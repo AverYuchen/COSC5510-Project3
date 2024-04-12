@@ -14,22 +14,41 @@ class BPlusTree:
 
 class IndexManager:
     def __init__(self):
-        self.indices = {}
+        # Assuming indexes are stored in a dictionary with table names as keys
+        # and sets or lists of indexed columns as values.
+        self.indexes = {}
 
-    def create_index(self, table_name, column_name):
+    def is_indexed(self, table, column):
         """
-        Create a new index for a table on a specific column.
+        Check if the specified column in the specified table is indexed.
 
-        Parameters:
-            table_name (str): The name of the table.
-            column_name (str): The column to index.
+        Args:
+            table (str): The name of the table.
+            column (str): The name of the column.
+
+        Returns:
+            bool: True if the column is indexed, False otherwise.
         """
-        if table_name not in self.indices:
-            self.indices[table_name] = {}
-        if column_name not in self.indices[table_name]:
-            self.indices[table_name][column_name] = BPlusTree()
-        else:
-            print("Index already exists for", table_name, "on column", column_name)
+        # Check if the table exists in the indexes dictionary and if the column is in the set or list of indexed columns.
+        return table in self.indexes and column in self.indexes[table]
+
+
+    def create_index(self, table, column):
+        """
+        Create an index for the specified column in the specified table.
+        """
+        if table not in self.indexes:
+            self.indexes[table] = set()
+        self.indexes[table].add(column)
+        print(f"Index created for {column} in {table}")
+        
+    def remove_index(self, table, column):
+        """
+        Remove the index of the specified column in the specified table, if it exists.
+        """
+        if table in self.indexes and column in self.indexes[table]:
+            self.indexes[table].remove(column)
+            print(f"Index removed for {column} in {table}")
 
     def drop_index(self, table_name, column_name):
         """
