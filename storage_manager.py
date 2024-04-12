@@ -30,17 +30,12 @@ class StorageManager:
                 logging.error(f"Failed to decode {filename} with {encoding}: {e}")
             except Exception as e:
                 logging.error(f"An error occurred while reading {filename} with {encoding}: {e}")
-        # If all encoding attempts fail, log and return an empty list
         logging.error(f"All encodings failed for {filename}. Check the file for data issues.")
         return []
 
     def update_table(self, table_name, data):
         """
         Update the in-memory and disk storage for a given table.
-
-        Parameters:
-            table_name (str): The name of the table to update.
-            data (list of dict): The complete updated data list for the table.
         """
         self.tables[table_name] = data
         self.write_csv(table_name + '.csv', data)
@@ -48,14 +43,10 @@ class StorageManager:
     def write_csv(self, filename, data):
         """
         Write data back to a CSV file after updates.
-
-        Parameters:
-            filename (str): The name of the file to write.
-            data (list of dict): Data to write.
         """
         path = os.path.join(self.data_directory, filename)
         if data:
-            keys = data[0].keys()
+            keys = data[0].keys() if data else []
             with open(path, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=keys)
                 writer.writeheader()
@@ -63,10 +54,7 @@ class StorageManager:
 
     def load_all_data(self):
         """
-        Load data from all CSV files in the directory, attempting multiple encodings.
-
-        Returns:
-            dict: A dictionary where keys are filenames and values are lists of rows.
+        Load data from all CSV files in the directory.
         """
         data = {}
         for filename in os.listdir(self.data_directory):

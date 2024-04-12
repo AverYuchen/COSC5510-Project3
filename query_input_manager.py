@@ -1,134 +1,76 @@
-from sql_parser import parse_sql
-from dml import DMLManager
-from storage_manager import StorageManager
+import csv
+import os
 import logging
 
+# Setup basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Initialize logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+class StorageManager:
+    def __init__(self, data_directory="data"):
+        """
+        Initialize the Storage Manager with a directory to store and manage CSV files.
+        """
+        self.data_directory = data_directory
+        if not os.path.exists(data_directory):
+            os.makedirs(data_directory)
+        self.data = self.load_all_data() 
+        # This dictionary stores all the table data
 
-# Create an instance of StorageManager and DMLManager
-storage_manager = StorageManager()
-dml_manager = DMLManager(storage_manager)
+    def get_table_data(self, table_name):
+        """
+        Retrieve data for a specific table.
+        """
+        return self.data.get(table_name, [])
 
+    def update_table_data(self, table_name, data):
+        """
+        Update the in-memory and disk storage for a given table.
+        """
+        self.data[table_name] = data
+        self.write_csv(table_name + '.csv', data)
 
-def handle_input(user_input):
-    parsed_command = parse_sql(user_input)  # Ensure this function is parsing correctly.
-    if parsed_command.get('error'):
-        return parsed_command['error']
+    def read_csv(self, filename, encodings=('utf-8-sig', 'ISO-8859-1')):
+        """
+        Attempts to read a CSV file using a list of encodings until one succeeds.
+        """
+        path = os.path.join(self.data_directory, filename)
+        for encoding in encodings:
+            try:
+                with open(path, mode='r', newline='', encoding=encoding) as file:
+                    reader = csv.DictReader(file)
+                    return [row for row in reader]
+            except UnicodeDecodeError as e:
+                logging.error(f"Failed to decode {filename} with {encoding}: {e}")
+            except Exception as e:
+                logging.error(f"An error occurred while reading {filename} with {encoding}: {e}")
+        logging.error(f"All encodings failed for {filename}. Check the file for data issues.")
+        return []
 
-    try:
-        if parsed_command['type'] == 'select':
-            result = dml_manager.select(**parsed_command)
-        elif parsed_command['type'] == 'insert':
-            result = dml_manager.insert(**parsed_command)
-        elif parsed_command['type'] == 'delete':
-            result = dml_manager.delete(**parsed_command)
-        elif parsed_command['type'] == 'update':
-            result = dml_manager.update(**parsed_command)
-        else:
-            return "Unsupported SQL command type."
-        
-        return format_result(result)
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+    def write_csv(self, filename, data):
+        """
+        Write data back to a CSV file after updates.
+        """
+        path = os.path.join(self.data_directory, filename)
+        keys = data[0].keys() if data else []
+        with open(path, 'w', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=keys)
+            writer.writeheader()
+            writer.writerows(data)
 
-def format_result(result):
-    if isinstance(result, list):
-        return "\n".join(str(row) for row in result) if result else "No results."
-    return str(result)
+    def load_all_data(self):
+        """
+        Load data from all CSV files in the directory.
+        """
+        data = {}
+        for filename in os.listdir(self.data_directory):
+            if filename.endswith('.csv'):
+                table_name = filename[:-4]
+                data[table_name] = self.read_csv(filename)
+        return data
 
+# Example usage of StorageManager
 if __name__ == "__main__":
-    print(handle_input("SELECT * FROM table;"))  # Example test input
-
-
-
-# def handle_input(user_input):
-#     """
-#     Handles a SQL command as input, parses it, and executes the appropriate action.
-#     """
-#     try:
-#         parsed_command = parse_sql(user_input)
-#         command_type = parsed_command['type']
-#         if command_type == 'select':
-#             result = dml_manager.select(parsed_command['table'], parsed_command.get('conditions'))
-#         elif command_type == 'insert':
-#             result = dml_manager.insert(parsed_command['table'], parsed_command['values'])
-#         elif command_type == 'delete':
-#             result = dml_manager.delete(parsed_command['table'], parsed_command.get('conditions'))
-#         else:
-#             result = "Error: Unsupported SQL command type."
-
-#         return format_result(result)
-#     except Exception as e:
-#         return f"An error occurred: {e}"
-
-# def format_result(result):
-#     if isinstance(result, list):
-#         return "\n".join(str(row) for row in result)
-#     elif isinstance(result, dict):
-#         return "\n".join(f"{key}: {value}" for key, value in result.items())
-#     else:
-#         return str(result)
-
-# from sql_parser import parse_sql
-# from execution_engine import execute_query
-# from ddl import create_table
-# from dml import insert, select, delete
-
-# def handle_input(user_input):
-#     """
-#     Handles a SQL command as input, parses it, and executes the appropriate action.
-
-#     Parameters:
-#         user_input (str): The SQL command entered by the user.
-
-#     Returns:
-#         str: The result or output of the executed command.
-#     """
-#     try:
-#         # Parse the SQL command
-#         parsed_command = parse_sql(user_input)
-
-#         # Dispatch the command to the appropriate function
-#         if parsed_command['type'] == 'select':
-#             result = select(**parsed_command)
-#         elif parsed_command['type'] == 'insert':
-#             result = insert(**parsed_command)
-#         elif parsed_command['type'] == 'create':
-#             result = create_table(**parsed_command)
-#         elif parsed_command['type'] == 'delete':
-#             result = delete(**parsed_command)
-#         else:
-#             result = "Error: Unsupported SQL command type."
-
-#         # Return formatted result for display
-#         return format_result(result)
-#     except Exception as e:
-#         # Return error message if an exception occurs
-#         return f"An error occurred: {e}"
-
-# def format_result(result):
-#     """
-#     Formats the result of an SQL command for display.
-#     """
-#     if isinstance(result, list):
-#         return "\n".join(str(row) for row in result)
-#     elif isinstance(result, dict):
-#         return "\n".join(f"{key}: {value}" for key, value in result.items())
-#     else:
-#         return str(result)
-
-
-# # Example usage for testing based on the provided SQL queries
-# if __name__ == "__main__":
-#     print(handle_input("SELECT state FROM state_abbreviation;"))
-#     print(handle_input("SELECT a.county_name, b.fips_number FROM county_count AS a JOIN fips_code AS b ON a.county_name = b.county_name;"))
-#     print(handle_input("SELECT county_name, total_count FROM county_count;"))
-#     print(handle_input("CREATE TABLE state_population (state_id INT PRIMARY KEY, state_name VARCHAR(100), population INT, year YEAR);"))
-#     print(handle_input("INSERT INTO state_population (state_id, state_name, population, year) VALUES (1, 'California', 39538223, 2020);"))
-#     print(handle_input("INSERT INTO state_population (state_id, state_name, population, year) VALUES (2, 'California', 38834137, 2021);"))
-#     print(handle_input("INSERT INTO state_population (state_id, state_name, population, year) VALUES (3, 'California', 38243082, 2022);"))
-#     print(handle_input("SELECT * FROM state_abbreviation WHERE state_name = 'California' OR state_name = 'Texas';"))
-#     print(handle_input("SELECT state_name, population, year FROM state_population ORDER BY population DESC;"))
-#     print(handle_input("SELECT state_name, SUM(population) AS total_population FROM state_population GROUP BY state_name HAVING SUM(population) > 10000000;"))
+    storage = StorageManager()
+    data = storage.load_all_data()
+    for table_name, rows in data.items():
+        logging.info(f"Loaded {len(rows)} rows from {table_name}")
