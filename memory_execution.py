@@ -77,4 +77,5 @@ if __name__ == "__main__":
     from storage_manager import StorageManager
     storage_manager = StorageManager()
     mem_exec = MemoryExecution(storage_manager)
-    print(mem_exec.select('users', conditions=lambda x: x['age'] > 20, projection=['name', 'age']))
+    print(mem_exec.select('state_population', conditions=lambda x: x['state_code'] == 'AK', projection=['state_code','year']))
+
