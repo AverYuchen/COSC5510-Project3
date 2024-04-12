@@ -4,20 +4,21 @@ def main():
     print("Welcome to MyDBMS")
     print("Type SQL commands or 'exit' to quit.")
     while True:
-        user_input = input("dbms> ").strip()  # Strip whitespace from the input
+        user_input = input("dbms> ").strip()
         if user_input.lower() == 'exit':
             print("Exiting MyDBMS.")
             break
-        if user_input:  # Check if input is not empty
-            # result = handle_input(user_input)
-            result = handle_input('SELECT * FROM table;')
-            if result:
-                print(result)
+        if user_input.startswith("'") and user_input.endswith("'"):
+            user_input = user_input[1:-1]  # Remove single quotes around the command
+        result = handle_input(user_input)
+        if result:
+            print("Query results:", result)
         else:
-            print("Please enter a valid SQL command or type 'exit' to quit.")
+            print("No results or feedback received. Check your input or system configuration.")
 
 if __name__ == "__main__":
     main()
 
 
+# result = handle_input(user_input)
 # print(handle_input("test"))  # Should print "Hello, world!"
