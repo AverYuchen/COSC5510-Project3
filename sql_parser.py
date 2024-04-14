@@ -68,7 +68,7 @@ def parse_create_table(sql):
 def parse_insert(sql):
     """Parses an INSERT INTO SQL statement."""
     #INSERT INTO users (id, name) VALUES (1, 'Alice');
-    pattern = r'INSERT INTO\s+(\w+)\s+\((.*)\)\s+VALUES\s+\((.*)\)3'
+    pattern = r'INSERT INTO\s+(\w+)\s+\((.*)\)\s+VALUES\s+\((.*)\)'
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid INSERT syntax'}
