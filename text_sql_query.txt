@@ -1,0 +1,50 @@
+<SELECT>
+
+SELECT state FROM state_abbreviation
+SELECT * FROM state_abbreviation
+
+
+<WHERE>
+
+SELECT state FROM state_abbreviation WHERE state = 'Alaska'
+
+<AND>
+
+SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'
+
+<OR>
+
+SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+
+SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+
+<JOIN>
+
+SELECT a.state_code, a.month, a.year, a.monthly_state_population, b.state
+FROM county_count AS a
+JOIN state_abbreviation AS b ON a.state_code = b.state_code
+
+<CREATE>
+
+CREATE TABLE state_population (
+    state_id INT PRIMARY KEY,
+    state_name VARCHAR(100),
+    population INT,
+    year YEAR
+);
+
+<INSERT>
+
+INSERT INTO state_population (state_id, state_name, population, year)
+VALUES (1, 'California', 39538223, 2020);
+
+<ORDER BY>
+
+SELECT state_name, population, year FROM state_population ORDER BY population DESC; 
+
+<HAVING>
+
+SELECT state_name, SUM(population) AS total_population
+FROM state_population
+GROUP BY state_name
+HAVING SUM(population) > 10000000;

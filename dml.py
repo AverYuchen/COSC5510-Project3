@@ -1,4 +1,5 @@
 from storage import StorageManager
+import re
 
 class DMLManager:
     def __init__(self):
@@ -9,18 +10,18 @@ class DMLManager:
         data.append(row)
         self.storage_manager.update_table_data(table_name, data)
         return "Insert successful."
-
+    
+    
     def select(self, table_name, columns, conditions):
         data = self.storage_manager.get_table_data(table_name)
         filtered_data = []
-        if conditions is None: 
-            filtered_data = data
+
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            filtered_data = [d for d in data if condition_function(d)]
         else:
-            conditions = conditions.replace('=','==')
-            conditions_key_value = conditions.split(" ", maxsplit = 1)
-            conditions = "{}{}{}{}{}".format('d','["',conditions_key_value[0],'"]',conditions_key_value[1])
-            #print(conditions)
-            filtered_data = [d for d in data if eval(conditions)]
+            filtered_data = data  # No conditions specified, select all data
+
         if columns is not None:
             if "*" in columns:
                 return filtered_data
@@ -28,13 +29,55 @@ class DMLManager:
                 selected_cols = [{k: v for k, v in single_entry.items() if k in columns} for single_entry in filtered_data]
         else:
             return None
+
         return selected_cols
+
+
+    def parse_conditions(self, conditions):
+        """ Build a function to evaluate conditions safely without using eval directly on user input. """
+        # Map SQL-like operators to Python operators
+        operators = {'=': '==', '!=': '!=', '>': '>', '<': '<', '>=': '>=', '<=': '<='}
+
+        # Handle logical operators (AND, OR) and ensure proper use of Python logical operators
+        logical_operators = re.split(r"\b(AND|OR)\b", conditions, flags=re.IGNORECASE)
+        parsed_conditions = []
+
+        for part in logical_operators:
+            part = part.strip()
+            if part.upper() in ['AND', 'OR']:
+                parsed_conditions.append(part.lower())  # Use Python's lower case and/or
+            else:
+                # Split on operators and capture the operator used
+                column, op, value = re.split(r"(\s*=\s*|\s*!=\s*|\s*>\s*|\s*<\s*|\s*>=\s*|\s*<=\s*)", part, maxsplit=1)
+                column = column.strip()
+                value = value.strip().strip("'")  # Assume values are always single-quoted in conditions
+                op = op.strip()
+                # Replace SQL-like operators with Python operators
+                python_op = operators[op]
+                # Construct the condition string for eval
+                parsed_conditions.append(f"(d['{column}'] {python_op} '{value}')")
+
+        condition_str = " ".join(parsed_conditions)
+
+        # Define a function to evaluate the condition for each row (dictionary) in the data
+        def condition_eval(d):
+            return eval(condition_str, {}, {"d": d})
+
+        return condition_eval
+
 
 if __name__ == "__main__":
     dml = DMLManager()
-    dml.insert("test_table", {"id": 1, "name": "Test"})
-    results = dml.select("test_table")
-    print("Results after insert:", results)
+    all_data = dml.select("state_abbreviation", "*", None)
+    print("Results after select all:", all_data)
+    # dml.insert("test_table", {"id": 1, "name": "Test"})
+    # results = dml.select("test_table", "*", None)
+    # print("Results after insert:", results)
+    # # Example of a more complex query
+    # complex_query = dml.select("test_table", "*", "name = 'Test' OR name = 'Alice'")
+    # print("Results after complex query:", complex_query)
+
+    # print(dml.select("state_abbreviation", "*", "state = 'California' OR state = 'Texas'"))
 
 # import logging
 
