@@ -1,3 +1,4 @@
+import logging
 from storage import StorageManager
 import re
 
@@ -65,6 +66,18 @@ class DMLManager:
 
         return condition_eval
 
+    def delete(self, table_name, condition):
+        """
+        Delete rows from a table based on a provided condition.
+        """
+        data = self.storage_manager.get_table_data(table_name)
+        original_count = len(data)
+        condition_function = self.parse_conditions(condition)
+        data = [d for d in data if not condition_function(d)]
+        self.storage_manager.update_table_data(table_name, data)
+        deleted_count = original_count - len(data)
+        logging.info(f"Deleted {deleted_count} rows from {table_name}")
+        return f"Deleted {deleted_count} rows."
 
 if __name__ == "__main__":
     dml = DMLManager()
