@@ -18,17 +18,18 @@ def parse_sql(sql):
 
 def parse_select(sql):
     """Parses a SELECT SQL statement."""
-    pattern = r'SELECT\s+(.*?)\s+FROM\s+(\w+)(\s+WHERE\s+(.*?))?(.*)'
+    pattern = r'SELECT\s+(.*?|\*)\s+FROM\s+(\w+)(\s+WHERE\s+((?:.(?!order by))*))?(\s+(.*))?'
+
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid SELECT syntax'}
 
-    columns, table, _, where_clause, additional = match.groups()
+    columns, table, __, where_clause, __, additional = match.groups()
     return {
         'type': 'select',
         'table': table,
         'columns': [column.strip() for column in columns.split(',')],
-        'conditions': where_clause.strip() if where_clause else None,
+        'conditions': where_clause if where_clause else None,
         'additional': parse_additional_clauses(additional.strip()) if additional else None
     }
 
@@ -129,6 +130,9 @@ def parse_additional_clauses(clause):
 
 # Example usage for testing
 if __name__ == "__main__":
+    print(parse_sql("SELECT * FROM users;"))
+    print(parse_sql("SELECT id FROM users;"))
+    print(parse_sql("SELECT * FROM state_abbreviation where state_code = 'NY';"))
     print(parse_sql("SELECT id, name FROM users WHERE id = 1 ORDER BY name;"))
     print(parse_sql("CREATE TABLE users (id INT, name VARCHAR(100));"))
     print(parse_sql("INSERT INTO users (id, name) VALUES (1, 'Alice');"))

@@ -10,11 +10,25 @@ class DMLManager:
         self.storage_manager.update_table_data(table_name, data)
         return "Insert successful."
 
-    def select(self, table_name, condition=lambda row: True):
-        if condition is None:
-            condition = lambda x: True
+    def select(self, table_name, columns, conditions):
         data = self.storage_manager.get_table_data(table_name)
-        return [row for row in data if condition(row)]
+        filtered_data = []
+        if conditions is None: 
+            filtered_data = data
+        else:
+            conditions = conditions.replace('=','==')
+            conditions_key_value = conditions.split(" ", maxsplit = 1)
+            conditions = "{}{}{}{}{}".format('d','["',conditions_key_value[0],'"]',conditions_key_value[1])
+            #print(conditions)
+            filtered_data = [d for d in data if eval(conditions)]
+        if columns is not None:
+            if "*" in columns:
+                return filtered_data
+            else:
+                selected_cols = [{k: v for k, v in single_entry.items() if k in columns} for single_entry in filtered_data]
+        else:
+            return None
+        return selected_cols
 
 if __name__ == "__main__":
     dml = DMLManager()
