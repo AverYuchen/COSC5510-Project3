@@ -67,7 +67,8 @@ def parse_create_table(sql):
 
 def parse_insert(sql):
     """Parses an INSERT INTO SQL statement."""
-    pattern = r"INSERT INTO (\w+) \((.*)\) VALUES \((.*)\);"
+    #INSERT INTO users (id, name) VALUES (1, 'Alice');
+    pattern = r'INSERT INTO\s+(\w+)\s+\((.*)\)\s+VALUES\s+\((.*)\)'
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid INSERT syntax'}
@@ -82,25 +83,6 @@ def parse_insert(sql):
         'table': table_name,
         'data': data
     }
-
-
-# def parse_insert(sql):
-#     """Parses an INSERT INTO SQL statement."""
-#     pattern = r'INSERT INTO (\w+) \((.*)\) VALUES \((.*)\)'
-#     match = re.match(pattern, sql, re.IGNORECASE)
-#     if not match:
-#         return {'error': 'Invalid INSERT syntax'}
-
-#     table_name, columns, values = match.groups()
-#     columns = [col.strip() for col in columns.split(',')]
-#     values = [value.strip().strip("'") for value in values.split(',')]
-
-#     return {
-#         'type': 'insert',
-#         'table': table_name,
-#         'columns': columns,
-#         'values': values
-#     }
 
 def parse_delete(sql):
     """Parses a DELETE FROM SQL statement."""

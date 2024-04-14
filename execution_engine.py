@@ -15,13 +15,16 @@ def execute_query(command):
     dml_manager = DMLManager()
     if command['type'] == 'insert':
         return dml_manager.insert(command['table'], command['data'])
+    elif command['type'] == 'delete':
+        return dml_manager.delete(command['table'], command['conditions'])
     elif command['type'] == 'select':
         return dml_manager.select(command['table'], command['columns'], command['conditions'])
     # Add other conditions for different SQL types
 
 
 if __name__ == "__main__":
-    #print(execute_query({"type": "insert", "table": "test_table", "data": {"id": 2, "name": "Alice"}}))
+    print(execute_query({"type": "insert", "table": "test_table", "data": {"id": 2, "name": "Alice"}}))
+    print(execute_query({"type": "delete", "table": "test_table", "conditions": 'name = Alice'}))
     #print(execute_query({"type": "select", "table": "test_table", "columns" : {"id, name"}}))
     print(execute_query({"type": "select", "table": "test_table", "columns" : ['id', 'name'], "conditions":'id=1'}))
     
