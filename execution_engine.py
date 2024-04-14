@@ -15,14 +15,14 @@ def execute_query(command):
     if command['type'] == 'insert':
         return dml_manager.insert(command['table'], command['data'])
     elif command['type'] == 'select':
-        return dml_manager.select(command['table'], command.get('conditions'))
+        return dml_manager.select(command['table'], command['columns'], command['conditions'])
     # Add other conditions for different SQL types
 
 
 if __name__ == "__main__":
-    print(execute_query({"type": "insert", "table": "test_table", "data": {"id": 2, "name": "Alice"}}))
-    print(execute_query({"type": "select", "table": "test_table"}))
-
+    #print(execute_query({"type": "insert", "table": "test_table", "data": {"id": 2, "name": "Alice"}}))
+    #print(execute_query({"type": "select", "table": "test_table", "columns" : {"id, name"}}))
+    print(execute_query({"type": "select", "table": "test_table", "columns" : ['id', 'name'], "conditions":'id=1'}))
 # from storage_manager import StorageManager
 # from index_manager import IndexManager
 # from ddl import create_table, drop_table
