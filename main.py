@@ -18,7 +18,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# result = handle_input(user_input)
-# print(handle_input("test"))  # Should print "Hello, world!"
