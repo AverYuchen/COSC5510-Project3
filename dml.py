@@ -12,6 +12,56 @@ class DMLManager:
         self.storage_manager.update_table_data(table_name, data)
         return "Insert successful."
     
+    def delete(self, table_name, condition):
+        print(f"Attempting to delete from {table_name} where {condition}")
+        data = self.storage_manager.get_table_data(table_name)
+        
+        if not data:
+            return "Table not found or empty."
+
+        # Normalize data to ensure consistent quote and type handling
+        for row in data:
+            for key in row:
+                row[key] = self.normalize_value(row[key])
+
+        initial_count = len(data)
+        if condition:
+            condition_function = self.parse_conditions(condition)
+            data = [row for row in data if not condition_function(row)]
+        else:
+            return "No condition provided."
+
+        updated_count = len(data)
+        deleted_count = initial_count - updated_count
+
+        if deleted_count > 0:
+            self.storage_manager.update_table_data(table_name, data)
+            
+        print(f"Deleted count: {deleted_count}")
+
+        return f"Deleted {deleted_count} rows."
+
+    def normalize_value(self, value):
+        # Normalize quotes and remove whitespace
+        if isinstance(value, str):
+            return value.strip().replace("‘", "'").replace("’", "'").replace("’", "'").replace("’", "'")
+        return value
+
+    
+    
+    # def delete(self, table_name, condition):
+    #     """
+    #     Delete rows from a table based on a provided condition.
+    #     """
+    #     data = self.storage_manager.get_table_data(table_name)
+    #     original_count = len(data)
+    #     condition_function = self.parse_conditions(condition)
+    #     data = [d for d in data if not condition_function(d)]
+    #     self.storage_manager.update_table_data(table_name, data)
+    #     deleted_count = original_count - len(data)
+    #     logging.info(f"Deleted {deleted_count} rows from {table_name}")
+    #     return f"Deleted {deleted_count} rows."
+    
     
     def select(self, table_name, columns, conditions):
         data = self.storage_manager.get_table_data(table_name)
@@ -32,140 +82,138 @@ class DMLManager:
             return None
 
         return selected_cols
-
-
+    
     def parse_conditions(self, conditions):
-        """ Build a function to evaluate conditions safely without using eval directly on user input. """
-        # Map SQL-like operators to Python operators
-        operators = {'=': '==', '!=': '!=', '>': '>', '<': '<', '>=': '>=', '<=': '<='}
+        print(f"Parsing conditions: {conditions}")
+        operators = {
+            '=': '==',
+            '!=': '!=',
+            '>': '>',
+            '<': '<',
+            '>=': '>=',
+            '<=': '<='
+        }
 
-        # Handle logical operators (AND, OR) and ensure proper use of Python logical operators
-        logical_operators = re.split(r"\b(AND|OR)\b", conditions, flags=re.IGNORECASE)
+        conditions = re.split(r"\b(AND|OR)\b", conditions, flags=re.IGNORECASE)
+        print(f"Split conditions: {conditions}")
         parsed_conditions = []
 
-        for part in logical_operators:
+        for part in conditions:
             part = part.strip()
             if part.upper() in ['AND', 'OR']:
                 parsed_conditions.append(part.lower())  # Use Python's lower case and/or
             else:
-                # Split on operators and capture the operator used
-                column, op, value = re.split(r"(\s*=\s*|\s*!=\s*|\s*>\s*|\s*<\s*|\s*>=\s*|\s*<=\s*)", part, maxsplit=1)
-                column = column.strip()
-                value = value.strip().strip("'")  # Assume values are always single-quoted in conditions
-                op = op.strip()
-                # Replace SQL-like operators with Python operators
-                python_op = operators[op]
-                # Construct the condition string for eval
-                parsed_conditions.append(f"(d['{column}'] {python_op} '{value}')")
+                match = re.search(r"(.*?)(=|!=|>|<|>=|<=)(.*)", part.strip(), re.IGNORECASE)
+                if match:
+                    column, op, value = match.groups()
+                    column, value = column.strip(), value.strip()
+
+                    if column in ['id']:  # Add more columns if needed
+                        value = value.strip("'")
+                        condition_str = f"(d['{column}'] {operators[op]} '{value}')"
+                    elif value.isdigit():
+                        condition_str = f"(d['{column}'] {operators[op]} {value})"
+                    else:
+                        value = value.strip("'")
+                        condition_str = f"(d['{column}'] {operators[op]} '{value}')"
+
+                    parsed_conditions.append(condition_str)
+                else:
+                    logging.error(f"Could not parse condition: {part}")
+                    return None  # Or raise an Exception
 
         condition_str = " ".join(parsed_conditions)
+        print(f"Final condition string: {condition_str}")
+        
+        # Return a callable lambda function
+        return lambda d: eval(condition_str, {}, {"d": d})
 
-        # Define a function to evaluate the condition for each row (dictionary) in the data
-        def condition_eval(d):
-            return eval(condition_str, {}, {"d": d})
 
-        return condition_eval
+    # def parse_conditions(self, conditions):
+    #     print(f"Parsing conditions: {conditions}")
+    #     # Map SQL-like operators to Python operators with regex patterns for matching
+    #     operators = {
+    #         '=': '==',
+    #         '!=': '!=',
+    #         '>': '>',
+    #         '<': '<',
+    #         '>=': '>=',
+    #         '<=': '<='
+    #     }
 
-    def delete(self, table_name, condition):
-        """
-        Delete rows from a table based on a provided condition.
-        """
-        data = self.storage_manager.get_table_data(table_name)
-        original_count = len(data)
-        condition_function = self.parse_conditions(condition)
-        data = [d for d in data if not condition_function(d)]
-        self.storage_manager.update_table_data(table_name, data)
-        deleted_count = original_count - len(data)
-        logging.info(f"Deleted {deleted_count} rows from {table_name}")
-        return f"Deleted {deleted_count} rows."
+    #     # Prepare to handle logical operators (AND, OR) and ensure proper Python logical operators
+    #     conditions = re.split(r"\b(AND|OR)\b", conditions, flags=re.IGNORECASE)
+    #     print(f"Parsing conditions: {conditions}")
+    #     parsed_conditions = []
+
+    #     for part in conditions:
+    #         part = part.strip()
+    #         if part.upper() in ['AND', 'OR']:
+    #             parsed_conditions.append(part.lower())  # Use Python's lower case and/or
+    #         else:
+    #             # Split on operators and capture the operator used
+    #             match = re.search(r"(.*?)(=|!=|>|<|>=|<=)(.*)", part.strip(), re.IGNORECASE)
+    #             if match:
+    #                 column, op, value = match.groups()
+    #                 column, value = column.strip(), value.strip()
+    #                 # Check if the value is a digit or a properly quoted string
+    #                 if value.isdigit():  # simple check to decide if it's a number
+    #                     condition_str = f"(d['{column}'] {operators[op]} {value})"
+    #                 else:  # Assume the value is a string and needs to be quoted
+    #                     # Strip any existing single quotes from the value to avoid syntax errors
+    #                     value = value.strip("'")
+    #                     condition_str = f"(d['{column}'] {operators[op]} '{value}')"
+    #                 parsed_conditions.append(condition_str)
+    #             else:
+    #                 logging.error(f"Could not parse condition: {part}")
+    #                 return None  # Or raise an Exception
+
+    #     condition_str = " ".join(parsed_conditions)
+
+    #     # Define a function to evaluate the condition for each row (dictionary) in the data
+    #     def condition_lambda(d):
+    #         return eval(condition_str, {"d": d})
+
+    #     return condition_lambda
 
 if __name__ == "__main__":
-    dml = DMLManager()
-    all_data = dml.select("state_abbreviation", "*", None)
-    print("Results after select all:", all_data)
-    # dml.insert("test_table", {"id": 1, "name": "Test"})
-    # results = dml.select("test_table", "*", None)
-    # print("Results after insert:", results)
-    # # Example of a more complex query
-    # complex_query = dml.select("test_table", "*", "name = 'Test' OR name = 'Alice'")
-    # print("Results after complex query:", complex_query)
+    
+    dml_manager = DMLManager()
+    # Assuming parse_conditions is part of the current module
+    test_condition = dml_manager.parse_conditions("id = '1'")
+    print(test_condition({'id': '1', 'name': 'Test'}))  # Should return True
 
-    # print(dml.select("state_abbreviation", "*", "state = 'California' OR state = 'Texas'"))
 
-# import logging
+# class TestDMLManager:
+#     @staticmethod
+#     def setup_sample_data():
+#         """ Set up sample data for testing. """
+#         return [
+#             {'id': '1', 'name': 'Test'},
+#             {'id': '1', 'name': 'Test'},
+#             {'id': '1', 'name': 'Test'},
+#             {'id': '6', 'name': 'Oliver'},
+#             {'id': '1', 'name': "Hachii"},
+#             {'id': '1', 'name': "‘Happy’"},
+#             {'id': '1', 'name': "’Back’"},
+#         ]
 
-# # Assuming StorageManager is defined in another module and imported correctly here
-# from query_input_manager import StorageManager
+#     @staticmethod
+#     def test_delete():
+#         """ Test the delete function of DMLManager. """
+#         dml_manager = DMLManager()  # Assuming DMLManager is already imported and set up properly
 
-# class DuplicatePrimaryKeyError(Exception):
-#     """Exception raised for duplicate primary key entries in a table."""
-#     pass
+#         # Setup initial data
+#         test_table_data = TestDMLManager.setup_sample_data()
+#         dml_manager.storage_manager.update_table_data('test_table', test_table_data)
 
-# class DMLManager:
-#     def __init__(self, storage_manager):
-#         """
-#         Initialize the DML Manager with a reference to the StorageManager.
-#         """
-#         self.storage_manager = storage_manager
+#         # Test deletion
+#         delete_count = dml_manager.delete('test_table', "id = '1'")
+#         print(delete_count)  # Output the result to see the deletion count
 
-#     def insert(self, table_name, row):
-#         """
-#         Insert a new row into the specified table, checking for primary key constraints.
-#         """
-#         data = self.storage_manager.get_table_data(table_name)
-#         primary_key = self.get_primary_key(table_name)
-#         if primary_key and any(row[primary_key] == existing[primary_key] for existing in data):
-#             logging.error(f"Duplicate primary key value in '{table_name}'")
-#             raise DuplicatePrimaryKeyError(f"Duplicate primary key value in '{table_name}'")
-#         data.append(row)
-#         self.storage_manager.update_table_data(table_name, data)
-#         logging.info(f"Inserted 1 row into {table_name}")
-#         return "Insert successful."
+#         # Fetch remaining data to verify
+#         remaining_data = dml_manager.storage_manager.get_table_data('test_table')
+#         print(f"Remaining data: {remaining_data}")
 
-#     def delete(self, table_name, condition):
-#         """
-#         Delete rows from a table based on a provided condition.
-#         """
-#         data = self.storage_manager.get_table_data(table_name)
-#         original_count = len(data)
-#         data = [row for row in data if not condition(row)]
-#         self.storage_manager.update_table_data(table_name, data)
-#         deleted_count = original_count - len(data)
-#         logging.info(f"Deleted {deleted_count} rows from {table_name}")
-#         return f"Deleted {deleted_count} rows."
-
-#     def select(self, table_name, condition=lambda row: True):
-#         """
-#         Select rows from a table that meet a specified condition.
-#         """
-#         if table_name not in self.storage_manager.data:
-#             return "Table does not exist."
-#         return [row for row in self.storage_manager.get_table_data(table_name) if condition(row)]
-
-#     def update(self, table_name, updates, condition):
-#         """
-#         Update rows in a table based on a condition and set new values from updates.
-#         """
-#         data = self.storage_manager.get_table_data(table_name)
-#         updated_count = 0
-#         for row in data:
-#             if condition(row):
-#                 row.update(updates)
-#                 updated_count += 1
-#         self.storage_manager.update_table_data(table_name, data)
-#         logging.info(f"Updated {updated_count} rows in {table_name}")
-#         return f"Updated {updated_count} rows."
-
-#     def get_primary_key(self, table_name):
-#         """
-#         Retrieve the primary key column for a given table from its schema.
-#         """
-#         schema = self.storage_manager.data.get(table_name, {})
-#         return schema.get('primary_key') if isinstance(schema, dict) else None
-
-# # Example usage
 # if __name__ == "__main__":
-#     storage = StorageManager()
-#     dml = DMLManager(storage)
-#     print(dml.insert('users', {'id': 1, 'name': 'Alice'}))  # Test the insert function
-#     print(dml.select('users', lambda x: x['id'] == 1))  # Test the select function
+#     TestDMLManager.test_delete()

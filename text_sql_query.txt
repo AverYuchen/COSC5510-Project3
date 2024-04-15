@@ -18,6 +18,21 @@ SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texa
 
 SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
 
+<INSERT>
+
+INSERT INTO test_table (id, name) VALUES (1, 'Hachii')
+
+
+<DELETE>
+
+DELETE FROM test_table WHERE id = 0
+
+<MAX, MIN, SUM>
+SELECT MAX(monthly_state_population) FROM state_population
+SELECT MIN(count_alldrug) FROM county_count
+SELECT SUM(monthly_state_population) FROM state_population
+
+
 <JOIN>
 
 SELECT a.state_code, a.month, a.year, a.monthly_state_population, b.state
