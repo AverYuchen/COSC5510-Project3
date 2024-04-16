@@ -37,33 +37,6 @@ class DDLManager:
                     schemas[table_name] = schema
         return schemas
 
-    # def load_all_schemas(self):
-    #     schemas = {}
-    #     for filename in os.listdir(self.schema_directory):
-    #         if filename.endswith(".csv"):
-    #             table_name = filename[:-4]  # Remove the .csv extension
-    #             with open(os.path.join(self.schema_directory, filename), newline='') as file:
-    #                 reader = csv.reader(file)
-    #                 schema = {
-    #                     'columns': {},
-    #                     'primary_key': None,
-    #                     'foreign_keys': [],
-    #                     'indexes': []
-    #                 }
-    #                 for row in reader:
-    #                     col_name, col_type, *constraints = row
-    #                     schema['columns'][col_name] = {'type': col_type}
-    #                     for constraint in constraints:
-    #                         if constraint == 'PRIMARY_KEY':
-    #                             schema['primary_key'] = col_name
-    #                         elif 'FOREIGN_KEY' in constraint:
-    #                             ref_table, ref_col = constraint.split('(')[1].strip(')').split(',')
-    #                             schema['foreign_keys'].append({'column': col_name, 'ref_table': ref_table, 'ref_column': ref_col})
-    #                         elif constraint == 'INDEX':
-    #                             schema['indexes'].append(col_name)
-    #                 schemas[table_name] = schema
-    #     return schemas
-
     def create_table(self, table_name, columns):
         if table_name in self.tables:
             return "Error: Table already exists."
@@ -82,8 +55,6 @@ class DDLManager:
 
         self.tables[table_name] = self.load_schema(table_name)
         return f"Table '{table_name}' created successfully."
-    
-    
 
     def validate_column_definition(self, col_def):
         # Simple validation for column type and constraints
@@ -92,7 +63,6 @@ class DDLManager:
         if parts[0] not in valid_types:
             return False
         return True
-
 
     def drop_table(self, table_name):
         if table_name not in self.tables:

@@ -57,7 +57,6 @@ class DMLManager:
 
         return True
 
-
     def delete(self, table_name, conditions):
         condition_func = self.parse_conditions_delete(conditions)
         if not condition_func:
@@ -76,19 +75,6 @@ class DMLManager:
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
             return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
-        
-    def write_data_to_csv(self, table_name):
-        # Path to the CSV file
-        csv_path = os.path.join(self.storage_manager.schema_directory, f"{table_name}.csv")
-        # Write the current in-memory data back to the CSV file
-        with open(csv_path, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Assuming the first row contains column headers
-            if self.storage_manager.data[table_name]:
-                writer.writerow(self.storage_manager.data[table_name][0].keys())  # column headers
-            for row in self.storage_manager.data[table_name]:
-                writer.writerow(row.values())
-
    
     def parse_conditions_delete(self, conditions):
     # Simplified parsing logic to handle basic conditions

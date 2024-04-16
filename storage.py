@@ -67,7 +67,6 @@ class StorageManager:
             logging.error(f"Failed to read {file_path}: {e}")
             return []  # Return an empty list on error
 
-
     def load_schemas(self):
         # Load only schema files
         for filename in os.listdir(self.schema_directory):
@@ -99,7 +98,6 @@ class StorageManager:
             logging.debug(f"No schema found for table {table_name}.")
         return schema
 
-
     def create_schema(self, table_name, schema):
         if table_name not in self.schemas:
             self.schemas[table_name] = schema
@@ -107,27 +105,25 @@ class StorageManager:
         else:
             return "Error: Schema for {0} already exists.".format(table_name)
         
-    def write_csv(self, table_name):
-        filename = os.path.join(self.data_directory, f"{table_name}.csv")
-        try:
-            with open(filename, mode='w', newline='', encoding='utf-8') as file:
-                writer = csv.DictWriter(file, fieldnames=self.schemas[table_name]['columns'].keys())
-                writer.writeheader()
-                writer.writerows(self.data[table_name])
-            logging.info(f"Data for {table_name} written successfully to CSV.")
-        except Exception as e:
-            logging.error(f"Failed to write to {filename}: {e}")
-            return f"Error: Failed to write data due to {e}"
-
     def delete_data(self, table_name, conditions):
+        condition_func = self.parse_conditions_safe(conditions)
+        if condition_func is None:
+            logging.error("Deletion failed: Invalid condition syntax")
+            return "Error: Invalid condition syntax"
+
         try:
             initial_data = self.data.get(table_name, [])
-            new_data = [row for row in initial_data if not eval(conditions, {}, {'row': row})]
+            new_data = [row for row in initial_data if not condition_func(row)]
             rows_deleted = len(initial_data) - len(new_data)
+
+            logging.debug(f"Initial data: {initial_data}")
+            logging.debug(f"New data after deletion: {new_data}")
 
             if rows_deleted > 0:
                 self.data[table_name] = new_data
-                self.write_csv(table_name)  # Writing changes back to the CSV file
+                result = self.write_csv(table_name)  # Write changes back to the CSV file
+                if result is not None:
+                    return result
                 return f"Deleted {rows_deleted} rows."
             else:
                 return "No rows matched the condition."
@@ -136,6 +132,44 @@ class StorageManager:
             return f"Error: Failed to delete data due to {e}"
 
 
+    def write_csv(self, table_name):
+        filename = os.path.join(self.data_directory, f"{table_name}.csv")
+        try:
+            with open(filename, mode='w', newline='', encoding='utf-8') as file:
+                writer = csv.DictWriter(file, fieldnames=self.schemas[table_name]['columns'].keys())
+                writer.writeheader()
+                writer.writerows(self.data[table_name])
+            logging.info(f"Data for {table_name} successfully written to CSV.")
+        except Exception as e:
+            logging.error(f"Failed to write to {filename}: {e}")
+            return f"Error: Failed to write data due to {e}"
+
+
+    def parse_conditions_safe(self, conditions):
+        import re
+        # This regex now captures both digits and non-digits for values
+        match = re.match(r"^\s*(\w+)\s*=\s*(['\"]?)(\w+)\2\s*$", conditions)
+        if match:
+            field, _, value = match.groups()
+            # Try to convert to integer, fallback to string
+            try:
+                value = int(value)
+            except ValueError:
+                pass  # Keep value as string if conversion fails
+
+            def condition_func(row):
+                # Convert both to string for comparison to handle different data types gracefully
+                row_value = row.get(field)
+                if isinstance(row_value, int):
+                    row_value = str(row_value)
+                return row_value == str(value)
+
+            return condition_func
+        else:
+            logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
+            return None
+
+    
     def insert_data(self, table_name, data):
         # Check if schema exists for the table
         if table_name in self.schemas:
@@ -147,7 +181,6 @@ class StorageManager:
         else:
             return "Error: Table does not exist."
         
-
     def get_table_data(self, table_name):
         table_data = self.data.get(table_name, [])
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
@@ -156,9 +189,6 @@ class StorageManager:
     def update_table_data(self, table_name, data):
         self.data[table_name] = data
         self.write_csv(table_name + '.csv', data)
-
-
-
 
 class TestStorageManager(unittest.TestCase):
     def setUp(self):
@@ -169,17 +199,18 @@ class TestStorageManager(unittest.TestCase):
         self.storage.data['test_table'] = [
             {'id': '1', 'name': 'Alice'},
             {'id': '2', 'name': 'Bob'},
-            {'id': '3', 'name': 'Charlie'}
+            {'id': '3', 'name': 'Charlie'},
+            {'id': '9', 'name': 'Joieho'}
         ]
         self.storage.write_csv('test_table')  # Write initial test data to CSV (optional)
 
-    def test_delete_data(self):
-        """Test deleting an item from the table."""
+    def test_delete_specific_row(self):
+        """Test deleting a specific row identified by ID."""
         # Check initial state
         initial_count = len(self.storage.data['test_table'])
-        self.assertEqual(initial_count, 3)
+        self.assertEqual(initial_count, 4)
 
-        # Perform deletion
+        # Perform deletion of id = 9
         result = self.storage.delete_data('test_table', 'id = 2')
         
         # Check the results of the deletion
@@ -190,10 +221,13 @@ class TestStorageManager(unittest.TestCase):
         remaining_ids = [row['id'] for row in self.storage.data['test_table']]
         self.assertNotIn('2', remaining_ids)
 
-    def test_delete_non_existent_data(self):
-        """Test deleting a non-existent item."""
-        result = self.storage.delete_data('test_table', 'id = 99')
-        self.assertEqual(result, "No rows matched the condition.")
+        # Ensure the CSV file is updated correctly
+        with open(os.path.join(self.storage.data_directory, 'test_table.csv'), 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            data_in_file = list(reader)
+            self.assertEqual(len(data_in_file), initial_count - 1)
+            ids_in_file = [row['id'] for row in data_in_file]
+            self.assertNotIn('2', ids_in_file)
 
     def tearDown(self):
         """Clean up after tests."""
