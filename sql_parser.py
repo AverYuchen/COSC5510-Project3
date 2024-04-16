@@ -1,9 +1,8 @@
 import re
+import logging
 
 def parse_sql(sql):
-    print(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
-    # Assume parsing logic is here...
-    # parsed_command = {}  # This should be the actual output from your parser
+    logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
     sql = sql.strip()
     lower_sql = sql.lower()
     tokens = lower_sql.split()
@@ -19,70 +18,58 @@ def parse_sql(sql):
         'aggregation': None
     }
 
-    if tokens[0] == 'select':
-        parsed_details['type'] = 'SELECT'
-        from_index = lower_sql.find('from ') + 5
-        select_contents = sql[6:from_index - 5].strip()
+    # Detect SQL command type
+    command_type = tokens[0]
+    parsed_details['type'] = command_type.upper()
 
-        if 'join' in tokens:
-            join_index = lower_sql.find('join ', from_index) + 5
-            on_index = lower_sql.find('on ', join_index)
-            join_type_start = lower_sql.rfind(' ', 0, join_index - 5) + 1
-            join_type_end = join_index - 5
-            join_type = lower_sql[join_type_start:join_type_end].strip()
-            parsed_details['join_type'] = join_type.upper() + 'JOIN'
-            
-            parsed_details['join_table'] = sql[join_index:on_index].split()[0].strip()  # Capture only the table name before any alias
-            parsed_details['join_condition'] = sql[on_index + 3:].strip()
+    # Parsing logic based on type of SQL command
+    if command_type == 'select':
+        # Handle SELECT fields and FROM clause
+        from_index = lower_sql.find(' from ') + 6
+        select_contents = sql[7:from_index - 6].strip()
+        parsed_details['select_fields'] = [field.strip() for field in select_contents.split(',')]
 
-        # Handling tables and aliases in FROM clause
-        table_end = lower_sql.find(' join', from_index) if 'join' in tokens else lower_sql.find(' where', from_index) if 'where' in tokens else len(sql)
-        tables_section = sql[from_index:table_end].strip()
-        for part in tables_section.split(','):
-            table_name = part.split()[0].strip()  # Assumes first part before space is the table name
-            parsed_details['tables'].append(table_name)
+        # Handle JOINs
+        join_index = lower_sql.find(' join ')
+        if join_index != -1:
+            join_type_start = lower_sql.rfind(' ', 0, join_index) + 1
+            parsed_details['join_type'] = lower_sql[join_type_start:join_index].strip().upper() + ' JOIN'
+            on_index = lower_sql.find(' on ', join_index)
+            parsed_details['join_table'] = sql[join_index + 6:on_index].strip().split()[0]
+            parsed_details['join_condition'] = sql[on_index + 4:].strip()
 
+        # Handle WHERE clause
+        where_index = lower_sql.find(' where ')
+        if where_index != -1:
+            parsed_details['where_condition'] = sql[where_index + 7:].strip()
 
-        if 'where' in tokens:
-            where_index = lower_sql.find('where ', from_index)
-            parsed_details['where_condition'] = sql[where_index + 6:].strip()
+        # Determine table or tables involved
+        table_end = where_index if where_index != -1 else len(sql)
+        parsed_details['tables'] = [part.strip().split()[0] for part in sql[from_index:table_end].split(',')]
 
-        for aggr in ['max(', 'min(', 'sum(']:
-            if aggr in lower_sql:
-                start = lower_sql.find(aggr) + len(aggr)
-                end = lower_sql.find(')', start)
-                parsed_details['select_fields'].append(sql[start:end].strip())
-                parsed_details['aggregation'] = aggr[:-1].upper()
-
-        if not parsed_details['aggregation']:
-            parsed_details['select_fields'] = select_contents.split(', ')
-        
+        # Extend parsing to handle other clauses such as GROUP BY, ORDER BY, etc.
         return parse_select(sql)
 
-    elif tokens[0] == 'insert':
-        parsed_details['type'] = 'INSERT'
-        into_index = lower_sql.find('into ') + 5
-        values_index = lower_sql.find('values ') + 7
-        table_name = sql[into_index:lower_sql.find(' ', into_index)].strip()
-        parsed_details['tables'].append(table_name)
-        values_str = sql[values_index:].strip()[1:-1]  # Skip the initial '(' and final ')'
+    elif command_type == 'insert':
+        # Handle INSERT INTO table (fields) VALUES (values)
+        into_index = lower_sql.find(' into ') + 6
+        values_index = lower_sql.find(' values ') + 8
+        table_end = lower_sql.find(' (', into_index)
+        parsed_details['tables'].append(sql[into_index:table_end].strip())
+        values_str = sql[values_index:].strip()[1:-1]
         parsed_details['values'] = [value.strip().strip("'") for value in values_str.split(',')]
         return parse_insert(sql)
-    
-    elif tokens[0] == 'delete':
-        parsed_details['type'] = 'DELETE'
-        from_index = lower_sql.find('from ') + 5
-        where_index = lower_sql.find('where ') if 'where' in tokens else len(sql)
-        table_name = sql[from_index:where_index].strip().split()[0]
-        parsed_details['tables'].append(table_name)
-        if 'where' in tokens:
-            where_condition = sql[where_index + 6:].strip()
-            parsed_details['where_condition'] = where_condition
 
+    elif command_type == 'delete':
+        # Handle DELETE FROM table WHERE condition
+        from_index = lower_sql.find(' from ') + 6
+        where_index = lower_sql.find(' where ')
+        table_end = where_index if where_index != -1 else len(sql)
+        parsed_details['tables'].append(sql[from_index:table_end].strip())
+        if where_index != -1:
+            parsed_details['where_condition'] = sql[where_index + 7:].strip()
         return parse_delete(sql)
-    
-    # print(f"Debug: Parsed command: {parsed_details}")  # Log parsed output
-    # return parsed_command
+
     return parsed_details
 
 def parse_select(sql):
@@ -196,21 +183,35 @@ def parse_additional_clauses(clause):
 
     return additional
 
+# if __name__ == "__main__":
+#     test_queries = [
+#         "SELECT state FROM state_abbreviation",
+#         "SELECT * FROM state_abbreviation",
+#         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         "SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
+#         "DELETE FROM test_table WHERE id = 1",
+#         "SELECT MAX(monthly_state_population) FROM state_population",
+#         "SELECT MIN(count_alldrug) FROM county_count",
+#         "SELECT SUM(monthly_state_population) FROM state_population",
+#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code"
+#     ]
+
+#     for query in test_queries:
+#         print(parse_sql(query))
+
 if __name__ == "__main__":
+    # Test the parser with various SQL commands
     test_queries = [
-        "SELECT state FROM state_abbreviation",
-        "SELECT * FROM state_abbreviation",
-        "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-        "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-        "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-        "SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+        "SELECT state_code, state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
         "DELETE FROM test_table WHERE id = 1",
-        "SELECT MAX(monthly_state_population) FROM state_population",
-        "SELECT MIN(count_alldrug) FROM county_count",
-        "SELECT SUM(monthly_state_population) FROM state_population",
-        "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code"
+        "SELECT MAX(monthly_state_population) FROM state_population"
     ]
 
     for query in test_queries:
-        print(parse_sql(query))
+        result = parse_sql(query)
+        print("Parsed SQL Command:", result)
+

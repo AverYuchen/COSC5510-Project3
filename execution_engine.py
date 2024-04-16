@@ -1,108 +1,5 @@
-
-
-# execution_engine.py
-
-# def execute(parsed_sql):
-#     logging.debug(f"Debug Executing parsed SQL: {parsed_sql}")
-#     try:
-#         if parsed_sql['type'] == 'SELECT':
-#             # Simulating a database fetch operation
-#             # You should replace this with the actual database interaction logic
-#             result = simulate_database_fetch(parsed_sql)
-#             logging.debug(f"Execution result: {result}")
-#             return result
-#         else:
-#             # Handle other types of SQL operations
-#             pass
-#     except Exception as e:
-#         logging.error(f"Execution error: {str(e)}")
-#         return None
-
-# def execute_query(command):
-#     from dml import DMLManager
-#     dml_manager = DMLManager()
-
-#     print(f"Debug: Executing parsed SQL: {command}")  # Log the parsed SQL command
-
-
-#     if 'type' in command:  # Check if it's a DML query
-#         if command['type'] == 'insert':
-#             return dml_manager.insert(command['table'], command['data'])
-#         elif command['type'] == 'delete':
-#             return dml_manager.delete(command['table'], command['conditions'])
-#         elif command['type'] == 'select':
-#             # Handling aggregation functions specifically
-#             if any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM']):
-#                 return handle_aggregations(command, dml_manager)
-#             else:
-#                 return dml_manager.select(command['table'], command['columns'], command['conditions'])
-#     else:  # It's an aggregation query
-#         if command['function'] == 'MAX':
-#             return aggregate_max(command, dml_manager)
-#         elif command['function'] == 'MIN':
-#             return aggregate_min(command, dml_manager)
-#         elif command['function'] == 'SUM':
-#             return aggregate_sum(command, dml_manager)
-    
-#     return None
-
-# Setup basic logging configuration
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 from dml import DMLManager
 import logging
-
-# def execute_query(command):
-#     print(f"Debug execution engine execute query: {command}")  # Log input SQL for debugging
-#     dml_manager = DMLManager()
-
-#     try:
-#         if 'type' in command:
-#             if command['type'] == 'select':
-#                 conditions = command.get('where_clause', "")
-#                 if 'join' in command and command['join'] is not None:
-#                     return handle_join(command, dml_manager)
-#                 elif any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM']):
-#                     return handle_aggregations(command, dml_manager, conditions)
-#                 else:
-#                     return dml_manager.select(command['main_table'], command['columns'], conditions)
-#             elif command['type'] == 'insert':
-#                 return dml_manager.insert(command['table'], command['data'])
-#             elif command['type'] == 'delete':
-#                 return dml_manager.delete(command['table'], command['conditions'])
-#             else:
-#                 logging.error("Unsupported SQL command type")
-#                 return None
-#         else:
-#             logging.error("Missing SQL command type")
-#             return None
-#     except Exception as e:
-#         logging.error(f"Execution error: {e}")
-#         return None
-
-# def handle_join(self, command):
-#     main_table_alias, main_table = command['main_table'].split(' AS ')
-#     join_part = command['join']
-#     join_table_alias, join_table = join_part.split(' ON ')[0].strip().split(' AS ')
-
-#     main_data = self.storage_manager.get_table_data(main_table)
-#     join_data = self.storage_manager.get_table_data(join_table)
-
-#     # Assuming condition is like "a.column_name = b.column_name"
-#     left_field, right_field = command['join'].split(' ON ')[1].split('=')
-#     left_field = left_field.strip().split('.')[-1]
-#     right_field = right_field.strip().split('.')[-1]
-
-#     # Join data based on condition
-#     joined_data = []
-#     for main_item in main_data:
-#         for join_item in join_data:
-#             if main_item[left_field] == join_item[right_field]:
-#                 # Properly merge data respecting aliases
-#                 merged_item = {**{f"{main_table_alias}.{k}": v for k, v in main_item.items()}, 
-#                                **{f"{join_table_alias}.{k}": v for k, v in join_item.items()}}
-#                 joined_data.append(merged_item)
-#     return
 
 def execute_query(command):
     print(f"Debug execution engine execute query: {command}")
@@ -128,39 +25,68 @@ def execute_query(command):
     except Exception as e:
         logging.error(f"Execution error: {e}")
         return f"Execution error: {e}"
-    
+
+
+# def handle_join(command, dml_manager):
+#     main_table, main_alias = extract_table_and_alias(command['main_table'])
+#     join_clause = command['join']
+#     join_table, join_alias = extract_table_and_alias(join_clause.split('ON')[0].strip())
+
+#     main_data = dml_manager.storage_manager.get_table_data('state_population')
+#     join_data = dml_manager.storage_manager.get_table_data('state_abbreviation')
+
+#     print("Main Data for Join:", main_data)
+#     print("Join Data for Join:", join_data)
+
+
+#     # Add debug statements to check data
+#     print(f"Debug: Main Data with Alias: {main_data}")
+#     print(f"Debug: Join Data with Alias: {join_data}")
+
+#     joined_data = []
+#     on_clause = command['join'].split('ON')[1].strip()
+#     left_field, right_field = [x.strip() for x in on_clause.split('=')]
+
+#     # Debug comparison logic
+#     for main_item in main_data:
+#         for join_item in join_data:
+#             print(f"Debug: Comparing {main_item[left_field]} to {join_item[right_field]}")
+#             if main_item[left_field] == join_item[right_field]:
+#                 print("Debug: Match Found")
+#                 merged_item = {**main_item, **join_item}
+#                 joined_data.append(merged_item)
+#             else:
+#                 print("Debug: No Match")
+
+#     print(f"Total joined rows: {len(joined_data)}")
+#     return joined_data
 
 def handle_join(command, dml_manager):
-    main_table, main_alias = extract_table_and_alias(command['main_table'])
+    dml_manager = DMLManager()
+    # Assuming command contains something like: 'JOIN state_abbreviation AS b ON a.state_code = b.state_code'
+    main_table, main_alias = command['main_table'].split(' AS ')
     join_clause = command['join']
-    join_table, join_alias = extract_table_and_alias(join_clause.split('ON')[0].strip())
+    join_table, join_alias = join_clause.replace('JOIN ', '').split(' ON ')[0].split(' AS ')
 
-    main_data = dml_manager.storage_manager.get_table_data(main_table)
-    join_data = dml_manager.storage_manager.get_table_data(join_table)
-
-    print(f"Main data: {main_data}")
-    print(f"Join data: {join_data}")
+    main_data = dml_manager.storage_manager.get_table_data(main_table.strip())
+    join_data = dml_manager.storage_manager.get_table_data(join_table.strip())
 
     joined_data = []
-    on_clause = command['join'].split('ON')[1].strip()
-    left_field, right_field = [x.strip().split('.')[-1] for x in on_clause.split('=')]
+    # Assuming 'ON a.state_code = b.state_code'
+    join_condition = join_clause.split(' ON ')[1]
+    left_field, right_field = join_condition.split(' = ')
+    left_field = left_field.split('.')[1]  # Remove alias 'a.'
+    right_field = right_field.split('.')[1]  # Remove alias 'b.'
 
-    # Log detailed comparison information
     for main_item in main_data:
         for join_item in join_data:
-            main_value = main_item.get(left_field, 'No data')
-            join_value = join_item.get(right_field, 'No data')
-            print(f"Comparing {main_value} from main table with {join_value} from join table")
-            if main_value == join_value:
-                print("Match found")
-                merged_item = {**{f"{main_alias}.{k}": v for k, v in main_item.items()},
-                               **{f"{join_alias}.{k}": v for k, v in join_item.items()}}
+            if main_item[left_field] == join_item[right_field]:
+                # Adjust how data is merged based on required fields
+                merged_item = {**main_item, **join_item}
                 joined_data.append(merged_item)
-            else:
-                print("No match found")
 
-    print(f"Total joined rows: {len(joined_data)}")
     return joined_data
+
 
 
 def evaluate_join_condition(row1, row2, condition):
@@ -231,13 +157,13 @@ def evaluate(condition, row1, row2):
 if __name__ == "__main__":
     # Define a set of test cases to verify each type of SQL command
     test_queries = [
-        {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'join': None, 'where_clause': None},
-        {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['*'], 'where_clause': None},
-        {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'where_clause': "state = 'Alaska'"},
-        {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'where_clause': "state_code = 'AK' AND year = '2018'"},
-        {'type': 'insert', 'table': 'test_table', 'data': {'id': 2, 'name': 'Happy'}},
-        {'type': 'delete', 'table': 'test_table', 'conditions': 'id = 1'},
-        {'type': 'select', 'main_table': 'state_population', 'columns': ['MAX(monthly_state_population)']},
+        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'join': None, 'where_clause': None},
+        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['*'], 'where_clause': None},
+        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'where_clause': "state = 'Alaska'"},
+        # {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'where_clause': "state_code = 'AK' AND year = '2018'"},
+        # {'type': 'insert', 'table': 'test_table', 'data': {'id': 2, 'name': 'Happy'}},
+        # {'type': 'delete', 'table': 'test_table', 'conditions': 'id = 1'},
+        # {'type': 'select', 'main_table': 'state_population', 'columns': ['MAX(monthly_state_population)']},
         {'type': 'select', 'main_table': 'state_population', 'columns': ['a.state_code', 'b.state'], 'join': 'JOIN state_abbreviation AS b ON a.state_code = b.state_code'}
     ]
 
