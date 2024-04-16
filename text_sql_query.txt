@@ -35,8 +35,6 @@ SELECT SUM(monthly_state_population) FROM state_population
 
 <JOIN>
 
-SELECT state_code, state FROM state_population, state_abbreviation WHERE state_population.state_code = state_abbreviation.state_code
-
 SELECT a.state_code, a.month, a.year, a.monthly_state_population, b.state
 FROM county_count AS a
 JOIN state_abbreviation AS b ON a.state_code = b.state_code

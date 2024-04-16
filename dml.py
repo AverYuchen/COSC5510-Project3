@@ -1,6 +1,7 @@
 import logging
 from storage import StorageManager
 import re
+import ast
 
 class DMLManager:
     def __init__(self):
@@ -8,6 +9,49 @@ class DMLManager:
 
     def insert(self, table_name, row):
         data = self.storage_manager.get_table_data(table_name)
+        with open('datatypes.txt', 'r') as file:
+            contents = file.readlines()
+            datatypes_dict = {}
+            for line in contents:
+                key, value = line.strip().split(':',1)
+                value = eval(value)
+                datatypes_dict[key] = value
+        table_datatype = datatypes_dict[table_name]
+        index = 0
+        max_length = float('inf')
+        for __, value in row.items():
+            value_type = type(value)
+            if value_type == 'int' or value_type == 'float':
+                continue
+            else:
+                try:
+                    int(value)
+                    value_type = 'int'
+                except ValueError:
+                    try:
+                # If that fails, try converting to float
+                        float(value)
+                        value_type = 'float'
+                    except ValueError:
+                        value_type = 'varchar'  # Expression does not evaluate to a number
+            
+            if '(' in table_datatype[index]:
+                datatype = table_datatype[index].split('(', 1)[0].lower()
+                max_length = int(table_datatype[index].split('(', 1)[-1].split(')', 1)[0])
+            else:
+                datatype = table_datatype[index].lower()
+                max_length = float('inf')
+            index +=1
+
+            if value_type == datatype:
+                if datatype == 'varchar' :
+                    if len(value) <= max_length:
+                        index += 1
+                        max_length = float('inf')
+                    else:
+                        return "Inserted data type is not matched with the dataset."   
+            else:
+                return "Inserted data type is not matched with the dataset."
         data.append(row)
         self.storage_manager.update_table_data(table_name, data)
         return "Insert successful."
@@ -68,34 +112,6 @@ class DMLManager:
 
         return selected_cols
     
-
-    def max(self, table, column, conditions=None):
-        data = self.storage_manager.get_table_data(table)
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        return max(d.get(column, float('-inf')) for d in data)
-
-    def min(self, table, column, conditions=None):
-        data = self.storage_manager.get_table_data(table)
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        return min(d.get(column, float('inf')) for d in data)
-    def sum(self, table, column, conditions=None):
-        data = self.storage_manager.get_table_data(table)
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        return sum(d.get(column, 0) for d in data if isinstance(d.get(column), (int, float)))
-
-
     def parse_conditions(self, conditions):
         print(f"Parsing conditions: {conditions}")
         operators = {
@@ -140,32 +156,11 @@ class DMLManager:
         
         # Return a callable lambda function
         return lambda d: eval(condition_str, {}, {"d": d})
-    
-    def aggregate(self, agg_type, table, column, conditions=None):
-        # This should connect to your database and execute the appropriate aggregation query.
-        # This is a simplified example:
-        query = f"SELECT {agg_type.upper()}({column}) FROM {table}"
-        if conditions:
-            query += f" WHERE {conditions}"
-        
-        # Simulating database connection and query execution
-        cursor = self.db_connection.cursor()
-        cursor.execute(query)
-        result = cursor.fetchone()
-        cursor.close()
-        return result[0] if result else None
 
-    def execute_query(self, query):
-        # Execute the query using your database connection
-        # This is a placeholder function, replace it with your actual database execution code
-        print(f"Executing query: {query}")
-        # Simulate a database response
-        return "Query result"
-    
 if __name__ == "__main__":
     
     dml_manager = DMLManager()
     # Assuming parse_conditions is part of the current module
     test_condition = dml_manager.parse_conditions("id = '1'")
     print(test_condition({'id': '1', 'name': 'Test'}))  # Should return True
-
+    

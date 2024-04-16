@@ -1,5 +1,4 @@
 from query_input_manager import handle_input
-from sql_parser import parse_sql
 
 def main():
     print("Welcome to MyDBMS")
@@ -19,4 +18,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

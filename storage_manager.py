@@ -1,7 +1,6 @@
 import csv
 import os
 import logging
-from storage import StorageManager  
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
