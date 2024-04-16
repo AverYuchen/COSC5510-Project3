@@ -28,7 +28,7 @@ class StorageManager:
 
     def get_table_data(self, table_name):
         table_data = self.data.get(table_name, [])
-        print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
+        # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
 
     def __init__(self, data_directory="data"):

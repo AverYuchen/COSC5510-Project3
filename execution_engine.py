@@ -27,40 +27,6 @@ def execute_query(command):
         return f"Execution error: {e}"
 
 
-# def handle_join(command, dml_manager):
-#     main_table, main_alias = extract_table_and_alias(command['main_table'])
-#     join_clause = command['join']
-#     join_table, join_alias = extract_table_and_alias(join_clause.split('ON')[0].strip())
-
-#     main_data = dml_manager.storage_manager.get_table_data('state_population')
-#     join_data = dml_manager.storage_manager.get_table_data('state_abbreviation')
-
-#     print("Main Data for Join:", main_data)
-#     print("Join Data for Join:", join_data)
-
-
-#     # Add debug statements to check data
-#     print(f"Debug: Main Data with Alias: {main_data}")
-#     print(f"Debug: Join Data with Alias: {join_data}")
-
-#     joined_data = []
-#     on_clause = command['join'].split('ON')[1].strip()
-#     left_field, right_field = [x.strip() for x in on_clause.split('=')]
-
-#     # Debug comparison logic
-#     for main_item in main_data:
-#         for join_item in join_data:
-#             print(f"Debug: Comparing {main_item[left_field]} to {join_item[right_field]}")
-#             if main_item[left_field] == join_item[right_field]:
-#                 print("Debug: Match Found")
-#                 merged_item = {**main_item, **join_item}
-#                 joined_data.append(merged_item)
-#             else:
-#                 print("Debug: No Match")
-
-#     print(f"Total joined rows: {len(joined_data)}")
-#     return joined_data
-
 def handle_join(command, dml_manager):
     dml_manager = DMLManager()
     # Assuming command contains something like: 'JOIN state_abbreviation AS b ON a.state_code = b.state_code'
@@ -157,13 +123,6 @@ def evaluate(condition, row1, row2):
 if __name__ == "__main__":
     # Define a set of test cases to verify each type of SQL command
     test_queries = [
-        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'join': None, 'where_clause': None},
-        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['*'], 'where_clause': None},
-        # {'type': 'select', 'main_table': 'state_abbreviation', 'columns': ['state'], 'where_clause': "state = 'Alaska'"},
-        # {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'where_clause': "state_code = 'AK' AND year = '2018'"},
-        # {'type': 'insert', 'table': 'test_table', 'data': {'id': 2, 'name': 'Happy'}},
-        # {'type': 'delete', 'table': 'test_table', 'conditions': 'id = 1'},
-        # {'type': 'select', 'main_table': 'state_population', 'columns': ['MAX(monthly_state_population)']},
         {'type': 'select', 'main_table': 'state_population', 'columns': ['a.state_code', 'b.state'], 'join': 'JOIN state_abbreviation AS b ON a.state_code = b.state_code'}
     ]
 
