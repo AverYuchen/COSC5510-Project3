@@ -1,0 +1,2 @@
+users:['INT', 'VARCHAR(100)']
+passowrd:['INT', 'VARCHAR(8)']
