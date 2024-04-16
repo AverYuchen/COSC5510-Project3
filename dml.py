@@ -1,96 +1,149 @@
 import logging
-from storage import StorageManager
+# import unittest
 import re
-import ast
+from storage import StorageManager
+from ddl import DDLManager
+import os
+import csv
+
+# Configure logging
+# logging.basicConfig(filename='dbms_debug.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DMLManager:
-    def __init__(self):
-        self.storage_manager = StorageManager()
+    def __init__(self, storage_manager):
+        self.storage_manager = storage_manager  # Use the passed instance
+        self.ddl_manager = DDLManager() 
+        logging.debug("DMLManager initialized with provided storage manager.")
 
-    def insert(self, table_name, row):
-        data = self.storage_manager.get_table_data(table_name)
-        with open('datatypes.txt', 'r') as file:
-            contents = file.readlines()
-            datatypes_dict = {}
-            for line in contents:
-                key, value = line.strip().split(':',1)
-                value = eval(value)
-                datatypes_dict[key] = value
-        table_datatype = datatypes_dict[table_name]
-        index = 0
-        max_length = float('inf')
-        for __, value in row.items():
-            value_type = type(value)
-            if value_type == 'int' or value_type == 'float':
-                continue
-            else:
+    def insert(self, table_name, data):
+        if not self.storage_manager.get_schema(table_name):  # Correct method to check table existence
+            logging.error(f"Insert operation failed: Table {table_name} does not exist.")
+            return "Error: Table does not exist."
+
+        if not self.validate_data(table_name, data):
+            logging.error("Insert operation failed: Data validation failed.")
+            return "Error: Data validation failed."
+
+        try:
+            self.storage_manager.insert_data(table_name, data)
+            logging.info(f"Data successfully inserted into {table_name}.")
+            return "Data inserted successfully."
+        except Exception as e:
+            logging.error(f"Insert operation failed: {e}")
+            return "Error: Failed to insert data."
+
+    def validate_data(self, table_name, data):
+        schema = self.storage_manager.get_schema(table_name)
+        if not schema:
+            logging.error(f"No schema available for table {table_name}")
+            return False
+
+        for field, value in data.items():
+            if field not in schema['columns']:
+                logging.error(f"Data validation error: Field '{field}' is not in the schema.")
+                return False
+            
+            expected_type = schema['columns'][field]['type']
+            if expected_type == 'int' and not isinstance(value, int):
                 try:
-                    int(value)
-                    value_type = 'int'
+                    value = int(value)  # Convert to int if necessary
+                    data[field] = value
                 except ValueError:
-                    try:
-                # If that fails, try converting to float
-                        float(value)
-                        value_type = 'float'
-                    except ValueError:
-                        value_type = 'varchar'  # Expression does not evaluate to a number
-            
-            if '(' in table_datatype[index]:
-                datatype = table_datatype[index].split('(', 1)[0].lower()
-                max_length = int(table_datatype[index].split('(', 1)[-1].split(')', 1)[0])
-            else:
-                datatype = table_datatype[index].lower()
-                max_length = float('inf')
-            index +=1
+                    logging.error(f"Type conversion error for field '{field}': expected int, got {value}")
+                    return False
+            elif expected_type == 'varchar' and not isinstance(value, str):
+                logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
+                return False
 
-            if value_type == datatype:
-                if datatype == 'varchar' :
-                    if len(value) <= max_length:
-                        index += 1
-                        max_length = float('inf')
-                    else:
-                        return "Inserted data type is not matched with the dataset."   
-            else:
-                return "Inserted data type is not matched with the dataset."
-        data.append(row)
-        self.storage_manager.update_table_data(table_name, data)
-        return "Insert successful."
-    
-    def delete(self, table_name, condition):
-        print(f"Attempting to delete from {table_name} where {condition}")
-        data = self.storage_manager.get_table_data(table_name)
+        return True
+
+
+    def delete(self, table_name, conditions):
+        condition_func = self.parse_conditions_delete(conditions)
+        if not condition_func:
+            logging.error("Failed to parse delete conditions")
+            return "Error: Invalid delete conditions."
+
+        try:
+            # Filter out rows that do not meet the condition
+            initial_data = self.storage_manager.data[table_name]
+            filtered_data = [row for row in initial_data if not condition_func(row)]
+            if len(filtered_data) == len(initial_data):
+                return "No rows matched the condition."
+            
+            self.storage_manager.data[table_name] = filtered_data
+            return f"Deleted {len(initial_data) - len(filtered_data)} rows."
+        except Exception as e:
+            logging.error(f"Delete operation failed: {str(e)}")
+            return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
         
-        if not data:
-            return "Table not found or empty."
+    def write_data_to_csv(self, table_name):
+        # Path to the CSV file
+        csv_path = os.path.join(self.storage_manager.schema_directory, f"{table_name}.csv")
+        # Write the current in-memory data back to the CSV file
+        with open(csv_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Assuming the first row contains column headers
+            if self.storage_manager.data[table_name]:
+                writer.writerow(self.storage_manager.data[table_name][0].keys())  # column headers
+            for row in self.storage_manager.data[table_name]:
+                writer.writerow(row.values())
 
-        # Normalize data to ensure consistent quote and type handling
-        for row in data:
-            for key in row:
-                row[key] = self.normalize_value(row[key])
+   
+    def parse_conditions_delete(self, conditions):
+    # Simplified parsing logic to handle basic conditions
+        conditions = conditions.strip()
+        if '=' in conditions:
+            field, value = conditions.split('=')
+            field = field.strip()
+            value = value.strip()
+            return lambda row: str(row.get(field)) == value
+        return None
 
-        initial_count = len(data)
-        if condition:
-            condition_function = self.parse_conditions(condition)
-            data = [row for row in data if not condition_function(row)]
-        else:
-            return "No condition provided."
+    def update(self, table_name, data, conditions):
+        logging.debug(f"Attempting to update {table_name}: {data} with conditions {conditions}")
+        try:
+            rows_updated = self.storage_manager.update_data(table_name, data, conditions)
+            if rows_updated > 0:
+                logging.info(f"Updated {rows_updated} rows in {table_name}.")
+                return f"Updated {rows_updated} rows."
+            else:
+                logging.warning(f"No rows updated in {table_name}.")
+                return "No rows matched the conditions."
+        except Exception as e:
+            logging.error(f"Update operation failed: {e}")
+            return "Error: Failed to update data."
+        
+    def check_primary_key_constraint(self, table_name, data, schema):
+        """
+        Check if the data violates primary key constraints.
+        """
+        primary_key = schema.get('primary_key')
+        if primary_key and primary_key in data:
+            existing_data = self.storage_manager.get_table_data(table_name)
+            for row in existing_data:
+                if row.get(primary_key) == data[primary_key]:
+                    return False
+        return True
 
-        updated_count = len(data)
-        deleted_count = initial_count - updated_count
-
-        if deleted_count > 0:
-            self.storage_manager.update_table_data(table_name, data)
+    def create_table(self, table_name, columns):
+        """
+        Facilitates the creation of a table and its schema definitions.
+        
+        Args:
+            table_name (str): The name of the table to create.
+            columns (dict): A dictionary describing the columns and constraints.
             
-        print(f"Deleted count: {deleted_count}")
-
-        return f"Deleted {deleted_count} rows."
+        Returns:
+            str: A message indicating the success or failure of the operation.
+        """
+        return self.ddl_manager.create_table(table_name, columns)
 
     def normalize_value(self, value):
         # Normalize quotes and remove whitespace
         if isinstance(value, str):
             return value.strip().replace("‘", "'").replace("’", "'").replace("’", "'").replace("’", "'")
         return value
-    
     
     def select(self, table_name, columns, conditions):
         data = self.storage_manager.get_table_data(table_name)
@@ -112,6 +165,33 @@ class DMLManager:
 
         return selected_cols
     
+    def max(self, table, column, conditions=None):
+        data = self.storage_manager.get_table_data(table)
+        if not data:
+            return "Table not found or no data available."
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [d for d in data if condition_function(d)]
+        return max(d.get(column, float('-inf')) for d in data)
+
+    def min(self, table, column, conditions=None):
+        data = self.storage_manager.get_table_data(table)
+        if not data:
+            return "Table not found or no data available."
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [d for d in data if condition_function(d)]
+        return min(d.get(column, float('inf')) for d in data)
+    
+    def sum(self, table, column, conditions=None):
+        data = self.storage_manager.get_table_data(table)
+        if not data:
+            return "Table not found or no data available."
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [d for d in data if condition_function(d)]
+        return sum(d.get(column, 0) for d in data if isinstance(d.get(column), (int, float)))
+
     def parse_conditions(self, conditions):
         print(f"Parsing conditions: {conditions}")
         operators = {
@@ -156,11 +236,54 @@ class DMLManager:
         
         # Return a callable lambda function
         return lambda d: eval(condition_str, {}, {"d": d})
+    
+    def aggregate(self, agg_type, table, column, conditions=None):
+        # This should connect to your database and execute the appropriate aggregation query.
+        # This is a simplified example:
+        query = f"SELECT {agg_type.upper()}({column}) FROM {table}"
+        if conditions:
+            query += f" WHERE {conditions}"
+        
+        # Simulating database connection and query execution
+        cursor = self.db_connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result else None
 
-if __name__ == "__main__":
-    
-    dml_manager = DMLManager()
-    # Assuming parse_conditions is part of the current module
-    test_condition = dml_manager.parse_conditions("id = '1'")
-    print(test_condition({'id': '1', 'name': 'Test'}))  # Should return True
-    
+
+
+# class TestStorageManagerSchemaLoading(unittest.TestCase):
+#     def setUp(self):
+#         """Initialize the StorageManager to load the schemas."""
+#         self.storage_manager = StorageManager()
+
+#     def test_predefined_schemas_loaded(self):
+#         """Test if the predefined schemas are correctly loaded upon initialization."""
+#         # Names of the tables we expect to be loaded
+#         expected_tables = ['state_abbreviation', 'state_population', 'test_table']
+        
+#         # Check if all expected tables are in the loaded schemas
+#         for table_name in expected_tables:
+#             with self.subTest(table=table_name):
+#                 self.assertIn(table_name, self.storage_manager.schemas,
+#                               f"Schema for '{table_name}' should be pre-defined in storage manager.")
+
+#     def test_schema_details(self):
+#         """Test the details of a specific schema to ensure correct loading."""
+#         # Checking one example table's schema details
+#         table_name = 'test_table'
+#         expected_columns = {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}
+#         expected_primary_key = 'id'
+
+#         # Fetch schema from storage manager
+#         schema = self.storage_manager.get_schema(table_name)
+        
+#         # Assert the schema contains the correct details
+#         self.assertIsNotNone(schema, f"Schema for {table_name} is not loaded.")
+#         self.assertEqual(schema['columns'], expected_columns, "Column definitions are incorrect.")
+#         self.assertEqual(schema['primary_key'], expected_primary_key, "Primary key is incorrect.")
+
+# if __name__ == '__main__':
+#     unittest.main()
+

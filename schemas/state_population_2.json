@@ -1,0 +1,19 @@
+{
+    "columns": {
+        "state_id": {
+            "type": "INT"
+        },
+        "state_name": {
+            "type": "VARCHAR(100)"
+        },
+        "population": {
+            "type": "INT"
+        },
+        "year": {
+            "type": "YEAR"
+        }
+    },
+    "primary_key": "state_id",
+    "foreign_keys": [],
+    "indexes": []
+}

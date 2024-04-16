@@ -1,70 +1,202 @@
 import re
+import logging
 
 def parse_sql(sql):
-    """Parses an SQL string into a command dictionary."""
-    sql = sql.strip().rstrip(';')  # Remove leading/trailing spaces and trailing semicolon
-    command_type = sql.split()[0].lower()
+    logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
+    sql = sql.strip()
+    lower_sql = sql.lower()
+    tokens = lower_sql.split()
+    parsed_details = {
+        'type': None,
+        'select_fields': [],
+        'tables': [],
+        'join_type': None,
+        'join_table': None,
+        'join_condition': None,
+        'where_condition': None,
+        'values': None,
+        'aggregation': None
+    }
 
+    # Detect SQL command type
+    command_type = tokens[0]
+    parsed_details['type'] = command_type.upper()
+
+    # Parsing logic based on type of SQL command
     if command_type == 'select':
+        # Handle SELECT fields and FROM clause
+        from_index = lower_sql.find(' from ') + 6
+        select_contents = sql[7:from_index - 6].strip()
+        parsed_details['select_fields'] = [field.strip() for field in select_contents.split(',')]
+
+        # Handle JOINs
+        join_index = lower_sql.find(' join ')
+        if join_index != -1:
+            join_type_start = lower_sql.rfind(' ', 0, join_index) + 1
+            parsed_details['join_type'] = lower_sql[join_type_start:join_index].strip().upper() + ' JOIN'
+            on_index = lower_sql.find(' on ', join_index)
+            parsed_details['join_table'] = sql[join_index + 6:on_index].strip().split()[0]
+            parsed_details['join_condition'] = sql[on_index + 4:].strip()
+
+        # Handle WHERE clause
+        where_index = lower_sql.find(' where ')
+        if where_index != -1:
+            parsed_details['where_condition'] = sql[where_index + 7:].strip()
+
+        # Determine table or tables involved
+        table_end = where_index if where_index != -1 else len(sql)
+        parsed_details['tables'] = [part.strip().split()[0] for part in sql[from_index:table_end].split(',')]
+
+        # Extend parsing to handle other clauses such as GROUP BY, ORDER BY, etc.
         return parse_select(sql)
-    elif command_type == 'create':
-        return parse_create_table(sql)
+
     elif command_type == 'insert':
+        # Handle INSERT INTO table (fields) VALUES (values)
+        into_index = lower_sql.find(' into ') + 6
+        values_index = lower_sql.find(' values ') + 8
+        table_end = lower_sql.find(' (', into_index)
+        parsed_details['tables'].append(sql[into_index:table_end].strip())
+        values_str = sql[values_index:].strip()[1:-1]
+        parsed_details['values'] = [value.strip().strip("'") for value in values_str.split(',')]
         return parse_insert(sql)
+
     elif command_type == 'delete':
+        # Handle DELETE FROM table WHERE condition
+        from_index = lower_sql.find(' from ') + 6
+        where_index = lower_sql.find(' where ')
+        table_end = where_index if where_index != -1 else len(sql)
+        parsed_details['tables'].append(sql[from_index:table_end].strip())
+        if where_index != -1:
+            parsed_details['where_condition'] = sql[where_index + 7:].strip()
         return parse_delete(sql)
+        
     elif command_type == 'drop':
-        return parse_drop(sql)
+        # Extract table name from the DROP TABLE command
+        table_name = tokens[2].strip()
+        return {'type': 'DROP', 'table_name': table_name}
+
+    elif command_type == 'create' and 'table' in tokens:
+        return parse_create_table(sql)
+    
     else:
-        return {'error': "Unsupported SQL command: " + sql}
+        return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
+
+    
+    return parsed_details
 
 def parse_select(sql):
-    """Parses a SELECT SQL statement."""
-    pattern = r'SELECT\s+(.*?|\*)\s+FROM\s+(\w+)(\s+WHERE\s+((?:.(?!order by))*))?(\s+(.*))?'
+    """Parses a SELECT SQL statement with better handling for aliases and joins."""
+    pattern = r'''
+    SELECT\s+(.*?)\s+FROM\s+([\w]+(?:\s+AS\s+\w+)?|\w+)   # Capture SELECT fields and main table with optional alias
+    (\s+JOIN\s+[\w]+(?:\s+AS\s+\w+)?\s+ON\s+[\w\s\.=]+)?  # Optionally capture JOIN with alias
+    (\s+WHERE\s+[\w\s\.\'=]+)?                           # Optionally capture WHERE clause
+    (\s+GROUP\s+BY\s+[\w\s\.,]+)?                        # Optionally capture GROUP BY
+    (\s+ORDER\s+BY\s+[\w\s\.,]+)?                        # Optionally capture ORDER BY
+    (\s+HAVING\s+[\w\s\.\'=]+)?;*                        # Optionally capture HAVING
+    '''
 
-    match = re.match(pattern, sql, re.IGNORECASE)
+    match = re.match(pattern, sql, re.IGNORECASE | re.VERBOSE)
     if not match:
         return {'error': 'Invalid SELECT syntax'}
 
-    columns, table, __, where_clause, __, additional = match.groups()
-    return {
+    select_fields, main_table, join_part, where_part, group_by, order_by, having = match.groups()
+    
+    # Parsing the table and alias correctly
+    if ' AS ' in main_table:
+        table_name, alias = main_table.split(' AS ')
+        main_table = f"{table_name.strip()} AS {alias.strip()}"
+    else:
+        main_table = main_table.strip()
+
+    result = {
         'type': 'select',
-        'table': table,
-        'columns': [column.strip() for column in columns.split(',')],
-        'conditions': where_clause.strip() if where_clause else None,
-        'additional': parse_additional_clauses(additional.strip()) if additional else None
+        'main_table': main_table,
+        'columns': [col.strip() for col in select_fields.split(',')],
+        'join': join_part.strip() if join_part else None,
+        'where_clause': where_part[6:].strip() if where_part else None,
+        'group_by': group_by[9:].strip() if group_by else None,
+        'order_by': order_by[9:].strip() if order_by else None,
+        'having': having[7:].strip() if having else None
     }
+    return result
 
 def parse_create_table(sql):
-    """
-    Parses a CREATE TABLE SQL statement.
-    """
-    pattern = r'CREATE TABLE (\w+)\s*\((.*)\)\s*'
-    match = re.match(pattern, sql, re.IGNORECASE)
+    # This is a simplified regex pattern; you might need a more robust implementation
+    pattern = r"CREATE TABLE (\w+) \((.*)\)"
+    match = re.match(pattern, sql)
     if not match:
         return {'error': 'Invalid CREATE TABLE syntax'}
 
     table_name, columns_part = match.groups()
-    columns = parse_column_definitions(columns_part)
+    columns = parse_columns(columns_part)  # You will need to implement this to handle columns parsing
+    if 'error' in columns:
+        return {'error': columns['error']}
+    return {'type': 'create', 'table_name': table_name, 'columns': columns}
+
+
+
+def parse_columns(columns_part):
+    """
+    Parses the part of a SQL CREATE TABLE statement that defines columns and additional constraints like indexes.
+    """
+    columns = {}
+    column_definitions = re.split(r',\s*(?![^()]*\))', columns_part)  # Improved splitting logic
     
-    return {
-        'type': 'create',
-        'table': table_name,
-        'columns': columns
+    for column_def in column_definitions:
+        if "INDEX" in column_def.upper():
+            # Handle standalone and inline INDEX definitions
+            index_match = re.search(r'INDEX\((\w+)\)', column_def, re.IGNORECASE)
+            if index_match:
+                index_column = index_match.group(1)
+                if index_column in columns:
+                    columns[index_column]['index'] = True
+                else:
+                    columns[index_column] = {'type': 'UNKNOWN', 'primary_key': False, 'index': True, 'foreign_key': None}
+            continue
+        
+        column_name, constraints = parse_column_definition(column_def.strip())
+        columns[column_name] = constraints
+    
+    return columns
+
+
+
+def parse_column_definition(column_def):
+    """
+    Parse a single column definition to extract the column name, type, and constraints like primary key or foreign key.
+    """
+    # Use regex to split column definitions more reliably, considering cases without spaces
+    parts = re.split(r'\s+', column_def, maxsplit=1)
+    if len(parts) < 2:
+        return column_def, {'type': 'UNKNOWN'}  # Handling cases with insufficient data more gracefully
+
+    column_name = parts[0]
+    rest_definition = parts[1]
+
+    # Initialize constraints dictionary with the type set to 'UNKNOWN' by default
+    constraints = {
+        'type': 'UNKNOWN',
+        'primary_key': False,
+        'index': False,
+        'foreign_key': None
     }
 
-def parse_column_definitions(columns_part):
-    """Parses column definitions in a CREATE TABLE SQL statement."""
-    columns = {}
-    column_definitions = re.split(r'\s*,\s*(?![^()]*\))', columns_part)
-    
-    for column_definition in column_definitions:
-        column_parts = column_definition.strip().split()
-        column_name = column_parts[0]
-        column_type = ' '.join(column_parts[1:])
-        columns[column_name] = column_type
+    # Extract type and additional constraints from the remaining definition part
+    type_and_constraints = rest_definition.split()
+    constraints['type'] = type_and_constraints[0]  # Assume first element is the type
 
-    return columns
+    # Check for primary key, index, and foreign key constraints
+    if 'PRIMARY KEY' in rest_definition.upper():
+        constraints['primary_key'] = True
+    if 'INDEX' in rest_definition.upper():
+        constraints['index'] = True
+    fk_match = re.search(r'FOREIGN KEY REFERENCES (\w+)\((\w+)\)', rest_definition, re.IGNORECASE)
+    if fk_match:
+        ref_table, ref_column = fk_match.groups()
+        constraints['foreign_key'] = {'referenced_table': ref_table, 'referenced_column': ref_column}
+
+    return column_name, constraints
+
 
 def parse_insert(sql):
     """Parses an INSERT INTO SQL statement."""
@@ -84,6 +216,17 @@ def parse_insert(sql):
         'data': data
     }
 
+def parse_drop(sql):
+    """Parses a DROP TABLE statement"""
+    pattern = r'\bDROP\s+TABLE\s+(\w+)\s*;?\b'
+    match = re.match(pattern, sql, re.IGNORECASE)
+    if not match:
+        return {'error': 'Invalid DROP TABLE syntax'}
+    return {
+        'type': 'drop',
+        'table': match.group(1)
+    }
+
 def parse_delete(sql):
     """Parses a DELETE FROM SQL statement."""
     pattern = r'DELETE FROM (\w+)( WHERE (.*))?'
@@ -98,17 +241,6 @@ def parse_delete(sql):
         'conditions': conditions.strip() if conditions else None
     }
 
-def parse_drop(sql):
-    """Parses a DROP TABLE statement"""
-    pattern = r'\bDROP\s+TABLE\s+(\w+)\s*;?\b'
-    match = re.match(pattern, sql, re.IGNORECASE)
-    if not match:
-        return {'error': 'Invalid DROP TABLE syntax'}
-    return {
-        'type': 'drop',
-        'table': match.group(1)
-    }
-    
 def parse_additional_clauses(clause):
     """Parses additional clauses in SQL statements like ORDER BY, GROUP BY, and HAVING."""
     additional = {}
@@ -121,14 +253,49 @@ def parse_additional_clauses(clause):
 
     return additional
 
-# Example usage for testing
 if __name__ == "__main__":
-    #for all sql query, when we do parse_sql, we get rid of semicolon. Should we make it back?
-    print(parse_sql("SELECT MAX(monthly_state_population) FROM state_population"))
-    print(parse_sql("SELECT MIN(count_alldrug) FROM county_count"))
-    print(parse_sql("SELECT SUM(population) FROM county_count"))
-    print(parse_sql("CREATE TABLE users (id INT, name VARCHAR(100), registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
-    print(parse_sql("INSERT INTO users (id, name) VALUES (123, Kiki)"))
-    print(parse_sql("DROP TABLE users"))
-    sql_command = "CREATE TABLE users (id INT, name VARCHAR(100), registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
-    print(parse_create_table(sql_command))
+    test_queries = [
+        "CREATE TABLE employees (id INT PRIMARY KEY, name VARCHAR(100), department_id INT INDEX, manager_id INT FOREIGN KEY REFERENCES managers(id) INDEX);",
+        "CREATE TABLE test (id INT PRIMARY KEY);",
+        "CREATE TABLE another_test (id INT, name VARCHAR(50) PRIMARY KEY, INDEX(name));"
+    ]
+    for query in test_queries:
+        result = parse_sql(query)
+        print("Parsed SQL Command:", result)
+
+
+
+
+# if __name__ == "__main__":
+#     test_queries = [
+#         "SELECT state FROM state_abbreviation",
+#         "SELECT * FROM state_abbreviation",
+#         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         "SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
+#         "DELETE FROM test_table WHERE id = 1",
+#         "SELECT MAX(monthly_state_population) FROM state_population",
+#         "SELECT MIN(count_alldrug) FROM county_count",
+#         "SELECT SUM(monthly_state_population) FROM state_population",
+#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code"
+#     ]
+
+#     for query in test_queries:
+#         print(parse_sql(query))
+
+# if __name__ == "__main__":
+#     # Test the parser with various SQL commands
+#     test_queries = [
+#         "SELECT state_code, state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+#         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
+#         "DELETE FROM test_table WHERE id = 1",
+#         "SELECT MAX(monthly_state_population) FROM state_population"
+#     ]
+
+#     for query in test_queries:
+#         result = parse_sql(query)
+#         print("Parsed SQL Command:", result)
+
+# Test the parser with a CREATE TABLE command

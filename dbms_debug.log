@@ -1,0 +1,1128 @@
+2024-04-16 02:54:38,774 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 02:54:38,778 - INFO - users.csv loaded with 0 rows
+2024-04-16 02:54:38,779 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 02:54:38,779 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 02:54:38,779 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 02:54:38,780 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 02:54:38,780 - INFO - employees.csv loaded with 0 rows
+2024-04-16 02:54:38,780 - DEBUG - DMLManager initialized.
+2024-04-16 02:54:42,637 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Alabama'
+2024-04-16 02:54:42,638 - INFO - users.csv loaded with 0 rows
+2024-04-16 02:54:42,638 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 02:54:42,638 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 02:54:42,638 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 02:54:42,638 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 02:54:42,638 - INFO - employees.csv loaded with 0 rows
+2024-04-16 02:54:42,639 - DEBUG - DMLManager initialized.
+2024-04-16 02:54:46,727 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 02:54:46,728 - INFO - users.csv loaded with 0 rows
+2024-04-16 02:54:46,728 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 02:54:46,728 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 02:54:46,729 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 02:54:46,729 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 02:54:46,729 - INFO - employees.csv loaded with 0 rows
+2024-04-16 02:54:46,729 - DEBUG - DMLManager initialized.
+2024-04-16 02:54:46,730 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 02:54:46,730 - ERROR - Execution error: 'StorageManager' object has no attribute 'schemas'
+2024-04-16 02:57:14,272 - INFO - users.csv loaded with 0 rows
+2024-04-16 02:57:14,272 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 02:57:14,272 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 02:57:14,273 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 02:57:14,273 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 02:57:14,273 - INFO - employees.csv loaded with 0 rows
+2024-04-16 02:57:14,273 - DEBUG - DMLManager initialized.
+2024-04-16 02:57:14,273 - DEBUG - Attempting to insert data into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:07:27,524 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:07:27,524 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:07:27,524 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:07:27,525 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:07:27,525 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:07:27,525 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:07:27,525 - DEBUG - DMLManager initialized.
+2024-04-16 03:08:23,475 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:08:23,475 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:08:23,475 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:08:23,476 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:08:23,476 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:08:23,476 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:08:23,476 - DEBUG - DMLManager initialized.
+2024-04-16 03:09:15,163 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:09:15,164 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:09:15,164 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:09:15,164 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:09:15,164 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:09:15,164 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:09:15,164 - DEBUG - DMLManager initialized.
+2024-04-16 03:09:54,486 - DEBUG - DMLManager initialized.
+2024-04-16 03:09:54,486 - DEBUG - Attempting to insert data into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:09:54,487 - INFO - Data successfully inserted into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:10:26,193 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:10:26,197 - DEBUG - DMLManager initialized.
+2024-04-16 03:10:33,495 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation
+2024-04-16 03:10:33,497 - DEBUG - DMLManager initialized.
+2024-04-16 03:12:15,994 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:12:15,997 - DEBUG - DMLManager initialized.
+2024-04-16 03:14:39,482 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:15:27,058 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:15:27,067 - ERROR - Failed to load schemas from data/schemas.json: [Errno 2] No such file or directory: 'data/schemas.json'
+2024-04-16 03:15:27,068 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:15:27,068 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:15:27,068 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:15:27,069 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:15:27,069 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:15:27,069 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:15:27,070 - DEBUG - DMLManager initialized.
+2024-04-16 03:15:27,070 - ERROR - Execution error: 'NoneType' object has no attribute 'get'
+2024-04-16 03:17:59,420 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:17:59,428 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:17:59,428 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:17:59,429 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:17:59,429 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:17:59,429 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:17:59,429 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:17:59,429 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:17:59,430 - DEBUG - DMLManager initialized.
+2024-04-16 03:17:59,431 - ERROR - Execution error: 'NoneType' object has no attribute 'get'
+2024-04-16 03:19:54,027 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:19:54,031 - DEBUG - DMLManager initialized.
+2024-04-16 03:20:32,214 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:20:32,221 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:20:56,154 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:20:56,162 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:31,891 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:22:31,896 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:31,897 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:31,897 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:31,898 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:31,898 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:31,898 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:31,898 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:31,899 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:37,555 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation
+2024-04-16 03:22:37,556 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:37,557 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:37,557 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:37,557 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:37,558 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:37,558 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:37,558 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:37,559 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:40,478 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'Alaska'
+2024-04-16 03:22:40,479 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:40,479 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:40,480 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:40,480 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:40,480 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:40,480 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:40,480 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:40,481 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:46,029 - DEBUG - Debug Parsing SQL: SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'
+2024-04-16 03:22:46,029 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:46,030 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:46,030 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:46,030 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:46,030 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:46,031 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:46,031 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:46,031 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:51,341 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+2024-04-16 03:22:51,341 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:51,342 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:51,342 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:51,342 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:51,343 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:51,343 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:51,343 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:51,343 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:55,465 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Alabama'
+2024-04-16 03:22:55,465 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:55,466 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:55,466 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:55,467 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:55,467 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:55,467 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:55,467 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:55,468 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:59,067 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:22:59,068 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:22:59,069 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:22:59,069 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:22:59,069 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:22:59,070 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:22:59,070 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:22:59,070 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:22:59,070 - DEBUG - DMLManager initialized.
+2024-04-16 03:22:59,071 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:22:59,071 - ERROR - No schema found for table: test_table
+2024-04-16 03:23:05,957 - DEBUG - Debug Parsing SQL: SELECT MAX(monthly_state_population) FROM state_population
+2024-04-16 03:23:05,957 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:05,958 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:05,958 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:05,959 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:05,959 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:05,959 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:05,959 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:05,960 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:09,016 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 03:23:09,017 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:09,018 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:09,018 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:09,018 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:09,018 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:09,018 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:09,019 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:09,019 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:17,280 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 6
+2024-04-16 03:23:17,281 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:17,282 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:17,282 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:17,282 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:17,282 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:17,282 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:17,283 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:17,283 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:17,284 - ERROR - No data provided to write to test_table.csv
+2024-04-16 03:23:21,641 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 03:23:21,642 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:21,642 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:21,643 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:21,643 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:21,643 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:21,643 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:21,643 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:21,644 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:24,406 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 6
+2024-04-16 03:23:24,407 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:24,407 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:24,408 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:24,408 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:24,408 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:24,408 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:24,408 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:24,409 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:24,410 - ERROR - No data provided to write to test_table.csv
+2024-04-16 03:23:34,786 - DEBUG - Debug Parsing SQL: SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+2024-04-16 03:23:34,786 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:34,787 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:34,787 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:34,787 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:34,787 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:34,787 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:34,787 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:34,787 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:34,788 - ERROR - Execution error: DMLManager.__init__() missing 1 required positional argument: 'storage_manager'
+2024-04-16 03:23:40,267 - DEBUG - Debug Parsing SQL: SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+2024-04-16 03:23:40,268 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:40,268 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:40,268 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:40,268 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:40,268 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:40,268 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:40,269 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:40,269 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:40,269 - ERROR - Execution error: DMLManager.__init__() missing 1 required positional argument: 'storage_manager'
+2024-04-16 03:23:44,282 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:23:44,282 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:44,282 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:44,283 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:44,283 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:44,283 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:44,283 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:44,283 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:44,284 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:44,284 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:23:44,284 - ERROR - No schema found for table: test_table
+2024-04-16 03:23:47,305 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 03:23:47,305 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:47,305 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:47,306 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:47,306 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:47,306 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:47,306 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:47,306 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:47,307 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:50,929 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id =
+2024-04-16 03:23:50,930 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:50,930 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:50,930 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:50,931 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:50,931 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:50,931 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:50,931 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:50,931 - DEBUG - DMLManager initialized.
+2024-04-16 03:23:55,667 - DEBUG - Debug Parsing SQL: CREATE TABLE user_testing (id INT PRIMARY KEY, name VARCHAR(100), department_id INT INDEX, manager_id INT FOREIGN KEY REFERENCES managers(id) INDEX);
+2024-04-16 03:23:55,668 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:23:55,669 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:23:55,669 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:23:55,669 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:23:55,669 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:23:55,669 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:23:55,669 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:23:55,670 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:11,117 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:24:11,117 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:24:11,118 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:24:11,118 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:24:11,118 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:24:11,118 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:24:11,118 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:24:11,118 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:24:11,119 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:11,119 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:24:11,119 - ERROR - No schema found for table: test_table
+2024-04-16 03:24:18,181 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 6
+2024-04-16 03:24:18,182 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:24:18,182 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:24:18,183 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:24:18,183 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:24:18,183 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:24:18,183 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:24:18,183 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:24:18,184 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:18,185 - ERROR - No data provided to write to test_table.csv
+2024-04-16 03:24:20,843 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 6
+2024-04-16 03:24:20,844 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:24:20,845 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:24:20,845 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:24:20,845 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:24:20,845 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:24:20,845 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:24:20,845 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:24:20,846 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:20,847 - ERROR - No data provided to write to test_table.csv
+2024-04-16 03:24:25,970 - DEBUG - Debug Parsing SQL: SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+2024-04-16 03:24:25,971 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:24:25,972 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:24:25,972 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:24:25,972 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:24:25,972 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:24:25,972 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:24:25,973 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:24:25,973 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:25,974 - ERROR - Execution error: DMLManager.__init__() missing 1 required positional argument: 'storage_manager'
+2024-04-16 03:24:29,706 - DEBUG - Debug Parsing SQL: CREATE TABLE user_testing_2 (id INT PRIMARY KEY, name VARCHAR(100), department_id INT INDEX, manager_id INT FOREIGN KEY REFERENCES managers(id) INDEX);
+2024-04-16 03:24:29,707 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:24:29,707 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:24:29,708 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:24:29,708 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:24:29,708 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:24:29,708 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:24:29,709 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:24:29,709 - DEBUG - DMLManager initialized.
+2024-04-16 03:24:29,710 - ERROR - Execution error: 'dict' object has no attribute 'split'
+2024-04-16 03:25:16,130 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:25:16,135 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:25:16,135 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:25:16,136 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:25:16,136 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:25:16,136 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:25:16,136 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:25:16,136 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:25:16,136 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:25:16,136 - DEBUG - DMLManager initialized.
+2024-04-16 03:25:16,137 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:25:16,137 - ERROR - No schema found for table: test_table
+2024-04-16 03:26:13,010 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:26:13,020 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:26:13,021 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:26:13,022 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:26:13,022 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:26:13,022 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:26:13,022 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:26:13,022 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:26:13,023 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:26:13,023 - DEBUG - DMLManager initialized.
+2024-04-16 03:26:13,023 - ERROR - Execution error: 'DMLManager' object has no attribute 'insert'
+2024-04-16 03:26:16,233 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:26:16,234 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:26:16,234 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:26:16,235 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:26:16,235 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:26:16,235 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:26:16,235 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:26:16,235 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:26:16,235 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:26:16,236 - DEBUG - DMLManager initialized.
+2024-04-16 03:26:16,236 - ERROR - Execution error: 'DMLManager' object has no attribute 'insert'
+2024-04-16 03:26:24,935 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:26:24,935 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:26:24,936 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:26:24,936 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:26:24,936 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:26:24,937 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:26:24,937 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:26:24,937 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:26:24,937 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:26:24,938 - DEBUG - DMLManager initialized.
+2024-04-16 03:26:24,938 - ERROR - Execution error: 'DMLManager' object has no attribute 'insert'
+2024-04-16 03:26:30,498 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:26:30,505 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:26:30,507 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:26:30,507 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:26:30,507 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:26:30,507 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:26:30,508 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:26:30,508 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:26:30,508 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:26:30,509 - DEBUG - DMLManager initialized.
+2024-04-16 03:26:30,509 - ERROR - Execution error: 'DMLManager' object has no attribute 'schemas'
+2024-04-16 03:27:15,568 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:27:15,577 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:27:15,579 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:27:15,580 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:27:15,580 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:27:15,581 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:27:15,581 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:27:15,581 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:27:15,581 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:27:15,582 - DEBUG - DMLManager initialized.
+2024-04-16 03:27:15,582 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:27:15,582 - ERROR - No schema found for table: test_table
+2024-04-16 03:28:05,545 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:28:05,554 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:28:05,555 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:28:05,556 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:28:05,556 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:28:05,556 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:28:05,557 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:28:05,557 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:28:05,557 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:28:05,557 - DEBUG - DMLManager initialized.
+2024-04-16 03:28:05,558 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:28:05,558 - ERROR - No schema found for table: test_table
+2024-04-16 03:30:24,576 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:30:24,585 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:30:24,587 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:30:24,588 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:30:24,588 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:30:24,588 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:30:24,589 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:30:24,589 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:30:24,589 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:30:24,589 - DEBUG - DMLManager initialized.
+2024-04-16 03:30:24,590 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:30:24,590 - ERROR - No schema found for table: test_table
+2024-04-16 03:33:17,084 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:33:17,084 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:33:17,084 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:33:17,085 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:33:17,085 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:33:17,085 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:33:17,085 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:33:17,085 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:33:17,085 - DEBUG - DMLManager initialized.
+2024-04-16 03:33:17,085 - DEBUG - Attempting to insert data into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:33:17,085 - INFO - Data successfully inserted into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:33:20,941 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:33:20,941 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:33:20,941 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:33:20,941 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:33:20,941 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:33:20,941 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:33:20,941 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:33:20,941 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:33:20,942 - DEBUG - DMLManager initialized.
+2024-04-16 03:33:20,942 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:33:20,942 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:33:20,942 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:33:20,942 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:33:20,942 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:33:20,942 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:33:20,942 - INFO - employees.csv loaded with 0 rows
+2024-04-16 03:33:20,942 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:33:20,942 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:38,917 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 03:34:38,928 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:34:38,929 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:34:38,930 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:34:38,930 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:34:38,930 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:34:38,930 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:34:38,931 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:34:38,931 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:42,655 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation
+2024-04-16 03:34:42,655 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:34:42,656 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:34:42,656 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:34:42,656 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:34:42,657 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:34:42,657 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:34:42,657 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:34:42,657 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:48,716 - DEBUG - Debug Parsing SQL: SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'
+2024-04-16 03:34:48,717 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:34:48,717 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:34:48,718 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:34:48,718 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:34:48,718 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:34:48,718 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:34:48,718 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:34:48,719 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:52,968 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+2024-04-16 03:34:52,969 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:34:52,970 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:34:52,970 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:34:52,970 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:34:52,970 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:34:52,971 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:34:52,971 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:34:52,971 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:59,679 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:34:59,681 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:34:59,681 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:34:59,682 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:34:59,682 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:34:59,682 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:34:59,682 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:34:59,682 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:34:59,683 - DEBUG - DMLManager initialized.
+2024-04-16 03:34:59,683 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:34:59,684 - ERROR - No schema found for table: test_table
+2024-04-16 03:35:04,929 - DEBUG - Debug Parsing SQL: SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+2024-04-16 03:35:04,930 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:35:04,930 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:35:04,930 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:35:04,930 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:35:04,931 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:35:04,931 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:35:04,931 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:35:04,931 - DEBUG - DMLManager initialized.
+2024-04-16 03:35:04,932 - ERROR - Execution error: DMLManager.__init__() missing 1 required positional argument: 'storage_manager'
+2024-04-16 03:37:52,919 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Alabama'
+2024-04-16 03:37:52,930 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:37:52,932 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:37:52,932 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:37:52,932 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:37:52,933 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:37:52,933 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:37:52,933 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:37:52,934 - DEBUG - DMLManager initialized.
+2024-04-16 03:37:58,383 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 03:37:58,385 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:37:58,385 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:37:58,386 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:37:58,386 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:37:58,386 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:37:58,386 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:37:58,386 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:37:58,387 - DEBUG - DMLManager initialized.
+2024-04-16 03:37:58,387 - DEBUG - Attempting to insert data into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 03:37:58,387 - ERROR - No schema found for table: test_table
+2024-04-16 03:38:01,780 - DEBUG - Debug Parsing SQL: SELECT MAX(monthly_state_population) FROM state_population
+2024-04-16 03:38:01,780 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:38:01,781 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:38:01,781 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:38:01,781 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:38:01,781 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:38:01,781 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:38:01,781 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:38:01,782 - DEBUG - DMLManager initialized.
+2024-04-16 03:38:28,180 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:38:28,180 - INFO - users.csv loaded with 0 rows
+2024-04-16 03:38:28,180 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:38:28,180 - INFO - user_testing.csv loaded with 0 rows
+2024-04-16 03:38:28,180 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:38:28,181 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:38:28,181 - INFO - user_testing_2.csv loaded with 0 rows
+2024-04-16 03:38:28,181 - DEBUG - DMLManager initialized.
+2024-04-16 03:38:28,181 - DEBUG - Attempting to insert data into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:38:28,181 - INFO - Data successfully inserted into test_table: {'id': 1, 'name': 'John Doe'}
+2024-04-16 03:46:19,284 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:46:19,285 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:46:19,285 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:46:19,286 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:46:19,286 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:46:19,286 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:46:19,286 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:49:14,730 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:49:14,731 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:49:14,731 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:49:14,731 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:49:14,731 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:49:14,731 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:49:14,731 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:49:14,731 - ERROR - Insert operation failed: Table test_table does not exist.
+2024-04-16 03:51:04,546 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:51:04,546 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:51:04,546 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:51:04,546 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:51:04,547 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:51:04,547 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:51:04,547 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:51:04,547 - ERROR - Insert operation failed: Table test_table does not exist.
+2024-04-16 03:51:38,620 - WARNING - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:51:38,621 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:51:38,621 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:51:38,621 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:51:38,621 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:51:38,622 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:51:38,622 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:51:38,622 - ERROR - Insert operation failed: Table test_table does not exist.
+2024-04-16 03:52:07,476 - ERROR - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:52:07,476 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:52:07,477 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:52:07,477 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:52:07,477 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:52:07,477 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:52:07,477 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:52:07,477 - ERROR - Insert operation failed: Table test_table does not exist.
+2024-04-16 03:52:27,806 - ERROR - data/schemas.json not found. No schemas loaded.
+2024-04-16 03:52:27,807 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 03:52:27,807 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 03:52:27,807 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 03:52:27,807 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 03:52:27,807 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 03:52:27,807 - DEBUG - Attempting to insert into test_table: {'id': 123, 'name': 'John Doe'}
+2024-04-16 03:52:27,808 - DEBUG - No schema found for table test_table.
+2024-04-16 03:52:27,808 - ERROR - Insert operation failed: Table test_table does not exist.
+2024-04-16 04:01:01,911 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:01:01,923 - ERROR - data/schemas.json not found. No schemas loaded.
+2024-04-16 04:01:01,925 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:01:01,926 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:01:01,926 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:01:01,926 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:01:01,927 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:01:01,927 - DEBUG - Attempting to insert into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 04:01:01,927 - DEBUG - Data validation error: Field id is not in the schema.
+2024-04-16 04:01:01,927 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:02:13,387 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:02:13,391 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:02:13,391 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:02:13,391 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:02:13,391 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:02:13,392 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:02:13,392 - DEBUG - Attempting to insert into test_table: {'id': '5', 'name': 'Alabama'}
+2024-04-16 04:02:13,392 - DEBUG - Data validation error: Field id is not in the schema.
+2024-04-16 04:02:13,392 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:05:37,567 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:05:37,572 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:05:37,572 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:05:37,572 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:05:37,572 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:05:37,573 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:05:37,573 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:05:37,573 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:05:37,573 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:05:37,573 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:06:46,917 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:06:46,922 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:06:46,922 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:06:46,922 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:06:46,923 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:06:46,923 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:06:46,923 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:06:46,924 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:06:46,924 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:06:46,924 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:06:46,925 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:06:46,925 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:06:46,925 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:06:46,925 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:07:12,308 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+2024-04-16 04:07:12,315 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:07:12,316 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:07:12,316 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:07:12,316 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:07:12,317 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:07:15,918 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:07:15,920 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:07:15,920 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:07:15,920 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:07:15,920 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:07:15,921 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:07:15,921 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:07:15,921 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:07:15,921 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:07:15,921 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:07:42,941 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:07:42,943 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:07:42,943 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:07:42,943 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:07:42,943 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:07:42,944 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:07:42,944 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:07:42,944 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:07:42,944 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:07:42,944 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:09:04,795 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:09:04,801 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:09:04,801 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:09:04,801 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:09:04,801 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:09:04,802 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:09:04,802 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:09:04,802 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:09:04,802 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:09:04,802 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:10:10,473 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:10:10,479 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:10:10,479 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:10:10,479 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:10:10,480 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:10:10,480 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:10:10,481 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:10:10,481 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:10:10,481 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:10:10,481 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:10:16,512 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:10:16,513 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:10:16,513 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:10:16,513 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:10:16,513 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:10:16,514 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:10:16,514 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:10:16,514 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:10:16,514 - DEBUG - Data validation error: Field name is not in the schema.
+2024-04-16 04:10:16,514 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:13:18,364 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:13:18,364 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:13:18,364 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:13:18,364 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:13:18,364 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:13:18,364 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:18,364 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:18,364 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:13:18,364 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:13:18,365 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:13:18,365 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:13:18,365 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:13:18,365 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:13:18,365 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:13:18,365 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:18,365 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:18,365 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:13:18,365 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:13:30,636 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:13:30,636 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:13:30,636 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:13:30,636 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:13:30,637 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:13:30,637 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:30,637 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:30,637 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:13:30,637 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:13:30,637 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:30,637 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:13:30,637 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:13:30,637 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:14:02,646 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:14:02,646 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:14:02,646 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:14:02,646 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:14:02,646 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:14:02,646 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:14:02,646 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:14:02,646 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:14:02,646 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:14:02,646 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:14:02,646 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:14:02,646 - ERROR - Data validation error: Field name is not in the schema.
+2024-04-16 04:14:02,646 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:15:28,401 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:15:28,401 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:15:28,402 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:15:28,402 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:15:28,402 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:15:28,402 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:15:28,402 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:15:28,402 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:15:28,402 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:15:28,402 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:15:28,402 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:15:28,402 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:15:28,402 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:15:28,402 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:15:28,402 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:15:28,402 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:15:28,403 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:15:28,403 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:15:28,403 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:16:52,552 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:16:52,552 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:16:52,552 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:16:52,552 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:16:52,552 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:16:52,552 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:16:52,552 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:16:52,552 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:16:52,553 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:16:52,553 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:16:52,553 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:16:52,553 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:16:52,553 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:16:52,553 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:16:52,553 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:16:52,553 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:16:52,553 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:23:37,137 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, Alabama')
+2024-04-16 04:23:37,142 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:23:37,142 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:23:37,142 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:23:37,142 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:23:37,143 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:23:37,144 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:23:37,144 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:23:37,144 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:23:37,144 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:24:20,496 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:24:20,499 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:24:20,499 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:24:20,499 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:24:20,499 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:24:20,499 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:24:20,499 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:20,499 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:20,500 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:24:20,500 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:24:20,631 - DEBUG - Debug Parsing SQL: 
+2024-04-16 04:24:38,072 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:24:38,075 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:24:38,075 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:24:38,076 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:24:38,076 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:24:38,076 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:24:38,076 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:38,076 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:38,076 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:24:38,076 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:24:53,176 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:24:53,179 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:24:53,179 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:24:53,179 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:24:53,179 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:24:53,179 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:24:53,180 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:53,180 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:24:53,180 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:24:53,180 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:25:45,513 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:25:45,517 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:25:45,517 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:25:45,518 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:25:45,518 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:25:45,518 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:25:45,518 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:25:45,518 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:25:45,518 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:25:45,518 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:28:42,295 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:28:42,296 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:28:42,296 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:28:42,296 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:28:47,604 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:28:47,606 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:28:47,607 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:28:47,607 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:28:47,607 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:28:47,607 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:28:47,608 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:28:47,608 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:28:47,608 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:28:47,608 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:29:15,070 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:29:15,070 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:29:15,070 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:29:15,070 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:29:19,927 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:29:19,929 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:29:19,929 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:29:19,929 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:29:19,930 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:29:19,930 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:29:19,930 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:29:19,930 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:29:19,930 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:29:19,930 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:29:44,768 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:29:44,769 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:29:44,769 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:29:44,769 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:29:49,239 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:29:49,241 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:29:49,241 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:29:49,241 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:29:49,241 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:29:49,242 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:29:49,242 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:29:49,242 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:29:49,242 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:29:49,242 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:31:28,940 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:31:28,940 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:31:28,940 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:31:28,940 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:31:32,841 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:31:32,843 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:31:32,843 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:31:32,843 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:31:32,843 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:31:32,843 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:31:32,844 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:31:32,844 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:31:32,844 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:33:44,778 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:33:44,778 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:33:44,778 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:33:44,778 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:36:20,578 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:36:20,578 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:36:20,578 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:36:20,578 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:36:20,579 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:36:20,579 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:36:20,579 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:36:20,579 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:36:20,579 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:36:20,579 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:36:20,579 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:36:20,579 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:36:20,579 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:36:20,579 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:36:20,579 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:36:20,579 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:36:20,579 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:38:57,979 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,980 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,980 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,980 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,980 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,980 - ERROR - Could not parse condition: name LIKE 'A%'
+2024-04-16 04:38:57,980 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,980 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,980 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,981 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,981 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,981 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 04:38:57,981 - ERROR - Delete operation failed: 'StorageManager' object has no attribute 'delete_data'
+2024-04-16 04:38:57,981 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,981 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,981 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,981 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,981 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,981 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id'}
+2024-04-16 04:38:57,981 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id'}
+2024-04-16 04:38:57,981 - ERROR - Type conversion error for field 'id': expected int, got three
+2024-04-16 04:38:57,981 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:38:57,981 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,981 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,982 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,982 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,982 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,982 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id'}
+2024-04-16 04:38:57,982 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id'}
+2024-04-16 04:38:57,982 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:38:57,982 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,982 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,982 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,982 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,982 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,982 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:38:57,982 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:38:57,983 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:38:57,983 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:38:57,983 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:38:57,983 - DEBUG - Attempting to update test_table: {'name': 'Jane Smith'} with conditions id = 1
+2024-04-16 04:38:57,983 - ERROR - Update operation failed: 'StorageManager' object has no attribute 'update_data'
+2024-04-16 04:40:11,656 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:40:11,656 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:40:11,656 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:40:11,656 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:40:11,656 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:40:11,656 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,656 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,656 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:40:11,656 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:40:11,656 - DEBUG - Attempting to delete from test_table with conditions id = 4
+2024-04-16 04:40:11,656 - ERROR - Delete operation failed: 'StorageManager' object has no attribute 'delete_data'
+2024-04-16 04:40:11,657 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:40:11,657 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:40:11,657 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:40:11,657 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:40:11,657 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:40:11,657 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,657 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,657 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:40:11,657 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:40:11,657 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:40:11,657 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:40:11,657 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:40:11,657 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:40:11,657 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:40:11,657 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,658 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,658 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:40:11,658 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:40:11,658 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:40:11,658 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:40:11,658 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:40:11,658 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:40:11,658 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:40:11,658 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,658 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,658 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:40:11,658 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:40:11,658 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:40:11,659 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:40:11,659 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:40:11,659 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:40:11,659 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:40:11,659 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,659 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:40:11,659 - ERROR - Data validation error: Field 'name' is not in the schema.
+2024-04-16 04:40:11,659 - ERROR - Insert operation failed: Data validation failed.
+2024-04-16 04:40:11,659 - DEBUG - Attempting to update test_table: {'name': 'Jane Smith'} with conditions id = 3
+2024-04-16 04:40:11,659 - ERROR - Update operation failed: 'StorageManager' object has no attribute 'update_data'
+2024-04-16 04:42:28,173 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:42:28,174 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:42:28,174 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:42:28,174 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:42:28,174 - INFO - state_population_2.csv loaded with 0 rows
+2024-04-16 04:42:28,174 - INFO - state_population.csv loaded with 16 rows
+2024-04-16 04:42:28,174 - INFO - state_abbreviation.csv loaded with 13 rows
+2024-04-16 04:42:28,174 - INFO - test_table.csv loaded with 1 rows
+2024-04-16 04:42:28,174 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'name'}, '6': {'type': 'Oliver'}}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:53:40,736 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:53:40,738 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:53:40,738 - ERROR - Execution error: 'StorageManager' object has no attribute 'get_schema'
+2024-04-16 04:54:18,141 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:54:18,145 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:54:18,145 - ERROR - Execution error: 'StorageManager' object has no attribute 'get_schema'
+2024-04-16 04:54:21,715 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:54:21,718 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:54:21,719 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:54:21,719 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:54:21,719 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:56:19,908 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:56:19,913 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:56:19,913 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:56:19,914 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:56:19,914 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:57:57,770 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:57:57,776 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:57:57,776 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:57:57,776 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:57:57,777 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 04:57:57,777 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:58:07,494 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation
+2024-04-16 04:58:07,500 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:11,332 - DEBUG - Debug Parsing SQL: SELECT * FROM state_abbreviation
+2024-04-16 04:58:11,335 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:15,918 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'Alaska'
+2024-04-16 04:58:15,922 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:19,866 - DEBUG - Debug Parsing SQL: SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'
+2024-04-16 04:58:19,867 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:47,431 - DEBUG - Debug Parsing SQL: SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
+2024-04-16 04:58:47,434 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:54,130 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (5, 'Alabama')
+2024-04-16 04:58:54,131 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:58:54,132 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:58:54,132 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:58:54,132 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 04:58:54,133 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:59:02,149 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (9, 'Alabama')
+2024-04-16 04:59:02,150 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:59:02,150 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:59:02,151 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 04:59:02,151 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 04:59:02,151 - INFO - Data successfully inserted into test_table.
+2024-04-16 04:59:10,532 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 04:59:10,535 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:59:10,536 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 04:59:10,536 - ERROR - Delete operation failed: 'StorageManager' object has no attribute 'delete_data'
+2024-04-16 04:59:16,719 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 9
+2024-04-16 04:59:16,721 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:59:16,721 - DEBUG - Attempting to delete from test_table with conditions id = 9
+2024-04-16 04:59:16,721 - ERROR - Delete operation failed: 'StorageManager' object has no attribute 'delete_data'
+2024-04-16 04:59:33,630 - DEBUG - Debug Parsing SQL: SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+2024-04-16 04:59:33,633 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 04:59:33,634 - ERROR - Execution error: DMLManager.__init__() missing 1 required positional argument: 'storage_manager'
+2024-04-16 05:00:25,244 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:00:25,247 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:00:25,247 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 05:00:25,247 - ERROR - Delete operation failed: '>' not supported between instances of 'str' and 'int'
+2024-04-16 05:05:36,896 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:05:36,900 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:05:36,901 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 05:05:36,901 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 05:05:36,901 - DEBUG - Deletion complete. Current row count: 2
+2024-04-16 05:05:36,902 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:05:36,902 - ERROR - Delete operation failed: '>' not supported between instances of 'str' and 'int'
+2024-04-16 05:06:20,819 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 1
+2024-04-16 05:06:20,824 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:06:20,824 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:06:20,824 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:06:20,824 - DEBUG - Deletion complete. Current row count: 1
+2024-04-16 05:06:20,825 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:06:20,825 - ERROR - Delete operation failed: '>' not supported between instances of 'str' and 'int'
+2024-04-16 05:07:30,734 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 1
+2024-04-16 05:07:30,739 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:07:30,739 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:07:30,739 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:07:30,739 - DEBUG - Deletion complete. Current row count: 5
+2024-04-16 05:07:30,740 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:07:30,740 - ERROR - Delete operation failed: '>' not supported between instances of 'str' and 'int'
+2024-04-16 05:12:02,955 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 1
+2024-04-16 05:12:02,959 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:12:02,959 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:12:02,959 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:12:02,959 - DEBUG - Attempting to delete from test_table with conditions id = 1
+2024-04-16 05:12:02,959 - DEBUG - Deletion complete. Current row count: 5
+2024-04-16 05:12:02,960 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:12:02,961 - DEBUG - Rows expected to delete: Deleted 1 rows.
+2024-04-16 05:12:02,961 - ERROR - Delete operation failed: '>' not supported between instances of 'str' and 'int'
+2024-04-16 05:14:40,195 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:14:40,199 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:14:40,199 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 05:14:40,199 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:14:40,199 - ERROR - Failed to delete data from s.py: invalid syntax (<string>, line 1)
+2024-04-16 05:14:40,199 - ERROR - Delete operation failed: invalid syntax (<string>, line 1)
+2024-04-16 05:16:14,771 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:16:14,774 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:16:14,775 - ERROR - Execution error: 'DMLManager' object has no attribute 'delete'
+2024-04-16 05:16:48,659 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:16:48,663 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:16:48,664 - DEBUG - Attempting to delete from test_table with conditions: id = 2
+2024-04-16 05:16:48,664 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:16:48,664 - ERROR - Failed to delete data from s.p: invalid syntax (<string>, line 1)
+2024-04-16 05:16:48,664 - ERROR - Exception details: Error: Failed to delete data. Details: invalid syntax (<string>, line 1) from dml.py
+2024-04-16 05:17:14,437 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:18:05,181 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:18:48,270 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:19:21,821 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:22:19,292 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 2
+2024-04-16 05:22:19,297 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:22:19,298 - DEBUG - Attempting to delete from test_table with conditions id = 2
+2024-04-16 05:22:19,298 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:19,298 - ERROR - Exception during deletion: invalid syntax (<string>, line 1)
+2024-04-16 05:22:19,298 - ERROR - Error: Failed to delete data. Details: invalid syntax (<string>, line 1)
+2024-04-16 05:22:33,042 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (9, 'Alabama')
+2024-04-16 05:22:33,045 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:22:33,045 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:33,045 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:33,046 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:22:33,046 - INFO - Data successfully inserted into test_table.
+2024-04-16 05:22:33,302 - DEBUG - Debug Parsing SQL: 
+2024-04-16 05:22:37,553 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (9, 'Alabama')
+2024-04-16 05:22:37,557 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:22:37,558 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:37,558 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:37,559 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:22:37,559 - INFO - Data successfully inserted into test_table.
+2024-04-16 05:22:43,693 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 9
+2024-04-16 05:22:43,696 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:22:43,696 - DEBUG - Attempting to delete from test_table with conditions id = 9
+2024-04-16 05:22:43,696 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:22:43,696 - ERROR - Exception during deletion: invalid syntax (<string>, line 1)
+2024-04-16 05:22:43,697 - ERROR - Error: Failed to delete data. Details: invalid syntax (<string>, line 1)
+2024-04-16 05:23:53,866 - DEBUG - Debug Parsing SQL: INSERT INTO test_table (id, name) VALUES (9, 'Alabama')
+2024-04-16 05:23:53,868 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:23:53,868 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:23:53,868 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:23:53,870 - INFO - Data for test_table written successfully to CSV.
+2024-04-16 05:23:53,870 - INFO - Data successfully inserted into test_table.
+2024-04-16 05:24:01,066 - DEBUG - Debug Parsing SQL: DELETE FROM test_table WHERE id = 9
+2024-04-16 05:24:01,069 - DEBUG - DMLManager initialized with provided storage manager.
+2024-04-16 05:24:01,069 - DEBUG - Attempting to delete from test_table with conditions: id = 9
+2024-04-16 05:24:01,069 - DEBUG - Schema found for table test_table: {'columns': {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}, 'primary_key': 'id', 'foreign_keys': [], 'indexes': []}
+2024-04-16 05:24:01,069 - ERROR - Exception during deletion: invalid syntax (<string>, line 1)
+2024-04-16 05:24:01,069 - ERROR - Exception details: Error: Failed to delete data. Details: invalid syntax (<string>, line 1) from dml.py

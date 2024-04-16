@@ -3,125 +3,135 @@ import csv
 
 class DDLManager:
     def __init__(self, schema_directory="data"):
-        """
-        Initialize the DDL Manager with a directory to store schema definitions.
-
-        Parameters:
-            schema_directory (str): The directory where table schemas are stored as csv files.
-        """
         self.schema_directory = schema_directory
         if not os.path.exists(schema_directory):
             os.makedirs(schema_directory)
-        self.tables = self.load_all_schemas()    
-    
-
+        self.tables = self.load_all_schemas()
 
     def load_all_schemas(self):
-        """
-        Load all schema definitions from the schema directory into memory.
-
-        Returns:
-            dict: A dictionary of table schemas.
-        """
         schemas = {}
         for filename in os.listdir(self.schema_directory):
             if filename.endswith(".csv"):
                 table_name = filename[:-4]  # Remove the .csv extension
-                with open(os.path.join(self.schema_directory, filename), 'r', encoding='utf-8-sig') as file:
-                    reader =  csv.reader(file)
-                    headers = next(reader)
-                    schemas[table_name] = headers
+                with open(os.path.join(self.schema_directory, filename), newline='') as file:
+                    reader = csv.reader(file)
+                    schema = {
+                        'columns': {},
+                        'primary_key': None,
+                        'foreign_keys': [],
+                        'indexes': []
+                    }
+                    for row in reader:
+                        if len(row) < 2:  # Ensure there are at least two elements to unpack
+                            continue
+                        col_name, col_type, *constraints = row
+                        schema['columns'][col_name] = {'type': col_type}
+                        for constraint in constraints:
+                            if constraint == 'PRIMARY_KEY':
+                                schema['primary_key'] = col_name
+                            elif 'FOREIGN_KEY' in constraint:
+                                ref_table, ref_col = constraint.split('(')[1].strip(')').split(',')
+                                schema['foreign_keys'].append({'column': col_name, 'ref_table': ref_table, 'ref_column': ref_col})
+                            elif constraint == 'INDEX':
+                                schema['indexes'].append(col_name)
+                    schemas[table_name] = schema
         return schemas
-    '''
+
+    # def load_all_schemas(self):
+    #     schemas = {}
+    #     for filename in os.listdir(self.schema_directory):
+    #         if filename.endswith(".csv"):
+    #             table_name = filename[:-4]  # Remove the .csv extension
+    #             with open(os.path.join(self.schema_directory, filename), newline='') as file:
+    #                 reader = csv.reader(file)
+    #                 schema = {
+    #                     'columns': {},
+    #                     'primary_key': None,
+    #                     'foreign_keys': [],
+    #                     'indexes': []
+    #                 }
+    #                 for row in reader:
+    #                     col_name, col_type, *constraints = row
+    #                     schema['columns'][col_name] = {'type': col_type}
+    #                     for constraint in constraints:
+    #                         if constraint == 'PRIMARY_KEY':
+    #                             schema['primary_key'] = col_name
+    #                         elif 'FOREIGN_KEY' in constraint:
+    #                             ref_table, ref_col = constraint.split('(')[1].strip(')').split(',')
+    #                             schema['foreign_keys'].append({'column': col_name, 'ref_table': ref_table, 'ref_column': ref_col})
+    #                         elif constraint == 'INDEX':
+    #                             schema['indexes'].append(col_name)
+    #                 schemas[table_name] = schema
+    #     return schemas
+
     def create_table(self, table_name, columns):
-        """
-        Create a new table schema and save it to a JSON file.
-
-        Parameters:
-            table_name (str): The name of the table.
-            columns (dict): A dictionary of column definitions.
-
-        Returns:
-            str: A message indicating the success or failure of the operation.
-        """
         if table_name in self.tables:
             return "Error: Table already exists."
 
-        self.tables[table_name] = {'columns': columns}
-        self.save_schema(table_name)
-        return f"Table '{table_name}' created successfully."
-    '''
-    def create_table(self, table_name, columns):
-        """
-        Create a new table schema and save it to a csv file.
+        schema_path = os.path.join(self.schema_directory, f"{table_name}.csv")
+        try:
+            with open(schema_path, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                for col_name, col_def in columns.items():
+                    if not self.validate_column_definition(col_def):
+                        return f"Error: Invalid column definition for {col_name}."
+                    row = [col_name, col_def.split()[0], *col_def.split()[1:]]
+                    writer.writerow(row)
+        except IOError as e:
+            return f"Error: Failed to write schema file due to {str(e)}"
 
-        Parameters:
-            table_name (str): The name of the table.
-            columns (dict): A dictionary of column definitions.
-
-        Returns:
-            str: A message indicating the success or failure of the operation.
-        """
-        if table_name in self.tables:
-            return "Error: Table already exists."
-        headers = list(columns.keys())
-        datatypes = list(columns.values())
-        self.save_schema(table_name, headers)
-        self.save_datatypes(table_name, datatypes)
+        self.tables[table_name] = self.load_schema(table_name)
         return f"Table '{table_name}' created successfully."
     
-    def save_datatypes (self, table_name, datatypes):
-        with open('datatypes.txt', 'a') as f:
-            f.write(f"{table_name}:{datatypes}\n")
+    
+
+    def validate_column_definition(self, col_def):
+        # Simple validation for column type and constraints
+        valid_types = {'INT', 'VARCHAR', 'YEAR'}
+        parts = col_def.split()
+        if parts[0] not in valid_types:
+            return False
+        return True
+
 
     def drop_table(self, table_name):
-        """
-        Drop a table schema and delete its csv file.
-
-        Parameters:
-            table_name (str): The name of the table.
-
-        Returns:
-            str: A message indicating the success or failure of the operation.
-        """
         if table_name not in self.tables:
             return "Error: Table does not exist."
 
         del self.tables[table_name]
         os.remove(os.path.join(self.schema_directory, f"{table_name}.csv"))
-        with open('datatypes.txt', 'r') as file:
-            lines = file.readlines()
-            remaining_lines = [line for line in lines if not line.startswith(table_name)]
-         # Write the remaining lines back to the file
-        with open('datatypes.txt', 'w') as file:
-            file.writelines(remaining_lines)
         return f"Table '{table_name}' dropped successfully."
 
-    def save_schema(self, table_name, headers):
-        """
-        Save the schema of a table to a csv file.
-
-        Parameters:
-            table_name (str): The name of the table and its headers.
-        """
-        with open(os.path.join(self.schema_directory, f"{table_name}.csv"), 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(headers)
-
-    
-
-# Functions to be used by other modules
-def create_table(table_name, columns):
-    return DDLManager().create_table(table_name, columns)
-
-def drop_table(table_name):
-    return DDLManager().drop_table(table_name)
+    def load_schema(self, table_name):
+        schema_path = os.path.join(self.schema_directory, f"{table_name}.csv")
+        with open(schema_path, newline='') as file:
+            reader = csv.reader(file)
+            schema = {
+                'columns': {},
+                'primary_key': None,
+                'foreign_keys': [],
+                'indexes': []
+            }
+            for row in reader:
+                col_name, col_type, *constraints = row
+                schema['columns'][col_name] = {'type': col_type}
+                for constraint in constraints:
+                    if constraint == 'PRIMARY_KEY':
+                        schema['primary_key'] = col_name
+                    elif 'FOREIGN_KEY' in constraint:
+                        ref_table, ref_col = constraint.split('(')[1].strip(')').split(',')
+                        schema['foreign_keys'].append({'column': col_name, 'ref_table': ref_table, 'ref_column': ref_col})
+                    elif constraint == 'INDEX':
+                        schema['indexes'].append(col_name)
+        return schema
 
 # Example usage for testing
 if __name__ == "__main__":
     ddl = DDLManager()
-    '''test over "create" and "drop" within the class'''
-    #print(ddl.tables)
-    print(ddl.create_table('users', {'id': 'INT', 'name' : 'VARCHAR(50)'}))
-    #print(ddl.drop_table('test_table2'))
-    
+    print(ddl.create_table('state_population_2', {
+        'state_id': 'INT PRIMARY_KEY',
+        'state_name': 'VARCHAR(100)',
+        'population': 'INT',
+        'year': 'YEAR FOREIGN_KEY(years,id) INDEX'
+    }))
+    print(ddl.drop_table('state_population_2'))
