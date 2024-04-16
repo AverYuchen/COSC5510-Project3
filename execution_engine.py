@@ -1,14 +1,18 @@
 from dml import DMLManager
-
+from ddl import DDLManager
 def execute_query(command):
     from dml import DMLManager
     dml_manager = DMLManager()
-
+    ddl_manager = DDLManager()
     if 'type' in command:  # Check if it's a DML query
         if command['type'] == 'insert':
             return dml_manager.insert(command['table'], command['data'])
         elif command['type'] == 'delete':
             return dml_manager.delete(command['table'], command['conditions'])
+        elif command['type'] == 'create':
+            return ddl_manager.create_table(command['table'], command['columns'])
+        elif command['type'] == 'drop':
+            return ddl_manager.drop_table(command['table'])
         elif command['type'] == 'select':
             # Handling aggregation functions specifically
             if any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM']):
@@ -63,6 +67,8 @@ def aggregate_sum(command, dml_manager):
 
 
 if __name__ == "__main__":
-    print(execute_query({"function": "MAX", "table": "state_population", "column": "monthly_state_population"}))
-    print(execute_query({"function": "MIN", "table": "county_count", "column": "count_alldrug"}))
-    print(execute_query({"function": "SUM", "table": "population", "column": "county_count"}))
+    #print(execute_query({"function": "MAX", "table": "state_population", "column": "monthly_state_population"}))
+    #print(execute_query({"function": "MIN", "table": "county_count", "column": "count_alldrug"}))
+    #print(execute_query({"function": "SUM", "table": "population", "column": "county_count"}))
+    #print(execute_query({'type': 'insert', 'table': 'test_table2', 'data': {'id': '456', 'name': 'Joanne'}}))
+    print(execute_query({'type': 'drop', 'table': 'test_table'}))

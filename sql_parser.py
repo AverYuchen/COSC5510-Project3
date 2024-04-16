@@ -13,6 +13,8 @@ def parse_sql(sql):
         return parse_insert(sql)
     elif command_type == 'delete':
         return parse_delete(sql)
+    elif command_type == 'drop':
+        return parse_drop(sql)
     else:
         return {'error': "Unsupported SQL command: " + sql}
 
@@ -37,7 +39,7 @@ def parse_create_table(sql):
     """
     Parses a CREATE TABLE SQL statement.
     """
-    pattern = r'CREATE TABLE (\w+)\s*\((.*)\)\s*;'
+    pattern = r'CREATE TABLE (\w+)\s*\((.*)\)\s*'
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid CREATE TABLE syntax'}
@@ -96,6 +98,17 @@ def parse_delete(sql):
         'conditions': conditions.strip() if conditions else None
     }
 
+def parse_drop(sql):
+    """Parses a DROP TABLE statement"""
+    pattern = r'\bDROP\s+TABLE\s+(\w+)\s*;?\b'
+    match = re.match(pattern, sql, re.IGNORECASE)
+    if not match:
+        return {'error': 'Invalid DROP TABLE syntax'}
+    return {
+        'type': 'drop',
+        'table': match.group(1)
+    }
+    
 def parse_additional_clauses(clause):
     """Parses additional clauses in SQL statements like ORDER BY, GROUP BY, and HAVING."""
     additional = {}
@@ -110,8 +123,12 @@ def parse_additional_clauses(clause):
 
 # Example usage for testing
 if __name__ == "__main__":
+    #for all sql query, when we do parse_sql, we get rid of semicolon. Should we make it back?
     print(parse_sql("SELECT MAX(monthly_state_population) FROM state_population"))
     print(parse_sql("SELECT MIN(count_alldrug) FROM county_count"))
     print(parse_sql("SELECT SUM(population) FROM county_count"))
+    print(parse_sql("CREATE TABLE users (id INT, name VARCHAR(100), registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
+    print(parse_sql("INSERT INTO users (id, name) VALUES (123, Kiki)"))
+    print(parse_sql("DROP TABLE users"))
     sql_command = "CREATE TABLE users (id INT, name VARCHAR(100), registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
     print(parse_create_table(sql_command))
