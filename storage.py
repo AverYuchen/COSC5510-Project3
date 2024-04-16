@@ -131,7 +131,6 @@ class StorageManager:
             logging.error(f"Deletion failed: {e}")
             return f"Error: Failed to delete data due to {e}"
 
-
     def write_csv(self, table_name):
         filename = os.path.join(self.data_directory, f"{table_name}.csv")
         try:
@@ -143,7 +142,6 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Failed to write to {filename}: {e}")
             return f"Error: Failed to write data due to {e}"
-
 
     def parse_conditions_safe(self, conditions):
         import re
@@ -168,8 +166,7 @@ class StorageManager:
         else:
             logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
             return None
-
-    
+ 
     def insert_data(self, table_name, data):
         # Check if schema exists for the table
         if table_name in self.schemas:

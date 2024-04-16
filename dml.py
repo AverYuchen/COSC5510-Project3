@@ -64,27 +64,58 @@ class DMLManager:
             return "Error: Invalid delete conditions."
 
         try:
-            # Filter out rows that do not meet the condition
             initial_data = self.storage_manager.data[table_name]
             filtered_data = [row for row in initial_data if not condition_func(row)]
-            if len(filtered_data) == len(initial_data):
+            rows_deleted = len(initial_data) - len(filtered_data)
+            if rows_deleted > 0:
+                self.storage_manager.data[table_name] = filtered_data
+                self.storage_manager.write_csv(table_name)
+                return f"Deleted {rows_deleted} rows."
+            else:
                 return "No rows matched the condition."
-            
-            self.storage_manager.data[table_name] = filtered_data
-            return f"Deleted {len(initial_data) - len(filtered_data)} rows."
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
             return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
-   
+            condition_func = self.parse_conditions_delete(conditions)
+            if not condition_func:
+                logging.error("Failed to parse delete conditions")
+                return "Error: Invalid delete conditions."
+
+            try:
+                # Filter out rows that do not meet the condition
+                initial_data = self.storage_manager.data[table_name]
+                filtered_data = [row for row in initial_data if not condition_func(row)]
+                if len(filtered_data) == len(initial_data):
+                    return "No rows matched the condition."
+                
+                self.storage_manager.data[table_name] = filtered_data
+                return f"Deleted {len(initial_data) - len(filtered_data)} rows."
+            except Exception as e:
+                logging.error(f"Delete operation failed: {str(e)}")
+                return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
+    
     def parse_conditions_delete(self, conditions):
-    # Simplified parsing logic to handle basic conditions
-        conditions = conditions.strip()
-        if '=' in conditions:
-            field, value = conditions.split('=')
-            field = field.strip()
-            value = value.strip()
-            return lambda row: str(row.get(field)) == value
-        return None
+        import re
+        # Simplify parsing logic to handle basic conditions like "id = 9"
+        pattern = r"^\s*(\w+)\s*=\s*(\d+)\s*$"
+        match = re.match(pattern, conditions)
+        if match:
+            field, value = match.groups()
+            # Ensure the field exists in the schema and value type is correct
+            schema = self.storage_manager.get_schema('test_table')
+            if field in schema['columns']:
+                if schema['columns'][field]['type'] == 'int':
+                    # Convert value to int for comparison, assuming all ids are integers
+                    return lambda row: int(row.get(field, None)) == int(value)
+                else:
+                    return lambda row: str(row.get(field, None)) == value
+            else:
+                logging.error(f"Field {field} not found in schema.")
+                return None
+        else:
+            logging.error("Failed to parse delete conditions")
+            return None
+
 
     def update(self, table_name, data, conditions):
         logging.debug(f"Attempting to update {table_name}: {data} with conditions {conditions}")
