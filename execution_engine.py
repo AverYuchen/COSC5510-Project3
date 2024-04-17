@@ -15,7 +15,7 @@ def execute_query(command):
             if command['type'] == 'select':
                 conditions = command.get('where_clause', "")
                 if 'join' in command and command['join'] is not None:
-                    return handle_join(command, dml_manager)
+                    return handle_join(command, dml_manager, storage_manager)
                 elif any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM']):
                     return handle_aggregations(command, dml_manager, conditions)
                 else:
@@ -36,32 +36,36 @@ def execute_query(command):
         return f"Execution error: {e}"
 
 
-def handle_join(command, dml_manager):
-    dml_manager = DMLManager()
-    # Assuming command contains something like: 'JOIN state_abbreviation AS b ON a.state_code = b.state_code'
+def handle_join(command, dml_manager, storage_manager):
     main_table, main_alias = command['main_table'].split(' AS ')
     join_clause = command['join']
     join_table, join_alias = join_clause.replace('JOIN ', '').split(' ON ')[0].split(' AS ')
-
-    main_data = dml_manager.storage_manager.get_table_data(main_table.strip())
-    join_data = dml_manager.storage_manager.get_table_data(join_table.strip())
+    
+    # Extract columns to be returned
+    columns_to_return = {col.split('.')[1]: col.split('.')[0] for col in command['columns']}
+    
+    main_data = storage_manager.get_table_data(main_table.strip())
+    join_data = storage_manager.get_table_data(join_table.strip())
 
     joined_data = []
-    # Assuming 'ON a.state_code = b.state_code'
     join_condition = join_clause.split(' ON ')[1]
     left_field, right_field = join_condition.split(' = ')
-    left_field = left_field.split('.')[1]  # Remove alias 'a.'
-    right_field = right_field.split('.')[1]  # Remove alias 'b.'
+    left_field_alias, left_field = left_field.split('.')
+    right_field_alias, right_field = right_field.split('.')
 
     for main_item in main_data:
         for join_item in join_data:
             if main_item[left_field] == join_item[right_field]:
-                # Adjust how data is merged based on required fields
-                merged_item = {**main_item, **join_item}
+                # Build a dictionary only with required columns
+                merged_item = {}
+                for col, alias in columns_to_return.items():
+                    if alias == main_alias.strip():
+                        merged_item[col] = main_item[col]
+                    elif alias == join_alias.strip():
+                        merged_item[col] = join_item[col]
                 joined_data.append(merged_item)
 
     return joined_data
-
 
 
 def evaluate_join_condition(row1, row2, condition):
