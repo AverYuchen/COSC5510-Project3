@@ -16,7 +16,7 @@ class DMLManager:
         logging.debug("DMLManager initialized with provided storage manager.")
 
     def insert(self, table_name, data):
-        if not self.storage_manager.get_schema(table_name):  # Correct method to check table existence
+        if table_name not in self.storage_manager.schemas:  # Correct method to check table existence
             logging.error(f"Insert operation failed: Table {table_name} does not exist.")
             return "Error: Table does not exist."
 
@@ -43,7 +43,9 @@ class DMLManager:
                 logging.error(f"Data validation error: Field '{field}' is not in the schema.")
                 return False
             
+            #verify if the inserted data matched the datatype definition
             expected_type = schema['columns'][field]['type']
+            print(expected_type)
             if expected_type == 'int' and not isinstance(value, int):
                 try:
                     value = int(value)  # Convert to int if necessary
@@ -54,6 +56,11 @@ class DMLManager:
             elif expected_type == 'varchar' and not isinstance(value, str):
                 logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
                 return False
+        #verify if the inserted data matched the primary key condition
+        if not self.check_primary_key_constraint(table_name, data, schema):
+            print(self.check_primary_key_constraint(table_name, data, schema))
+            logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
+            return False
 
         return True
 
@@ -135,12 +142,21 @@ class DMLManager:
         """
         Check if the data violates primary key constraints.
         """
-        primary_key = schema.get('primary_key')
-        if primary_key and primary_key in data:
-            existing_data = self.storage_manager.get_table_data(table_name)
-            for row in existing_data:
-                if row.get(primary_key) == data[primary_key]:
+        print(schema)
+        primary_keys = schema.get('primary_key')
+        existing_data = self.storage_manager.get_table_data(table_name)
+        if primary_keys:
+            if isinstance(primary_keys, str):
+                primary_keys = [primary_keys] 
+            for primary_key in primary_keys:
+                if primary_key not in data:
                     return False
+                for row in existing_data:
+                    if schema['columns'][primary_key]['type'] == "int":
+                        row[primary_key] = int(row[primary_key])
+                    if row[primary_key] == data[primary_key]:
+                        return False
+
         return True
 
     def create_table(self, table_name, columns):
@@ -301,6 +317,7 @@ class DMLManager:
 #         self.assertEqual(schema['columns'], expected_columns, "Column definitions are incorrect.")
 #         self.assertEqual(schema['primary_key'], expected_primary_key, "Primary key is incorrect.")
 
-# if __name__ == '__main__':
+#if __name__ == '__main__':
 #     unittest.main()
+
 

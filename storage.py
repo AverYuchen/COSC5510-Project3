@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import logging
 import unittest
@@ -7,12 +8,18 @@ class StorageManager:
     def __init__(self, data_directory="data"):
             # Ensure the data_directory is correctly set
             self.data_directory = os.path.abspath(data_directory)
+            self.schema_directory = os.path.join(self.data_directory, 'schemas')
             if not os.path.exists(self.data_directory):
                 os.makedirs(self.data_directory)
+                if not os.path.exists(self.schema_directory):
+                    os.makedirs(self.schema_directory)
             self.schemas = {}
             self.data = {}
             self.define_schemas()
+            self.load_schemas()
             self.load_all_data()
+
+
 
     def define_schemas(self):
         # Manually defining schemas for each table
@@ -25,6 +32,7 @@ class StorageManager:
             'foreign_keys': [],
             'indexes': []
         }
+
 
         self.schemas['state_population'] = {
             'columns': {
@@ -47,7 +55,19 @@ class StorageManager:
             'foreign_keys': [],
             'indexes': []
         }
-        print("Schemas defined for all tables.")
+        file_1 = os.path.join(self.schema_directory, 'state_abbreviation.json')
+        if os.path.exists(file_1) == False:
+            with open(file_1, "w") as json_file:
+                json.dump(self.schemas['state_abbreviation'], json_file)
+        file_2 = os.path.join(self.schema_directory, 'state_population.json')
+        if os.path.exists(file_2) == False:
+            with open(file_2, "w") as json_file:
+                json.dump(self.schemas['state_population'], json_file)
+        file_3 = os.path.join(self.schema_directory, 'test_table.json')
+        if os.path.exists(file_3) == False:
+            with open(file_3, "w") as json_file:
+                json.dump(self.schemas['test_table'], json_file)
+        #print("Schemas defined for all tables.")
 
     def load_all_data(self):
         # Load data files if present
@@ -70,20 +90,15 @@ class StorageManager:
     def load_schemas(self):
         # Load only schema files
         for filename in os.listdir(self.schema_directory):
-            if filename.endswith(".csv"):
-                table_name = filename[:-4]  # Remove the .csv extension
+            if filename.endswith(".json"):
+                table_name = filename[:-5]  # Remove the .json extension
                 self.schemas[table_name] = self.load_schema(os.path.join(self.schema_directory, filename))
 
     def load_schema(self, schema_path):
-        schema = {'columns': {}, 'primary_key': None, 'foreign_keys': [], 'indexes': []}
+        schema = {}
         try:
             with open(schema_path, newline='') as file:
-                reader = csv.reader(file)
-                for row in reader:
-                    if len(row) != 2:
-                        continue  # Expect exactly two entries per row, skip otherwise
-                    col_name, col_type = row
-                    schema['columns'][col_name] = {'type': col_type}
+                schema = json.load(file)
         except FileNotFoundError:
             logging.error(f"Schema file {schema_path} not found.")
         except Exception as e:
@@ -99,12 +114,23 @@ class StorageManager:
         return schema
 
     def create_schema(self, table_name, schema):
+        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+        with open(schema_file, "w") as json_file:
+            json.dump(schema, json_file)
         if table_name not in self.schemas:
             self.schemas[table_name] = schema
             return "Schema for {0} created successfully.".format(table_name)
         else:
             return "Error: Schema for {0} already exists.".format(table_name)
-        
+    
+    def drop_schema(self, table_name):
+        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+        if os.path.exists(schema_file):
+            os.remove(schema_file)
+            return "Schema file {0} is dropped successfully".format(table_name)
+        else:
+            return "Error: Drop schema task fail, the schema file not existed."
+
     def delete_data(self, table_name, conditions):
         condition_func = self.parse_conditions_safe(conditions)
         if condition_func is None:
@@ -231,4 +257,9 @@ class TestStorageManager(unittest.TestCase):
         # Optionally remove any files or other clean-up actions
 
 if __name__ == '__main__':
-    unittest.main()
+    #unittest.main()
+    """
+    stor = StorageManager()
+    list = stor.schemas['test_table']['primary_key']
+    print(type(list))
+    """

@@ -50,6 +50,11 @@ CREATE TABLE state_population (
     year YEAR
 );
 
+CREATE TABLE users (
+    user_id INT PRIMARY KEY,
+    state_name VARCHAR(100)
+);
+
 <INSERT>
 
 INSERT INTO state_population (state_id, state_name, population, year)
