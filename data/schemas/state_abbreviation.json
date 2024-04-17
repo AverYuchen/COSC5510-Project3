@@ -1,0 +1,1 @@
+{"columns": {"state": {"type": "varchar"}, "state_code": {"type": "varchar"}}, "primary_key": "state", "foreign_keys": [], "indexes": []}

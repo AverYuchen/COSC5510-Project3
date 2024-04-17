@@ -252,7 +252,7 @@ def parse_additional_clauses(clause):
         additional['having'] = re.search(r'HAVING (.+)', clause, re.IGNORECASE).group(1)
 
     return additional
-
+"""
 if __name__ == "__main__":
     test_queries = [
         "CREATE TABLE employees (id INT PRIMARY KEY, name VARCHAR(100), department_id INT INDEX, manager_id INT FOREIGN KEY REFERENCES managers(id) INDEX);",
@@ -263,11 +263,11 @@ if __name__ == "__main__":
         result = parse_sql(query)
         print("Parsed SQL Command:", result)
 
+"""
 
 
-
-# if __name__ == "__main__":
-#     test_queries = [
+if __name__ == "__main__":
+ #    test_queries = [
 #         "SELECT state FROM state_abbreviation",
 #         "SELECT * FROM state_abbreviation",
 #         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 #     ]
 
 #     for query in test_queries:
-#         print(parse_sql(query))
+    print(parse_sql("INSERT INTO test_table (id, name) VALUES (2, 789)"))
 
 # if __name__ == "__main__":
 #     # Test the parser with various SQL commands
@@ -297,5 +297,3 @@ if __name__ == "__main__":
 #     for query in test_queries:
 #         result = parse_sql(query)
 #         print("Parsed SQL Command:", result)
-
-# Test the parser with a CREATE TABLE command
