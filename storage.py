@@ -98,8 +98,7 @@ class StorageManager:
         schema = {}
         try:
             with open(schema_path, newline='') as file:
-                reader = json.load(file)
-                schema = schema.update(reader)
+                schema = json.load(file)
         except FileNotFoundError:
             logging.error(f"Schema file {schema_path} not found.")
         except Exception as e:
@@ -258,4 +257,9 @@ class TestStorageManager(unittest.TestCase):
         # Optionally remove any files or other clean-up actions
 
 if __name__ == '__main__':
-    unittest.main()
+    #unittest.main()
+    """
+    stor = StorageManager()
+    list = stor.schemas['test_table']['primary_key']
+    print(type(list))
+    """

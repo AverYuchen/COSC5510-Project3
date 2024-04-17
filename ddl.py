@@ -26,6 +26,9 @@ class DDLManager:
                     #pump up schema with new table's data definition
                     for key, value in col_def.items():
                         if key == 'type':
+                            if '(' in value:
+                                value = value.split('(')[0]
+                            value = value.lower()
                             schema['columns'][col_name] = {'type': value}
                         elif key == 'primary_key' and value:
                                 schema['primary_key'].append(col_name)
@@ -60,32 +63,7 @@ class DDLManager:
         self.ddlstorage.drop_schema(table_name)
         return f"Table '{table_name}' dropped successfully."
 
-    def load_schema(self, table_name):
-        schema_path = os.path.join(self.schema_directory, f"{table_name}.csv")
-        with open(schema_path, newline='') as file:
-            reader = csv.reader(file)
-            schema = {
-                'columns': {},
-                'primary_key': None,
-                'foreign_keys': [],
-                'indexes': []
-            }
-            for row in reader:
-                col_name, col_type, *constraints = row
-                schema['columns'][col_name] = {'type': col_type}
-                for constraint in constraints:
-                    if constraint == 'PRIMARY_KEY':
-                        schema['primary_key'] = col_name
-                    elif 'FOREIGN_KEY' in constraint:
-                        ref_table, ref_col = constraint.split('(')[1].strip(')').split(',')
-                        schema['foreign_keys'].append({'column': col_name, 'ref_table': ref_table, 'ref_column': ref_col})
-                    elif constraint == 'INDEX':
-                        schema['indexes'].append(col_name)
-        return schema
-
 # Example usage for testing
 if __name__ == "__main__":
     ddl = DDLManager()
-    #print(ddl.ddlstorage.schemas)
-    print(ddl.create_table('password', ))
     #print(ddl.drop_table('another_test'))

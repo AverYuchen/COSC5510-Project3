@@ -143,7 +143,6 @@ def evaluate(condition, row1, row2):
 if __name__ == "__main__":
     # Define a set of test cases to verify each type of SQL command
     '''
-    (This is test used by Chao-chin)
     test_queries = [
         {'type': 'create', 'table_name': 'employees', 'columns': {
             'id': 'INT PRIMARY_KEY',
@@ -159,6 +158,5 @@ if __name__ == "__main__":
         result = execute_query(query)
         print(f"Test result for {query['type']} on {query.get('table_name')}: {result}")
     '''
-    #This is test used by Avery
-    print(execute_query({'type': 'insert', 'table': 'test_table', 'data': {'id': '8899', 'name': 'Earl'}}))
-    print(execute_query({'type': 'create', 'table_name': 'another_test', 'columns': {'id': {'type': 'INT', 'primary_key': False, 'index': False, 'foreign_key': None}, 'name': {'type': 'VARCHAR(50)', 'primary_key': True, 'index': True, 'foreign_key': None}}}))
+    print(execute_query({'type': 'insert', 'table': 'students', 'data': {'id': 'AJk', 'name': 'Ave'}}))
+    #print(execute_query({'type': 'create', 'table_name': 'another_test', 'columns': {'id': {'type': 'INT', 'primary_key': False, 'index': False, 'foreign_key': None}, 'name': {'type': 'VARCHAR(50)', 'primary_key': True, 'index': True, 'foreign_key': None}}}))

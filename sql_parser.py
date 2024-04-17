@@ -73,7 +73,7 @@ def parse_sql(sql):
     elif command_type == 'drop':
         # Extract table name from the DROP TABLE command
         table_name = tokens[2].strip()
-        return {'type': 'DROP', 'table_name': table_name}
+        return {'type': 'drop', 'table_name': table_name}
 
     elif command_type == 'create' and 'table' in tokens:
         return parse_create_table(sql)
@@ -122,7 +122,8 @@ def parse_select(sql):
 
 def parse_create_table(sql):
     # This is a simplified regex pattern; you might need a more robust implementation
-    pattern = r"CREATE TABLE (\w+) \((.*)\)"
+    #pattern = r"CREATE TABLE (\w+) \((.*)\)"
+    pattern = r'CREATE TABLE (\w+)\s*\((.*)\)\s*'
     match = re.match(pattern, sql)
     if not match:
         return {'error': 'Invalid CREATE TABLE syntax'}
@@ -218,7 +219,7 @@ def parse_insert(sql):
 
 def parse_drop(sql):
     """Parses a DROP TABLE statement"""
-    pattern = r'\bDROP\s+TABLE\s+(\w+)\s*;?\b'
+    pattern = r'\bDROP\s+TABLE\s+(\w+)\s+;?\b'
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid DROP TABLE syntax'}
@@ -283,8 +284,7 @@ if __name__ == "__main__":
 #     ]
 
 #     for query in test_queries:
-    print(parse_sql("INSERT INTO test_table (id, name) VALUES (2, 789)"))
-
+    print(parse_sql("INSERT INTO students (id, name, age) VALUES (Ave, Ave, AVe);"))
 # if __name__ == "__main__":
 #     # Test the parser with various SQL commands
 #     test_queries = [
