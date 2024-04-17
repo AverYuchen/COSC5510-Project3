@@ -27,10 +27,12 @@ INSERT INTO test_table (id, name) VALUES (1, 'Hachii')
 
 DELETE FROM test_table WHERE id = 0
 
-<MAX, MIN, SUM> 
+<MAX, MIN, SUM, AVG, COUNT> 
 SELECT MAX(monthly_state_population) FROM state_population
-SELECT MIN(count_alldrug) FROM county_count
+SELECT MIN(monthly_state_population) FROM state_population
 SELECT SUM(monthly_state_population) FROM state_population
+SELECT AVG(monthly_state_population) FROM state_population
+SELECT COUNT(monthly_state_population) FROM state_population
 
 
 <JOIN>
@@ -43,17 +45,7 @@ JOIN state_abbreviation AS b ON a.state_code = b.state_code
 
 <CREATE>
 
-CREATE TABLE state_population (
-    state_id INT PRIMARY KEY,
-    state_name VARCHAR(100),
-    population INT,
-    year YEAR
-);
-
-CREATE TABLE users (
-    user_id INT PRIMARY KEY,
-    state_name VARCHAR(100)
-);
+CREATE TABLE users (id INT, name VARCHAR(100), age INT);
 
 <INSERT>
 

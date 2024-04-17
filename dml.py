@@ -1,5 +1,7 @@
+# DML.py
+
 import logging
-# import unittest
+# import unittest 
 import re
 from storage import StorageManager
 from ddl import DDLManager
@@ -123,7 +125,6 @@ class DMLManager:
             logging.error("Failed to parse delete conditions")
             return None
 
-
     def update(self, table_name, data, conditions):
         logging.debug(f"Attempting to update {table_name}: {data} with conditions {conditions}")
         try:
@@ -199,31 +200,94 @@ class DMLManager:
         return selected_cols
     
     def max(self, table, column, conditions=None):
+        # Find the maximum value in the specified column
         data = self.storage_manager.get_table_data(table)
         if not data:
             return "Table not found or no data available."
         if conditions:
             condition_function = self.parse_conditions(conditions)
             data = [d for d in data if condition_function(d)]
-        return max(d.get(column, float('-inf')) for d in data)
+        column_values = [d.get(column, float('-inf')) for d in data]
+        return max(column_values)
 
     def min(self, table, column, conditions=None):
+        # Find the minimum value in the specified column
         data = self.storage_manager.get_table_data(table)
         if not data:
             return "Table not found or no data available."
         if conditions:
             condition_function = self.parse_conditions(conditions)
             data = [d for d in data if condition_function(d)]
-        return min(d.get(column, float('inf')) for d in data)
+        column_values = [d.get(column, float('inf')) for d in data]
+        return min(column_values)
+
     
     def sum(self, table, column, conditions=None):
         data = self.storage_manager.get_table_data(table)
+        # print(f"Debug: Retrieved data for sum: {data}")
         if not data:
             return "Table not found or no data available."
         if conditions:
             condition_function = self.parse_conditions(conditions)
             data = [d for d in data if condition_function(d)]
-        return sum(d.get(column, 0) for d in data if isinstance(d.get(column), (int, float)))
+        # print(f"Debug: Filtered data for sum: {data}")
+        values_for_sum = [int(d.get(column, 0)) for d in data if d.get(column).isdigit()]
+        # print(f"Debug: Values for sum: {values_for_sum}")
+        return sum(values_for_sum)
+
+    def avg(self, main_table, column, conditions=None):
+        # Calculate the average of the specified column
+        data = self.storage_manager.get_table_data(main_table)
+        if not data:
+            print("Debug: Table not found or no data available.")
+            return "Table not found or no data available."
+
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [d for d in data if condition_function(d)]
+        
+        column_values = [d.get(column, None) for d in data]
+        print(f"Debug: All values in the column: {column_values}")
+
+        # Filter out non-numeric values
+        numeric_values = [value for value in column_values if str(value).isdigit()]
+        print(f"Debug: Numeric values in the column: {numeric_values}")
+
+        if not numeric_values:
+            return "No numerical values found in the specified column."
+
+        # Convert numeric values to integers and calculate the average
+        numeric_values = [int(value) for value in numeric_values]
+        average = sum(numeric_values) / len(numeric_values)
+        return average
+
+    def count(self, main_table, column=None, conditions=None):
+        # Count the number of rows in the specified table or the number of non-null values in the specified column
+        data = self.storage_manager.get_table_data(main_table)
+        if not data:
+            print("Debug: Table not found or no data available.")
+            return "Table not found or no data available."
+
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [d for d in data if condition_function(d)]
+        
+        if column:
+            # Count non-null values in the specified column
+            column_values = [d.get(column, None) for d in data]
+            print(f"Debug: All values in the column: {column_values}")
+
+            # Filter out null values
+            non_null_values = [value for value in column_values if value is not None]
+            print(f"Debug: Non-null values in the column: {non_null_values}")
+
+            count = len(non_null_values)
+        else:
+            # Count the number of rows in the table
+            count = len(data)
+
+        return count
+
 
     def parse_conditions(self, conditions):
         print(f"Parsing conditions: {conditions}")
@@ -284,40 +348,24 @@ class DMLManager:
         cursor.close()
         return result[0] if result else None
 
+def test_dml_aggregations():
+    storage_manager = StorageManager()
+    dml_manager = DMLManager(storage_manager)
+    
+    # Test SUM
+    sum_result = dml_manager.sum('test_table', 'value')
+    assert sum_result == 15, "SUM operation failed"
+    
+    # Test AVG
+    avg_result = dml_manager.avg('test_table', 'value')
+    assert avg_result == 5, "AVG operation failed"
 
+    # Test HAVING
+    having_result = dml_manager.select('test_table', ['id', 'value'], conditions="value > 3 HAVING COUNT(*) > 1")
+    assert len(having_result) == 2, "HAVING operation failed"
 
-# class TestStorageManagerSchemaLoading(unittest.TestCase):
-#     def setUp(self):
-#         """Initialize the StorageManager to load the schemas."""
-#         self.storage_manager = StorageManager()
+    # Add more test cases as needed...
 
-#     def test_predefined_schemas_loaded(self):
-#         """Test if the predefined schemas are correctly loaded upon initialization."""
-#         # Names of the tables we expect to be loaded
-#         expected_tables = ['state_abbreviation', 'state_population', 'test_table']
-        
-#         # Check if all expected tables are in the loaded schemas
-#         for table_name in expected_tables:
-#             with self.subTest(table=table_name):
-#                 self.assertIn(table_name, self.storage_manager.schemas,
-#                               f"Schema for '{table_name}' should be pre-defined in storage manager.")
-
-#     def test_schema_details(self):
-#         """Test the details of a specific schema to ensure correct loading."""
-#         # Checking one example table's schema details
-#         table_name = 'test_table'
-#         expected_columns = {'id': {'type': 'int'}, 'name': {'type': 'varchar'}}
-#         expected_primary_key = 'id'
-
-#         # Fetch schema from storage manager
-#         schema = self.storage_manager.get_schema(table_name)
-        
-#         # Assert the schema contains the correct details
-#         self.assertIsNotNone(schema, f"Schema for {table_name} is not loaded.")
-#         self.assertEqual(schema['columns'], expected_columns, "Column definitions are incorrect.")
-#         self.assertEqual(schema['primary_key'], expected_primary_key, "Primary key is incorrect.")
-
-#if __name__ == '__main__':
-#     unittest.main()
-
-
+if __name__ == "__main__":
+    test_dml_aggregations()
+    print("All DML aggregation operations tested successfully.")

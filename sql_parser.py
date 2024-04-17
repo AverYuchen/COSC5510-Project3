@@ -1,5 +1,14 @@
+# SQL_PARSER
 import re
 import logging
+
+# from sql_parser import parse_sql
+from execution_engine import execute_query
+from storage_manager import StorageManager  # Assuming this exists for testing
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def parse_sql(sql):
     logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
@@ -120,6 +129,27 @@ def parse_select(sql):
     }
     return result
 
+def parse_where_clause(where_clause):
+    """Parses the WHERE clause into a list of conditions."""
+    if not where_clause:
+        return None
+
+    conditions = []
+    # Split conditions by ' AND ', ' OR ', considering possible nesting with parentheses
+    tokens = re.split(r'\s+(AND|OR)\s+', where_clause, flags=re.IGNORECASE)
+    current_op = None
+
+    for token in tokens:
+        if token.upper() in ['AND', 'OR']:
+            current_op = token.upper()
+        else:
+            field, op, value = re.split(r'\s*(<=|>=|<>|!=|<|>|=)\s*', token, 1)
+            condition = {'field': field.strip(), 'operator': op, 'value': value.strip(), 'logic_operator': current_op}
+            conditions.append(condition)
+            current_op = None  # Reset after adding condition
+
+    return conditions
+
 def parse_create_table(sql):
     # This is a simplified regex pattern; you might need a more robust implementation
     #pattern = r"CREATE TABLE (\w+) \((.*)\)"
@@ -133,8 +163,6 @@ def parse_create_table(sql):
     if 'error' in columns:
         return {'error': columns['error']}
     return {'type': 'create', 'table_name': table_name, 'columns': columns}
-
-
 
 def parse_columns(columns_part):
     """
@@ -159,8 +187,6 @@ def parse_columns(columns_part):
         columns[column_name] = constraints
     
     return columns
-
-
 
 def parse_column_definition(column_def):
     """
@@ -197,7 +223,6 @@ def parse_column_definition(column_def):
         constraints['foreign_key'] = {'referenced_table': ref_table, 'referenced_column': ref_column}
 
     return column_name, constraints
-
 
 def parse_insert(sql):
     """Parses an INSERT INTO SQL statement."""
@@ -253,47 +278,41 @@ def parse_additional_clauses(clause):
         additional['having'] = re.search(r'HAVING (.+)', clause, re.IGNORECASE).group(1)
 
     return additional
-"""
+
+
 if __name__ == "__main__":
-    test_queries = [
-        "CREATE TABLE employees (id INT PRIMARY KEY, name VARCHAR(100), department_id INT INDEX, manager_id INT FOREIGN KEY REFERENCES managers(id) INDEX);",
-        "CREATE TABLE test (id INT PRIMARY KEY);",
-        "CREATE TABLE another_test (id INT, name VARCHAR(50) PRIMARY KEY, INDEX(name));"
+    logging.info("Starting SQL functionalities tests")
+
+    # Mock queries to test
+    queries = [
+        # "SELECT state FROM state_abbreviation",
+        # "SELECT * FROM state_abbreviation",
+        # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+        "SELECT monthly_state_population FROM state_population WHERE monthly_state_population > 5886320",
+        "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+        "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+        # "INSERT INTO test_table (id, name) VALUES (45, 'Jihasd')",
+        # "DELETE FROM test_table WHERE id = 9",
+        "SELECT MAX(monthly_state_population) FROM state_population",
+        "SELECT MIN(monthly_state_population) FROM state_population",
+        "SELECT SUM(monthly_state_population) FROM state_population",
+        "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        "SELECT sp.state_code, sa.state, sp.monthly_state_population FROM state_population AS sp JOIN state_abbreviation AS sa ON sp.state_code = sa.state_code WHERE sp.monthly_state_population > 6897721",
+        "SELECT state_name, population, year FROM state_population ORDER BY population DESC",
+        "SELECT state_name FROM state_population GROUP BY month HAVING SUM(population) > 1000000"
     ]
-    for query in test_queries:
-        result = parse_sql(query)
-        print("Parsed SQL Command:", result)
 
-"""
+    # Mock storage manager for testing
+    storage_manager = StorageManager()
 
+    for query in queries:
+        logging.debug(f"Testing query: {query}")
+        parsed_command = parse_sql(query)
+        if 'error' in parsed_command:
+            logging.error(f"Parsing error in query: {query}")
+            continue
 
-if __name__ == "__main__":
- #    test_queries = [
-#         "SELECT state FROM state_abbreviation",
-#         "SELECT * FROM state_abbreviation",
-#         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-#         "SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-#         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
-#         "DELETE FROM test_table WHERE id = 1",
-#         "SELECT MAX(monthly_state_population) FROM state_population",
-#         "SELECT MIN(count_alldrug) FROM county_count",
-#         "SELECT SUM(monthly_state_population) FROM state_population",
-#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code"
-#     ]
+        result = execute_query(parsed_command)
+        logging.info(f"Result for query '{query}': {result}")
 
-#     for query in test_queries:
-    print(parse_sql("INSERT INTO students (id, name, age) VALUES (Ave, Ave, AVe);"))
-# if __name__ == "__main__":
-#     # Test the parser with various SQL commands
-#     test_queries = [
-#         "SELECT state_code, state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-#         "INSERT INTO test_table (id, name) VALUES (2, 'Happy')",
-#         "DELETE FROM test_table WHERE id = 1",
-#         "SELECT MAX(monthly_state_population) FROM state_population"
-#     ]
-
-#     for query in test_queries:
-#         result = parse_sql(query)
-#         print("Parsed SQL Command:", result)
+    logging.info("SQL functionalities tests completed")
