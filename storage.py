@@ -1,3 +1,5 @@
+# STORAGE.py
+
 import csv
 import json
 import os
@@ -18,9 +20,7 @@ class StorageManager:
             self.define_schemas()
             self.load_schemas()
             self.load_all_data()
-
-
-
+            
     def define_schemas(self):
         # Manually defining schemas for each table
         self.schemas['state_abbreviation'] = {

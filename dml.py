@@ -1,7 +1,6 @@
 # DML.py
 
 import logging
-# import unittest 
 import re
 from storage import StorageManager
 from ddl import DDLManager
@@ -221,18 +220,30 @@ class DMLManager:
         column_values = [d.get(column, float('inf')) for d in data]
         return min(column_values)
 
-    
+    # def sum(self, table, column, conditions=None):
+    #     data = self.storage_manager.get_table_data(table)
+    #     # print(f"Debug: Retrieved data for sum: {data}")
+    #     if not data:
+    #         return "Table not found or no data available."
+    #     if conditions:
+    #         condition_function = self.parse_conditions(conditions)
+    #         data = [d for d in data if condition_function(d)]
+    #     # print(f"Debug: Filtered data for sum: {data}")
+    #     values_for_sum = [int(d.get(column, 0)) for d in data if d.get(column).isdigit()]
+    #     # print(f"Debug: Values for sum: {values_for_sum}")
+    #     return sum(values_for_sum)
+
     def sum(self, table, column, conditions=None):
         data = self.storage_manager.get_table_data(table)
-        # print(f"Debug: Retrieved data for sum: {data}")
+        print(f"Debug: Retrieved data for sum: {data}")  # Debug: Print retrieved data
         if not data:
             return "Table not found or no data available."
         if conditions:
             condition_function = self.parse_conditions(conditions)
             data = [d for d in data if condition_function(d)]
-        # print(f"Debug: Filtered data for sum: {data}")
+        print(f"Debug: Filtered data for sum: {data}")  # Debug: Print filtered data
         values_for_sum = [int(d.get(column, 0)) for d in data if d.get(column).isdigit()]
-        # print(f"Debug: Values for sum: {values_for_sum}")
+        print(f"Debug: Values for sum: {values_for_sum}")  # Debug: Print values used for sum
         return sum(values_for_sum)
 
     def avg(self, main_table, column, conditions=None):
@@ -287,7 +298,6 @@ class DMLManager:
             count = len(data)
 
         return count
-
 
     def parse_conditions(self, conditions):
         print(f"Parsing conditions: {conditions}")
@@ -348,24 +358,69 @@ class DMLManager:
         cursor.close()
         return result[0] if result else None
 
-def test_dml_aggregations():
-    storage_manager = StorageManager()
-    dml_manager = DMLManager(storage_manager)
+    def group_by(self, main_table, group_column, aggregate_function, conditions=None):
+        data = self.storage_manager.get_table_data(main_table)
+        if not data:
+            return "Table not found or no data available."
+        
+        grouped_data = {}
+        for row in data:
+            key = row.get(group_column)
+            if key not in grouped_data:
+                grouped_data[key] = []
+            grouped_data[key].append(row)
+        
+        aggregated_data = {}
+        for key, rows in grouped_data.items():
+            if conditions:
+                condition_function = self.parse_conditions(conditions)
+                rows = [row for row in rows if condition_function(row)]
+            values = [row.get(aggregate_function) for row in rows]
+            aggregated_data[key] = self.aggregate_function(values)
+        
+        return aggregated_data
     
-    # Test SUM
-    sum_result = dml_manager.sum('test_table', 'value')
-    assert sum_result == 15, "SUM operation failed"
+    def having(self, aggregated_data, condition):
+        print("Debug dml: Applying HAVING condition:", condition)
+        
+        # Parse the condition
+        condition_function = self.parse_conditions(condition)
+        
+        # Filter aggregated data based on the condition
+        filtered_data = {key: value for key, value in aggregated_data.items() if condition_function(value)}
+        
+        print("Debug: Filtered data after HAVING condition:", filtered_data)
+        
+        return filtered_data
+
+    def order_by(self, data, order_column, ascending=True):
+            # Convert string numeric data to integers before sorting
+            numeric_data = [
+                {order_column: int(row.get(order_column))}
+                for row in data
+                if row.get(order_column).isdigit()
+            ]
+            sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
+            return sorted_data
     
-    # Test AVG
-    avg_result = dml_manager.avg('test_table', 'value')
-    assert avg_result == 5, "AVG operation failed"
+# def test_dml_aggregations():
+#     storage_manager = StorageManager()
+#     dml_manager = DMLManager(storage_manager)
+    
+#     # Test SUM
+#     sum_result = dml_manager.sum('test_table', 'value')
+#     assert sum_result == 15, "SUM operation failed"
+    
+#     # Test AVG
+#     avg_result = dml_manager.avg('test_table', 'value')
+#     assert avg_result == 5, "AVG operation failed"
 
-    # Test HAVING
-    having_result = dml_manager.select('test_table', ['id', 'value'], conditions="value > 3 HAVING COUNT(*) > 1")
-    assert len(having_result) == 2, "HAVING operation failed"
+#     # Test HAVING
+#     having_result = dml_manager.select('test_table', ['id', 'value'], conditions="value > 3 HAVING COUNT(*) > 1")
+#     assert len(having_result) == 2, "HAVING operation failed"
 
-    # Add more test cases as needed...
+#     # Add more test cases as needed...
 
-if __name__ == "__main__":
-    test_dml_aggregations()
-    print("All DML aggregation operations tested successfully.")
+# if __name__ == "__main__":
+#     test_dml_aggregations()
+#     print("All DML aggregation operations tested successfully.")

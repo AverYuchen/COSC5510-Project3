@@ -1,5 +1,0 @@
-2024-04-17 08:51:08,288 - DEBUG - Starting handle_join function
-2024-04-17 08:51:08,289 - DEBUG - Columns to return: {'id': 'd'}
-2024-04-17 08:51:08,289 - DEBUG - Joined item: {'d.id': 1}
-2024-04-17 08:51:08,289 - DEBUG - Joined item: {'d.id': 1}
-2024-04-17 08:51:08,289 - DEBUG - Final joined data: [{'d.id': 1}]

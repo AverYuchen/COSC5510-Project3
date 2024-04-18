@@ -6,31 +6,32 @@ from storage import StorageManager
 import logging
 import re
 
-
 # Configure logging to display debug information
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
+ 
 def execute_query(command):
     print(f"Debug execution engine execute query: {command}")
     storage_manager = StorageManager()
     dml_manager = DMLManager(storage_manager)
     ddl_manager = DDLManager()
-    
 
     try:
         if 'type' in command:
             if command['type'] == 'select':
                 conditions = command.get('where_clause', "")
+                result = dml_manager.select(command['main_table'], command['columns'], conditions)  # Assign result here
                 if 'join' in command and command['join'] is not None:
                     return handle_join(command, dml_manager, storage_manager)
-                # elif any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM']):
-                #     return handle_aggregations(command, dml_manager, conditions)
+                elif 'order_by' in command and command['order_by'] is not None:  # Check if result is not None before using it
+                    print("Debug: Result before select operation:", result)
+                    order_direction = command.get('order_direction', 'ASC')
+                    result = handle_order_by(result, command['order_by'], order_direction)
+                    print("Debug: Result after select operation:", result) 
+                    return result
                 elif any(func in command['columns'][0] for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
                     return handle_aggregations(command, dml_manager, conditions)
-
                 else:
-                    return dml_manager.select(command['main_table'], command['columns'], conditions)
+                    return result  # Return result if no order_by or aggregation
             elif command['type'] == 'insert':
                 return dml_manager.insert(command['table'], command['data'])
             elif command['type'] == 'delete':
@@ -45,7 +46,8 @@ def execute_query(command):
     except Exception as e:
         logging.error(f"Execution error: {e}")
         return f"Execution error: {e}"
-    
+
+
 def apply_where_clause(data, where_clause):
     import operator
     ops = {
@@ -74,9 +76,15 @@ def apply_where_clause(data, where_clause):
 
     return [row for row in data if evaluate(row)]
 
+# def parse_condition(condition):
+#     import re
+#     pattern = r'(\w+\.\w+)\s*(<=|>=|<>|!=|<|>|=)\s*(\w+\.\w+)'
+#     match = re.search(pattern, condition)
+#     return match.group(1), match.group(2), match.group(3)
+
 def parse_condition(condition):
     import re
-    pattern = r'(\w+\.\w+)\s*(<=|>=|<>|!=|<|>|=)\s*(\w+\.\w+)'
+    pattern = r'(\w+\.\w+)\s*(<=|>=|<>|!=|<|>|=)\s*(\w+\.\w+|\'.+?\')'
     match = re.search(pattern, condition)
     return match.group(1), match.group(2), match.group(3)
 
@@ -155,27 +163,16 @@ def extract_table_and_alias(table_expression):
         return parts[0].strip(), parts[1].strip()
     return parts[0].strip(), None  # No alias, ensure no trailing spaces
 
-# def handle_aggregations(command, dml_manager, conditions):
-#     column = command['columns'][0].split('(')[1].split(')')[0]
-#     func = command['columns'][0].split('(')[0].strip().upper()
-    
-#     aggregator = getattr(dml_manager, func.lower(), None)
-#     if callable(aggregator):
-#         return aggregator(command['main_table'], column, conditions)
-#     else:
-#         logging.error(f"DMLManager does not support {func} aggregation.")
-#         return f"DMLManager does not support {func} aggregation."
-
 def handle_aggregations(command, dml_manager, conditions):
     column = command['columns'][0].split('(')[1].split(')')[0]
     func = command['columns'][0].split('(')[0].strip().upper()
     
     aggregator = getattr(dml_manager, func.lower(), None)
     if callable(aggregator):
-        print(f"Debug: Aggregation function: {func}({column})")
-        print(f"Debug: Conditions: {conditions}")
+        print(f"EE Debug: Aggregation function: {func}({column})")
+        print(f"EE Debug: Conditions: {conditions}")
         result = aggregator(command['main_table'], column, conditions)
-        print(f"Debug: Aggregation result: {result}")
+        print(f"EE Debug: Aggregation result: {result}")
         return result
     else:
         logging.error(f"DMLManager does not support {func} aggregation.")
@@ -186,6 +183,76 @@ def handle_select(command, dml_manager):
         return handle_aggregations(command, dml_manager)
     else:
         return dml_manager.select(command['main_table'], command['columns'], command['conditions'])
+
+def handle_group_by(data, group_by_clause):
+    # Handling logic for GROUP BY clause
+    print(f"EE Debug: Applying GROUP BY clause: {group_by_clause}")
+    grouped_data = {}
+    for group_key, group_rows in data.items():
+        # Extract the value of the group by column(s)
+        for row in group_rows:
+            group_key_value = row[group_by_clause.strip()]
+            if group_key not in grouped_data:
+                grouped_data[group_key_value] = []
+            # Add the row to the corresponding group
+            grouped_data[group_key_value].append(row)
+    return grouped_data
+
+def handle_having(grouped_data, having_clause):
+    print("EE ebug: Applying HAVING clause:", having_clause)
+    filtered_data = {}
+    
+    # Iterate over grouped data
+    for group_key, group_data in grouped_data.items():
+        print("EE Debug: Group key:", group_key, "Group data:", group_data)
+        
+        # Check if group_data is a list
+        if isinstance(group_data, list):
+            print("EE Debug: Group data is a list.")
+            try:
+                # Evaluate the HAVING clause
+                if eval(having_clause, {'sum': sum, 'len': len}, {'group_data': group_data}):
+                    # Add the group data to filtered_data
+                    filtered_data[group_key] = group_data
+            except Exception as e:
+                print("Error occurred during evaluation:", e)
+        else:
+            print("EE Debug: Group data is not a list.")
+
+    return filtered_data
+
+
+def handle_order_by(data, order_by_clause, order_direction):
+    # Check if data needs to be converted to numeric type before ordering
+    if data:
+        field, _ = order_by_clause.split()
+        convert_to_numeric(data, field)
+    # Handling logic for ORDER BY clause
+    print(f"Debug: Applying ORDER BY clause: {order_by_clause}")
+    print(f"Debug: Order direction: {order_direction}")
+    field, order = order_by_clause.split()
+    reverse = True if order.upper() == 'DESC' else False
+    sorted_data = sorted(data, key=lambda x: int(x[field]) if isinstance(x[field], int) else x[field], reverse=reverse)
+    return sorted_data
+
+def convert_to_numeric(data, field):
+    for row in data:
+        if field in row:
+            try:
+                row[field] = int(row[field])
+            except ValueError:
+                pass
+    return data
+
+
+def check_data_type(data):
+    # Check the data type of the first value in the dataset
+    if data:
+        first_value = next(iter(data[0].values()))
+        data_type = type(first_value)
+        print(f"Data type of the ordered column: {data_type}")
+    else:
+        print("Data is empty, unable to determine data type.")
 
 def aggregate_max(command, dml_manager):
     data = dml_manager.select(command['main_table'], [command['column']], command.get('conditions'))
@@ -217,26 +284,11 @@ def aggregate_count(command, dml_manager):
     data = dml_manager.select(command['main_table'], ['*'], command.get('conditions'))
     return len(data)
 
-def apply_having_clause(data, having_clause):
-    # Example: 'SUM(revenue) > 10000'
-    field, condition = having_clause.split('>')
-    field, agg_func = field.split('(')[1].split(')')
-    value = int(condition.strip())
-    agg_data = {
-        'SUM': sum,
-        'AVG': lambda x: sum(x) / len(x) if len(x) > 0 else 0
-    }
-    if agg_func in agg_data:
-        result = agg_data[agg_func]([item[field.strip()] for item in data])
-        return result > value
-    return False
-
 def order_data(data, order_clause):
     import operator
     field, order = order_clause.split()
     reverse = True if order.upper() == 'DESC' else False
     return sorted(data, key=lambda x: x[field], reverse=reverse)
-
 
 def simulate_database_fetch(command):
     # This is a placeholder function that should be replaced with actual database interaction
@@ -250,27 +302,3 @@ def evaluate(condition, row1, row2):
     column1 = column1.strip()
     column2 = column2.strip()
     return row1[column1] == row2[column2]
-
-if __name__ == "__main__":
-    def test_aggregations():
-        storage_manager = StorageManager()
-        dml_manager = DMLManager(storage_manager)
-        
-        commands = [
-            {'type': 'select', 'main_table': 'employees', 'columns': ['AVG(age)'], 'conditions': None},
-            {'type': 'select', 'main_table': 'employees', 'columns': ['COUNT(id)'], 'conditions': None}
-        ]
-        for command in commands:
-            print(f"Result of {command['columns'][0]}: {handle_aggregations(command, dml_manager, command['conditions'])}")
-
-    def test_order_by():
-        data = [{'name': 'Alice', 'age': 32}, {'name': 'Bob', 'age': 24}, {'name': 'Charlie', 'age': 29}]
-        ordered_data = order_data(data, 'age DESC')
-        print("Data ordered by age DESC:")
-        for item in ordered_data:
-            print(item)
-
-    # Running all tests
-    # test_theta_join()
-    test_aggregations()
-    test_order_by()

@@ -1,4 +1,5 @@
-# SQL_PARSER
+# SQL_PARSER.py
+
 import re
 import logging
 

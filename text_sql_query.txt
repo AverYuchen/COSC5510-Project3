@@ -54,7 +54,9 @@ VALUES (1, 'California', 39538223, 2020);
 
 <ORDER BY>
 
-SELECT state_name, population, year FROM state_population ORDER BY population DESC; 
+SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC
+
+SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC
 
 <HAVING>
 
