@@ -210,10 +210,6 @@ class StorageManager:
         return table_data
     
     def update_table_data(self, table_name, value, parsed_condition, conditions):
-        condition_func = self.parse_conditions_safe(conditions)
-        if condition_func is None:
-            logging.error("Deletion failed: Invalid condition syntax")
-            return "Error: Invalid condition syntax"
         try:
             initial_data = self.get_table_data(table_name)
             retrieved_data = [row for row in initial_data if parsed_condition(row)]
