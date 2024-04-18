@@ -349,7 +349,7 @@ def parse_additional_clauses(clause):
 
 if __name__ == "__main__":
     # Sample test SQL for UPDATE
-    test_sql = "UPDATE employees SET name = 'John', age = 30 WHERE id = 101;"
+    test_sql = "SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code "
     result = parse_sql(test_sql)
     
     # Print the result to verify the output

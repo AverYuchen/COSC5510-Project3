@@ -23,7 +23,7 @@ class DMLManager:
 
         if not self.validate_data(table_name, data):
             logging.error("Insert operation failed: Data validation failed.")
-            return "Error: Data validation failed."
+            return "Error: PK exist - Data validation failed."
 
         try:
             self.storage_manager.insert_data(table_name, data)
@@ -178,26 +178,60 @@ class DMLManager:
             return value.strip().replace("‘", "'").replace("’", "'").replace("’", "'").replace("’", "'")
         return value
     
-    def select(self, table_name, columns, conditions):
-        data = self.storage_manager.get_table_data(table_name)
-        filtered_data = []
+    # def select(self, table_name, columns, conditions):
+    #     data = self.storage_manager.get_table_data(table_name)
+    #     print(f"Debug DML: Data retrieved from {table_name}: {data}") 
+    #     filtered_data = []
 
+    #     if conditions:
+    #         condition_function = self.parse_conditions(conditions)
+    #         filtered_data = [d for d in data if condition_function(d)]
+    #     else:
+    #         filtered_data = data  # No conditions specified, select all data
+
+    #     if columns is not None:
+    #         if "*" in columns:
+    #             return filtered_data
+    #         else:
+    #             selected_cols = [{k: v for k, v in single_entry.items() if k in columns} for single_entry in filtered_data]
+    #     else:
+    #         return None
+
+    #     return selected_cols
+    
+
+    def select(self, table_name, columns, conditions=None):
+        # Retrieve data from the storage manager
+        data = self.storage_manager.get_table_data(table_name)
+        print(f"Debug: Data retrieved from {table_name}: {data}")
+
+        # Apply conditions if specified
         if conditions:
             condition_function = self.parse_conditions(conditions)
-            filtered_data = [d for d in data if condition_function(d)]
-        else:
-            filtered_data = data  # No conditions specified, select all data
+            data = [d for d in data if condition_function(d)]
 
-        if columns is not None:
-            if "*" in columns:
-                return filtered_data
-            else:
-                selected_cols = [{k: v for k, v in single_entry.items() if k in columns} for single_entry in filtered_data]
+        # Handle column selection
+        if columns == ['*']:
+            # If columns contain '*', return all data without filtering columns
+            return data
         else:
-            return None
+            # Process column names for SQL function extraction or direct use
+            processed_columns = []
+            for col in columns:
+                # Check if the column is wrapped in a function and extract the column name
+                match = re.search(r"\w+\((\w+)\)", col)
+                if match:
+                    # Extract the column name from the function
+                    processed_columns.append(match.group(1))
+                else:
+                    processed_columns.append(col)
 
-        return selected_cols
-    
+            # Filter data to only include specified columns
+            filtered_data = [{k: v for k, v in item.items() if k in processed_columns} for item in data]
+            return filtered_data
+
+
+
     def max(self, table, column, conditions=None):
         # Find the maximum value in the specified column
         data = self.storage_manager.get_table_data(table)
@@ -358,11 +392,17 @@ class DMLManager:
         cursor.close()
         return result[0] if result else None
 
-    def group_by(self, main_table, group_column, aggregate_function, conditions=None):
+    def group_by(self, main_table, group_column, aggregate_func, aggregate_column, conditions=None):
         data = self.storage_manager.get_table_data(main_table)
         if not data:
             return "Table not found or no data available."
         
+        # Apply conditions if any
+        if conditions:
+            condition_function = self.parse_conditions(conditions)
+            data = [row for row in data if condition_function(row)]
+
+        # Grouping data
         grouped_data = {}
         for row in data:
             key = row.get(group_column)
@@ -370,15 +410,24 @@ class DMLManager:
                 grouped_data[key] = []
             grouped_data[key].append(row)
         
+        # Aggregating data
         aggregated_data = {}
         for key, rows in grouped_data.items():
-            if conditions:
-                condition_function = self.parse_conditions(conditions)
-                rows = [row for row in rows if condition_function(row)]
-            values = [row.get(aggregate_function) for row in rows]
-            aggregated_data[key] = self.aggregate_function(values)
-        
+            if aggregate_func == 'sum':
+                aggregated_data[key] = sum(self.safe_convert(row.get(aggregate_column, 0)) for row in rows)
+            elif aggregate_func == 'avg':
+                values = [self.safe_convert(row.get(aggregate_column, 0)) for row in rows]
+                aggregated_data[key] = sum(values) / len(values) if values else 0
+            elif aggregate_func == 'count':
+                aggregated_data[key] = len(rows)
+
         return aggregated_data
+
+    def safe_convert(self, value):
+        try:
+            return float(value)
+        except ValueError:
+            return 0
     
     def having(self, aggregated_data, condition):
         print("Debug dml: Applying HAVING condition:", condition)
@@ -402,25 +451,5 @@ class DMLManager:
             ]
             sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
             return sorted_data
+        
     
-# def test_dml_aggregations():
-#     storage_manager = StorageManager()
-#     dml_manager = DMLManager(storage_manager)
-    
-#     # Test SUM
-#     sum_result = dml_manager.sum('test_table', 'value')
-#     assert sum_result == 15, "SUM operation failed"
-    
-#     # Test AVG
-#     avg_result = dml_manager.avg('test_table', 'value')
-#     assert avg_result == 5, "AVG operation failed"
-
-#     # Test HAVING
-#     having_result = dml_manager.select('test_table', ['id', 'value'], conditions="value > 3 HAVING COUNT(*) > 1")
-#     assert len(having_result) == 2, "HAVING operation failed"
-
-#     # Add more test cases as needed...
-
-# if __name__ == "__main__":
-#     test_dml_aggregations()
-#     print("All DML aggregation operations tested successfully.")
