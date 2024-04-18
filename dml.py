@@ -124,10 +124,25 @@ class DMLManager:
             logging.error("Failed to parse delete conditions")
             return None
 
-    def update(self, table_name, data, conditions):
-        logging.debug(f"Attempting to update {table_name}: {data} with conditions {conditions}")
+    def update(self, table_name, value, conditions):
+        #check validation:
+        for col, content in value.items():
+            expected_type = self.storage_manager.schemas[table_name]['columns'][col]['type']
+            if expected_type == 'int' and not isinstance(content, int):
+                try:
+                    content = int(content)  # Convert to int if necessary
+                    value[col] = content
+                except ValueError:
+                    logging.error(f"Type conversion error for col ‘{col}’: expected int, got {content}")
+                    return "Error: update data fail due to invalid datatype"
+            elif expected_type == 'varchar' and not isinstance(content, str):
+                logging.error(f"Type validation error for col ‘{col}’: expected string, got {type(content).__name__}")
+                return "Error: update data fail due to invalid datatype"
+
+        logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
         try:
-            rows_updated = self.storage_manager.update_data(table_name, data, conditions)
+            parsed_conditions = self.parse_conditions(conditions)
+            rows_updated = self.storage_manager.update_table_data(table_name, value, parsed_conditions, conditions)
             if rows_updated > 0:
                 logging.info(f"Updated {rows_updated} rows in {table_name}.")
                 return f"Updated {rows_updated} rows."

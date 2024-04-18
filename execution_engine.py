@@ -63,6 +63,9 @@ def execute_query(command):
                 return ddl_manager.create_table(command['table_name'], command['columns'])
             elif command['type'] == 'drop':
                 return ddl_manager.drop_table(command['table_name'])
+            elif command['type'] == 'update':
+                result = dml_manager.update(command['tables'], command['values'],command['where_condition'])
+            
         else:
             logging.error("Unsupported or missing SQL command type")
             return "Unsupported or missing SQL command type"
@@ -336,6 +339,3 @@ def evaluate(condition, row1, row2):
     column2 = column2.strip()
     return row1[column1] == row2[column2]
 
-
-# if __name__ == "__main__":
-    
