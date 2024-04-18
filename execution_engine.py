@@ -40,6 +40,9 @@ def execute_query(command):
                 return ddl_manager.create_table(command['table_name'], command['columns'])
             elif command['type'] == 'drop':
                 return ddl_manager.drop_table(command['table_name'])
+            elif command['type'] == 'update':
+                result = dml_manager.update(command['tables'], command['values'],command['where_condition'])
+            
         else:
             logging.error("Unsupported or missing SQL command type")
             return "Unsupported or missing SQL command type"
@@ -302,3 +305,8 @@ def evaluate(condition, row1, row2):
     column1 = column1.strip()
     column2 = column2.strip()
     return row1[column1] == row2[column2]
+
+if __name__ == "__main__":
+    # Define a set of test cases to verify each type of SQL command
+    #print(execute_query({'type': 'insert', 'table': 'test_table', 'data': {'id': '8899', 'name': 'Earl'}}))
+    print(execute_query({'type': 'update', 'select_fields': [], 'tables': 'test_table', 'join_type': None, 'join_table': None, 'join_condition': None, 'where_condition': 'id = 798', 'values': {'name': 'Vera'}, 'aggregation': None}))

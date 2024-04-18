@@ -64,3 +64,30 @@ SELECT state_name, SUM(population) AS total_population
 FROM state_population
 GROUP BY state_name
 HAVING SUM(population) > 10000000;
+
+
+Avery Test 
+1. table name: test_table
+<DELETE>
+DELETE FROM test_table WHERE id = 173
+
+<INSERT: successful>
+INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
+
+<INSERT: fail due to primary key confliction>
+INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
+INSERT INTO test_table (id, name) VALUES (798, 'Yelia');
+
+<INSERt: fail due to datatype confliction>
+INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
+
+<UPDATE: successful>
+UPDATE test_table SET name = 'Vera' WHERE id = 798; 
+
+
+2. table name: employees
+<CREATE>
+CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+
+<UPDATE: fail due to invalid datatype>
+UPDATE employees SET salary = 'test' WHERE id = 1;

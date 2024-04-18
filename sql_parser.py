@@ -66,7 +66,8 @@ def parse_sql(sql):
         where_index = lower_sql.find(' where ')
         if where_index != -1:
             set_str = sql[set_index:where_index].strip()
-            parsed_details['where_condition'] = sql[where_index + 7:].strip()
+            where_string = sql[where_index + 7:].replace(';','')
+            parsed_details['where_condition'] = where_string.strip()
         else:
             set_str = sql[set_index:].strip()
             where_index = len(sql)
@@ -120,6 +121,8 @@ def parse_sql(sql):
 def parse_update(parsed_details, sql):
     # This function could further process or validate the parsed details
     # For now, let's just return what was passed as a demonstration
+    parsed_details['type'] = 'update' #lower the string and keep the format
+    parsed_details['tables'] = parsed_details['tables'][0]
     return parsed_details
 
 
@@ -348,7 +351,6 @@ def parse_additional_clauses(clause):
 #     logging.info("SQL functionalities tests completed")
 
 if __name__ == "__main__":
-    # Sample test SQL for UPDATE
     test_sql = "UPDATE employees SET name = 'John', age = 30 WHERE id = 101;"
     result = parse_sql(test_sql)
     
