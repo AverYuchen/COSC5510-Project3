@@ -10,7 +10,6 @@ from storage_manager import StorageManager  # Assuming this exists for testing
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 def parse_sql(sql):
     logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
     sql = sql.strip()
@@ -60,6 +59,30 @@ def parse_sql(sql):
         # Extend parsing to handle other clauses such as GROUP BY, ORDER BY, etc.
         return parse_select(sql)
 
+     # Parsing logic based on type of SQL command
+    elif command_type == 'update':
+        # Handle UPDATE
+        set_index = lower_sql.find(' set ') + 5
+        where_index = lower_sql.find(' where ')
+        if where_index != -1:
+            set_str = sql[set_index:where_index].strip()
+            parsed_details['where_condition'] = sql[where_index + 7:].strip()
+        else:
+            set_str = sql[set_index:].strip()
+            where_index = len(sql)
+
+        # Table name
+        parsed_details['tables'].append(sql[7:set_index - 5].strip())
+
+        # Parse set values
+        parsed_details['values'] = {}
+        for part in set_str.split(','):
+            column, value = part.split('=')
+            parsed_details['values'][column.strip()] = value.strip().strip("'")
+
+        return parse_update(parsed_details, sql)
+
+        
     elif command_type == 'insert':
         # Handle INSERT INTO table (fields) VALUES (values)
         into_index = lower_sql.find(' into ') + 6
@@ -93,6 +116,12 @@ def parse_sql(sql):
 
     
     return parsed_details
+
+def parse_update(parsed_details, sql):
+    # This function could further process or validate the parsed details
+    # For now, let's just return what was passed as a demonstration
+    return parsed_details
+
 
 def parse_select(sql):
     """Parses a SELECT SQL statement with better handling for aliases and joins."""
@@ -281,39 +310,48 @@ def parse_additional_clauses(clause):
     return additional
 
 
+# if __name__ == "__main__":
+#     logging.info("Starting SQL functionalities tests")
+
+#     # Mock queries to test
+#     queries = [
+#         # "SELECT state FROM state_abbreviation",
+#         # "SELECT * FROM state_abbreviation",
+#         # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+#         "SELECT monthly_state_population FROM state_population WHERE monthly_state_population > 5886320",
+#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         # "INSERT INTO test_table (id, name) VALUES (45, 'Jihasd')",
+#         # "DELETE FROM test_table WHERE id = 9",
+#         "SELECT MAX(monthly_state_population) FROM state_population",
+#         "SELECT MIN(monthly_state_population) FROM state_population",
+#         "SELECT SUM(monthly_state_population) FROM state_population",
+#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+#         "SELECT sp.state_code, sa.state, sp.monthly_state_population FROM state_population AS sp JOIN state_abbreviation AS sa ON sp.state_code = sa.state_code WHERE sp.monthly_state_population > 6897721",
+#         "SELECT state_name, population, year FROM state_population ORDER BY population DESC",
+#         "SELECT state_name FROM state_population GROUP BY month HAVING SUM(population) > 1000000"
+#     ]
+
+#     # Mock storage manager for testing
+#     storage_manager = StorageManager()
+
+#     for query in queries:
+#         logging.debug(f"Testing query: {query}")
+#         parsed_command = parse_sql(query)
+#         if 'error' in parsed_command:
+#             logging.error(f"Parsing error in query: {query}")
+#             continue
+
+#         result = execute_query(parsed_command)
+#         logging.info(f"Result for query '{query}': {result}")
+
+#     logging.info("SQL functionalities tests completed")
+
 if __name__ == "__main__":
-    logging.info("Starting SQL functionalities tests")
-
-    # Mock queries to test
-    queries = [
-        # "SELECT state FROM state_abbreviation",
-        # "SELECT * FROM state_abbreviation",
-        # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-        "SELECT monthly_state_population FROM state_population WHERE monthly_state_population > 5886320",
-        "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-        "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-        # "INSERT INTO test_table (id, name) VALUES (45, 'Jihasd')",
-        # "DELETE FROM test_table WHERE id = 9",
-        "SELECT MAX(monthly_state_population) FROM state_population",
-        "SELECT MIN(monthly_state_population) FROM state_population",
-        "SELECT SUM(monthly_state_population) FROM state_population",
-        "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-        "SELECT sp.state_code, sa.state, sp.monthly_state_population FROM state_population AS sp JOIN state_abbreviation AS sa ON sp.state_code = sa.state_code WHERE sp.monthly_state_population > 6897721",
-        "SELECT state_name, population, year FROM state_population ORDER BY population DESC",
-        "SELECT state_name FROM state_population GROUP BY month HAVING SUM(population) > 1000000"
-    ]
-
-    # Mock storage manager for testing
-    storage_manager = StorageManager()
-
-    for query in queries:
-        logging.debug(f"Testing query: {query}")
-        parsed_command = parse_sql(query)
-        if 'error' in parsed_command:
-            logging.error(f"Parsing error in query: {query}")
-            continue
-
-        result = execute_query(parsed_command)
-        logging.info(f"Result for query '{query}': {result}")
-
-    logging.info("SQL functionalities tests completed")
+    # Sample test SQL for UPDATE
+    test_sql = "UPDATE employees SET name = 'John', age = 30 WHERE id = 101;"
+    result = parse_sql(test_sql)
+    
+    # Print the result to verify the output
+    print("Parsed SQL details:")
+    print(result)
