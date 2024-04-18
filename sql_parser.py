@@ -351,8 +351,7 @@ def parse_additional_clauses(clause):
 #     logging.info("SQL functionalities tests completed")
 
 if __name__ == "__main__":
-    test_sql = "UPDATE employees SET name = 'John', age = 30 WHERE id = 101;"
-    result = parse_sql(test_sql)
+
     
     # Print the result to verify the output
     print("Parsed SQL details:")

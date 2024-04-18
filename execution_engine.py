@@ -8,7 +8,7 @@ import re
 
 # Configure logging to display debug information
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
- 
+
 def execute_query(command):
     print(f"Debug execution engine execute query: {command}")
     storage_manager = StorageManager()
@@ -19,9 +19,32 @@ def execute_query(command):
         if 'type' in command:
             if command['type'] == 'select':
                 conditions = command.get('where_clause', "")
+                print(f"EE Debug: Columns parameter being passed: {command['columns']}")
                 result = dml_manager.select(command['main_table'], command['columns'], conditions)  # Assign result here
+                # result = dml_manager.select(command['main_table'], ['state_code', 'monthly_state_population'], conditions)
                 if 'join' in command and command['join'] is not None:
                     return handle_join(command, dml_manager, storage_manager)
+                if 'group_by' in command and command['group_by'] is not None:
+                    aggregate_info = command['columns'][1]
+                    match = re.search(r"(\w+)\((\w+)\)", aggregate_info)
+                    if match:
+                        aggregation_type = match.group(1).lower()
+                        aggregate_column = match.group(2)
+                        result = handle_group_by(result, command['group_by'], aggregate_column, aggregation_type)
+                    else:
+                        print("Error: Failed to parse aggregation details")
+                        return None  # Ensure to handle this case properly
+
+                    if result:
+                        print("Final aggregated results:", result)
+                        return result
+                    else:
+                        print("Error: No aggregated data found")
+                        return "Error: No result found or error occurred"
+    
+                    # else:
+                    #     print("Error: Failed to parse aggregation details")
+                    
                 elif 'order_by' in command and command['order_by'] is not None:  # Check if result is not None before using it
                     print("Debug: Result before select operation:", result)
                     order_direction = command.get('order_direction', 'ASC')
@@ -50,7 +73,6 @@ def execute_query(command):
         logging.error(f"Execution error: {e}")
         return f"Execution error: {e}"
 
-
 def apply_where_clause(data, where_clause):
     import operator
     ops = {
@@ -78,12 +100,6 @@ def apply_where_clause(data, where_clause):
         return True
 
     return [row for row in data if evaluate(row)]
-
-# def parse_condition(condition):
-#     import re
-#     pattern = r'(\w+\.\w+)\s*(<=|>=|<>|!=|<|>|=)\s*(\w+\.\w+)'
-#     match = re.search(pattern, condition)
-#     return match.group(1), match.group(2), match.group(3)
 
 def parse_condition(condition):
     import re
@@ -187,19 +203,38 @@ def handle_select(command, dml_manager):
     else:
         return dml_manager.select(command['main_table'], command['columns'], command['conditions'])
 
-def handle_group_by(data, group_by_clause):
-    # Handling logic for GROUP BY clause
-    print(f"EE Debug: Applying GROUP BY clause: {group_by_clause}")
+def handle_group_by(data, group_by_clause, aggregate_column, aggregation_type):
     grouped_data = {}
-    for group_key, group_rows in data.items():
-        # Extract the value of the group by column(s)
-        for row in group_rows:
-            group_key_value = row[group_by_clause.strip()]
-            if group_key not in grouped_data:
-                grouped_data[group_key_value] = []
-            # Add the row to the corresponding group
-            grouped_data[group_key_value].append(row)
-    return grouped_data
+    for row in data:
+        key = row.get(group_by_clause)
+        if key not in grouped_data:
+            grouped_data[key] = []
+        grouped_data[key].append(row)
+
+    aggregated_data = {}
+    for key, rows in grouped_data.items():
+        values = [safe_get_value(row, aggregate_column) for row in rows]
+        if aggregation_type == 'avg':
+            aggregated_value = sum(values) / len(values) if values else 0
+        elif aggregation_type == 'sum':
+            aggregated_value = sum(values)
+        elif aggregation_type == 'count':
+            aggregated_value = len(rows)
+        
+        aggregated_data[key] = aggregated_value
+
+    return aggregated_data
+
+def safe_get_value(row, column_name):
+    try:
+        # Convert the value to float before returning
+        return float(row[column_name])  # Use float in case the data has decimal points
+    except KeyError:
+        print(f"Error: Column {column_name} not found in row.")
+        return 0
+    except ValueError:
+        print(f"Error: Non-numeric data in {column_name}, cannot aggregate.")
+        return 0
 
 def handle_having(grouped_data, having_clause):
     print("EE ebug: Applying HAVING clause:", having_clause)
@@ -224,7 +259,6 @@ def handle_having(grouped_data, having_clause):
 
     return filtered_data
 
-
 def handle_order_by(data, order_by_clause, order_direction):
     # Check if data needs to be converted to numeric type before ordering
     if data:
@@ -246,7 +280,6 @@ def convert_to_numeric(data, field):
             except ValueError:
                 pass
     return data
-
 
 def check_data_type(data):
     # Check the data type of the first value in the dataset
@@ -306,7 +339,3 @@ def evaluate(condition, row1, row2):
     column2 = column2.strip()
     return row1[column1] == row2[column2]
 
-if __name__ == "__main__":
-    # Define a set of test cases to verify each type of SQL command
-    #print(execute_query({'type': 'insert', 'table': 'test_table', 'data': {'id': '8899', 'name': 'Earl'}}))
-    print(execute_query({'type': 'update', 'select_fields': [], 'tables': 'test_table', 'join_type': None, 'join_table': None, 'join_condition': None, 'where_condition': 'id = 798', 'values': {'name': 'Vera'}, 'aggregation': None}))
