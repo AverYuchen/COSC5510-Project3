@@ -35,9 +35,15 @@ class ExecutionEngine:
                 # If an aggregation function is found, handle the aggregation
                 return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
 
+        # if 'join' in command and command['join']:
+        #     for join in command['join']:
+        #         data = self.handle_join(data, join, main_table)
+        
         if 'join' in command and command['join']:
+            select_columns = command['columns']  # This assumes that columns are specified in command.
             for join in command['join']:
-                data = self.handle_join(data, join, main_table)
+                data = self.handle_join(data, join, main_table, select_columns)
+
 
         if 'group_by' in command and command['group_by']:
             data = self.handle_group_by(data, command['group_by'], command['columns'])
@@ -50,6 +56,32 @@ class ExecutionEngine:
             data = self.handle_having(data, command['having'])
 
         return data
+    
+    def filter_select_columns(self, data, select_columns):
+        filtered_data = []
+        for row in data:
+            filtered_row = {}
+            for col in select_columns:
+                try:
+                    table_alias, column_name = col.split('.')
+                    key = f"{table_alias}.{column_name}"
+                    if key in row:
+                        filtered_row[key] = row[key]
+                except ValueError:
+                    logging.error(f"Invalid column format: {col}")
+            filtered_data.append(filtered_row)
+        return filtered_data
+
+    def parse_join_condition(self, condition):
+        try:
+            left, _, right = condition.partition('=')
+            left_table, left_column = left.strip().split('.')
+            right_table, right_column = right.strip().split('.')
+            return (f"{left_table}.{left_column}", f"{right_table}.{right_column}")
+        except ValueError:
+            logging.error(f"Invalid join condition format: {condition}")
+            raise
+
 
     
     def parse_table_alias(self, table_expression):
@@ -58,7 +90,24 @@ class ExecutionEngine:
             return parts[0].strip(), parts[1].strip()
         return table_expression.strip(), table_expression.strip()
 
-    def handle_join(self, main_data, join, main_table):
+    # def handle_join(self, main_data, join, main_table):
+    #     main_table_name, main_alias = self.parse_table_alias(main_table)
+    #     join_table_name, join_alias = self.parse_table_alias(join['join_table'])
+    #     main_data = self.storage_manager.get_table_data(main_table_name)
+    #     join_data = self.storage_manager.get_table_data(join_table_name)
+    #     left_field, right_field = self.parse_join_condition(join['join_condition'])
+
+    #     join_type = join.get('join_type', 'INNER').upper()
+    #     method = {
+    #         'LEFT JOIN': self.left_join,
+    #         'RIGHT JOIN': self.right_join,
+    #         'INNER JOIN': self.inner_join,
+    #         'JOIN': self.inner_join  # Treat generic JOIN as INNER JOIN
+    #     }.get(join_type, self.unsupported_join)
+
+    #     return method(main_data, join_data, left_field, right_field, join_alias)    
+    
+    def handle_join(self, main_data, join, main_table, select_columns):
         main_table_name, main_alias = self.parse_table_alias(main_table)
         join_table_name, join_alias = self.parse_table_alias(join['join_table'])
         main_data = self.storage_manager.get_table_data(main_table_name)
@@ -73,13 +122,14 @@ class ExecutionEngine:
             'JOIN': self.inner_join  # Treat generic JOIN as INNER JOIN
         }.get(join_type, self.unsupported_join)
 
-        return method(main_data, join_data, left_field, right_field, join_alias)    
+        return method(main_data, join_data, left_field, right_field, join_alias, select_columns)
+
         
     def parse_join_condition(self, condition):
         left, _, right = condition.partition('=')
         return left.strip(), right.strip()
-
-    def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type):
+    
+    def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type, select_columns):
         joined_data = []
         for main_row in main_data:
             matched = False
@@ -88,71 +138,64 @@ class ExecutionEngine:
                 join_value = join_row.get(right_field.split('.')[-1])  # Get the field without alias
                 if main_value == join_value:
                     matched = True
-                    merged_row = {**main_row, **{f"{join_alias}.{k}": v for k, v in join_row.items()}}
+                    # Build the merged row based on selected columns only
+                    merged_row = {}
+                    for col in select_columns:
+                        table_alias, column_name = col.split('.')
+                        if table_alias == join_alias:
+                            # Use the join row if column belongs to the join table
+                            merged_row[col] = join_row.get(column_name)
+                        else:
+                            # Use the main row if column belongs to the main table
+                            merged_row[col] = main_row.get(column_name)
                     joined_data.append(merged_row)
-            if not matched and join_type in ['LEFT JOIN', 'RIGHT JOIN']:
-                null_row = {f"{join_alias}.{k}": None for k in join_data[0].keys()}
-                if join_type == 'LEFT JOIN':
-                    joined_data.append({**main_row, **null_row})
-                else:
-                    joined_data.append({**null_row, **join_row})
+            if not matched and join_type == 'LEFT JOIN':
+                # Handle LEFT JOIN specifics
+                null_row = {col: None for col in select_columns}
+                joined_data.append({**main_row, **null_row})
         return joined_data
 
-    def left_join(self, main_data, join_data, left_field, right_field, join_alias):
-        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN')
+    
+    def left_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
+        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN', select_columns)
 
-    def right_join(self, main_data, join_data, left_field, right_field, join_alias):
-        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'RIGHT JOIN')
+    def right_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
+        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'RIGHT JOIN', select_columns)
 
-    def inner_join(self, main_data, join_data, left_field, right_field, join_alias):
-        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN')
+    def inner_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
+        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN', select_columns)
+    
+    # def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type):
+    #     joined_data = []
+    #     for main_row in main_data:
+    #         matched = False
+    #         main_value = main_row.get(left_field.split('.')[-1])  # Get the field without alias
+    #         for join_row in join_data:
+    #             join_value = join_row.get(right_field.split('.')[-1])  # Get the field without alias
+    #             if main_value == join_value:
+    #                 matched = True
+    #                 merged_row = {**main_row, **{f"{join_alias}.{k}": v for k, v in join_row.items()}}
+    #                 joined_data.append(merged_row)
+    #         if not matched and join_type in ['LEFT JOIN', 'RIGHT JOIN']:
+    #             null_row = {f"{join_alias}.{k}": None for k in join_data[0].keys()}
+    #             if join_type == 'LEFT JOIN':
+    #                 joined_data.append({**main_row, **null_row})
+    #             else:
+    #                 joined_data.append({**null_row, **join_row})
+    #     return joined_data
+
+    # def left_join(self, main_data, join_data, left_field, right_field, join_alias):
+    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN')
+
+    # def right_join(self, main_data, join_data, left_field, right_field, join_alias):
+    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'RIGHT JOIN')
+
+    # def inner_join(self, main_data, join_data, left_field, right_field, join_alias):
+    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN')
 
     def unsupported_join(self, main_data, join_data, left_field, right_field, join_alias):
         logging.error("Unsupported join type")
         return main_data
-    
-    # def handle_aggregations(self, data, agg_func, column_name):
-    #     numeric_data = [float(row[column_name]) for row in data if column_name in row and row[column_name] is not None]
-
-    #     if agg_func == 'MAX':
-    #         return max(numeric_data)
-    #     elif agg_func == 'MIN':
-    #         return min(numeric_data)
-    #     elif agg_func == 'SUM':
-    #         return sum(numeric_data)
-    #     elif agg_func == 'AVG':
-    #         return sum(numeric_data) / len(numeric_data) if numeric_data else None
-    #     elif agg_func == 'COUNT':
-    #         return len(data)
-    #     else:
-    #         return None
-    
-    # def handle_aggregations(self, command, data_manager, conditions=None):
-    #     table = command['main_table']
-    #     column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
-    #     match = re.match(r'(\w+)\((\w+)\)', column)
-    #     if match:
-    #         agg_func, agg_column = match.groups()
-    #         data = data_manager.select(table, [agg_column], conditions)
-
-    #         # Perform the aggregation
-    #         if agg_func.upper() == 'MAX':
-    #             result = max(item[agg_column] for item in data if item[agg_column] is not None)
-    #         elif agg_func.upper() == 'MIN':
-    #             result = min(item[agg_column] for item in data if item[agg_column] is not None)
-    #         elif agg_func.upper() == 'SUM':
-    #             result = sum(item[agg_column] for item in data if item[agg_column] is not None)
-    #         elif agg_func.upper() == 'AVG':
-    #             values = [item[agg_column] for item in data if item[agg_column] is not None]
-    #             result = sum(values) / len(values) if values else None
-    #         elif agg_func.upper() == 'COUNT':
-    #             result = len([item for item in data if item[agg_column] is not None])
-    #         else:
-    #             return "Unsupported aggregation function"
-
-    #         return {column: result}
-
-    #     return "No valid aggregation found"
     
     def handle_aggregations(self, command, data_manager, conditions=None):
         table = command['main_table']
@@ -182,8 +225,6 @@ class ExecutionEngine:
             return {column: result}
 
         return "No valid aggregation found"
-
-
 
     def handle_order_by(self, data, order_by_clause):
         import re
