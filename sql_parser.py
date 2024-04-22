@@ -317,11 +317,12 @@ if __name__ == "__main__":
         # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a LEFT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a RIGHT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
-        # "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
+        "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
+        "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
+        "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
+        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
+        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A",
+        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
         

@@ -2,6 +2,7 @@
 
 from dml import DMLManager
 from ddl import DDLManager
+# from collections import defaultdict
 from storage import StorageManager
 import logging
 import re
@@ -23,25 +24,61 @@ class ExecutionEngine:
             logging.error(f"Execution error: {e}")
             return f"Execution error: {e}"
 
+    # def handle_select(self, command):
+    #     main_table = command['main_table']
+    #     data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
+        
+    #     if 'join' in command and command['join']:
+    #         for join in command['join']:
+    #             data = self.handle_join(data, join, main_table)
+        
+    #     if 'group_by' in command and command['group_by']:
+    #         data = self.handle_group_by(data, command['group_by'], command['columns'])
+    #         print("Data after grouping:", data)  # Debug output to verify structure
+        
+    #     if 'order_by' in command and command['order_by']:
+    #         data = self.handle_order_by(data, command['order_by'])
+
+    #     if 'having' in command and command['having']:
+    #         data = self.handle_having(data, command['having'])
+        
+        
+    #     # # Aggregation handling remains unchanged
+    #     # for col in command['columns']:
+    #     #     if any(agg in col.upper() for agg in ['MAX', 'MIN', 'SUM', 'COUNT', 'AVG']):
+    #     #         agg_match = re.match(r'(\w+)\((\w+)\)', col)
+    #     #         if agg_match:
+    #     #             agg_func, column_name = agg_match.groups()
+    #     #             data = [{col: self.handle_aggregations(data, agg_func.upper(), column_name)}]
+    #     #             break
+    #     return data
+    
     def handle_select(self, command):
         main_table = command['main_table']
         data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
         
+        # Check for the presence of any aggregation functions in the columns specification
+        if 'columns' in command and command['columns']:
+            if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
+                # If an aggregation function is found, handle the aggregation
+                return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
+
         if 'join' in command and command['join']:
             for join in command['join']:
                 data = self.handle_join(data, join, main_table)
 
-        # Aggregation handling remains unchanged
-        for col in command['columns']:
-            if any(agg in col.upper() for agg in ['MAX', 'MIN', 'SUM', 'COUNT', 'AVG']):
-                agg_match = re.match(r'(\w+)\((\w+)\)', col)
-                if agg_match:
-                    agg_func, column_name = agg_match.groups()
-                    data = [{col: self.handle_aggregations(data, agg_func.upper(), column_name)}]
-                    break
+        if 'group_by' in command and command['group_by']:
+            data = self.handle_group_by(data, command['group_by'], command['columns'])
+            print("Data after grouping:", data)
+
+        if 'order_by' in command and command['order_by']:
+            data = self.handle_order_by(data, command['order_by'])
+
+        if 'having' in command and command['having']:
+            data = self.handle_having(data, command['having'])
 
         return data
-    
+
     
     def parse_table_alias(self, table_expression):
         parts = table_expression.split(' AS ')
@@ -66,7 +103,6 @@ class ExecutionEngine:
 
         return method(main_data, join_data, left_field, right_field, join_alias)    
         
-
     def parse_join_condition(self, condition):
         left, _, right = condition.partition('=')
         return left.strip(), right.strip()
@@ -90,7 +126,6 @@ class ExecutionEngine:
                     joined_data.append({**null_row, **join_row})
         return joined_data
 
-
     def left_join(self, main_data, join_data, left_field, right_field, join_alias):
         return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN')
 
@@ -104,22 +139,64 @@ class ExecutionEngine:
         logging.error("Unsupported join type")
         return main_data
     
-    def handle_aggregations(self, data, agg_func, column_name):
-        numeric_data = [float(row[column_name]) for row in data if column_name in row and row[column_name] is not None]
+    # def handle_aggregations(self, data, agg_func, column_name):
+    #     numeric_data = [float(row[column_name]) for row in data if column_name in row and row[column_name] is not None]
 
-        if agg_func == 'MAX':
-            return max(numeric_data)
-        elif agg_func == 'MIN':
-            return min(numeric_data)
-        elif agg_func == 'SUM':
-            return sum(numeric_data)
-        elif agg_func == 'AVG':
-            return sum(numeric_data) / len(numeric_data) if numeric_data else None
-        elif agg_func == 'COUNT':
-            return len(data)
-        else:
-            return None
+    #     if agg_func == 'MAX':
+    #         return max(numeric_data)
+    #     elif agg_func == 'MIN':
+    #         return min(numeric_data)
+    #     elif agg_func == 'SUM':
+    #         return sum(numeric_data)
+    #     elif agg_func == 'AVG':
+    #         return sum(numeric_data) / len(numeric_data) if numeric_data else None
+    #     elif agg_func == 'COUNT':
+    #         return len(data)
+    #     else:
+    #         return None
     
+    def handle_aggregations(self, command, data_manager, conditions=None):
+        table = command['main_table']
+        column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
+        match = re.match(r'(\w+)\((\w+)\)', column)
+        if match:
+            agg_func, agg_column = match.groups()
+            data = data_manager.select(table, [agg_column], conditions)
+
+            # Perform the aggregation
+            if agg_func.upper() == 'MAX':
+                result = max(item[agg_column] for item in data if item[agg_column] is not None)
+            elif agg_func.upper() == 'MIN':
+                result = min(item[agg_column] for item in data if item[agg_column] is not None)
+            elif agg_func.upper() == 'SUM':
+                result = sum(item[agg_column] for item in data if item[agg_column] is not None)
+            elif agg_func.upper() == 'AVG':
+                values = [item[agg_column] for item in data if item[agg_column] is not None]
+                result = sum(values) / len(values) if values else None
+            elif agg_func.upper() == 'COUNT':
+                result = len([item for item in data if item[agg_column] is not None])
+            else:
+                return "Unsupported aggregation function"
+
+            return {column: result}
+
+        return "No valid aggregation found"
+
+
+    def handle_order_by(self, data, order_by_clause):
+        import re
+        column, order = re.split(r'\s+', order_by_clause)
+        reverse = (order.upper() == 'DESC')
+        return sorted(data, key=lambda x: x[column], reverse=reverse)
+
+    def handle_having(self, grouped_data, having_clause):
+        # Example simple HAVING clause handler; expand as needed
+        result = []
+        for item in grouped_data:
+            if eval(having_clause, {}, item):
+                result.append(item)
+        return result
+        
     def handle_insert(self, command):
         return self.dml_manager.insert(command['table'], command['data'])
 
@@ -137,6 +214,101 @@ class ExecutionEngine:
 
     def handle_unsupported(self, command):
         return "Unsupported command type"
+    
+    @staticmethod
+    def safe_convert_to_numeric(value):
+        try:
+            return float(value)
+        except ValueError:
+            try:
+                return int(value)
+            except ValueError:
+                logging.error(f"Conversion to numeric failed for value: {value}")
+                return None
+            
+    def handle_group_by(self, data, group_by_column, columns):
+        # Setup
+        grouped_data = {}
+        agg_funcs = {}
+        
+        # Parsing columns for aggregate functions and their intended aliases
+        for col in columns:
+            agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
+            if agg_match:
+                agg_func, column_name, alias = agg_match.groups()
+                agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
+
+        # Grouping data
+        for row in data:
+            key = row[group_by_column]
+            if key not in grouped_data:
+                grouped_data[key] = []
+            grouped_data[key].append(row)
+
+        # Applying aggregation
+        result = []
+        for key, rows in grouped_data.items():
+            aggregated_row = {group_by_column: key}
+            for column_name, (agg_func, alias) in agg_funcs.items():
+                column_values = [self.safe_convert_to_numeric(row[column_name]) for row in rows if column_name in row and row[column_name] is not None]
+                if column_values:
+                    if agg_func == 'AVG':
+                        aggregated_row[alias] = sum(column_values) / len(column_values)
+                    elif agg_func == 'SUM':
+                        aggregated_row[alias] = sum(column_values)
+                    elif agg_func == 'MAX':
+                        aggregated_row[alias] = max(column_values)
+                    elif agg_func == 'MIN':
+                        aggregated_row[alias] = min(column_values)
+                    elif agg_func == 'COUNT':
+                        aggregated_row[alias] = len(column_values)
+            result.append(aggregated_row)
+
+        return result
+
+
+
+    # def handle_group_by(self, data, group_by_column, columns):
+    #     # Initialize an empty dictionary to emulate defaultdict(list)
+    #     grouped_data = {}
+    #     agg_funcs = {}
+    #     for col in columns:
+    #         match = re.match(r'(\w+)\((\w+)\)', col)
+    #         if match:
+    #             agg_func, column_name = match.groups()
+    #             agg_funcs[column_name] = agg_func.upper()
+
+    #     # Group the data by the specified column
+    #     for row in data:
+    #         key = row[group_by_column]
+    #         if key not in grouped_data:
+    #             grouped_data[key] = []
+    #         grouped_data[key].append(row)
+
+    #     # Process grouped data
+    #     result = []
+    #     for key, rows in grouped_data.items():
+    #         aggregated_row = {group_by_column: key}
+    #         for column_name, agg_func in agg_funcs.items():
+    #             # Ensure values are converted properly
+    #             column_values = [ExecutionEngine.safe_convert_to_numeric(row[column_name]) 
+    #                              for row in rows if column_name in row and row[column_name] is not None]
+
+    #             if column_values:
+    #                 if agg_func == 'AVG':
+    #                     aggregated_row[column_name] = sum(column_values) / len(column_values)
+    #                 elif agg_func == 'SUM':
+    #                     aggregated_row[column_name] = sum(column_values)
+    #                 elif agg_func == 'MAX':
+    #                     aggregated_row[column_name] = max(column_values)
+    #                 elif agg_func == 'MIN':
+    #                     aggregated_row[column_name] = min(column_values)
+    #                 elif agg_func == 'COUNT':
+    #                     aggregated_row[column_name] = len(column_values)
+    #         result.append(aggregated_row)
+    #     return result
+                            
+
 
 # Example usage
 if __name__ == "__main__":
