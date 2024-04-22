@@ -430,3 +430,34 @@ class DMLManager:
             sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
             return sorted_data
         
+# if __name__ == "__main__":
+#     from storage import StorageManager
+
+#     storage_manager = StorageManager()
+#     dml_manager = DMLManager(storage_manager)
+
+#     queries = [
+#         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+#         "INSERT INTO test_table (id, name) VALUES (1, 'Hachii')",
+#         "DELETE FROM test_table WHERE id = 0",
+#         "SELECT MAX(monthly_state_population) FROM state_population",
+#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+#         "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code"
+#     ]
+
+#     # Mock responses for testing purposes
+#     for query in queries:
+#         if query.startswith("SELECT"):
+#             print("\nQuerying:", query)
+#             result = dml_manager.select(query)  # Simulate a select method
+#             print("Results:", result)
+#         elif query.startswith("INSERT"):
+#             print("\nInserting:", query)
+#             result = dml_manager.insert(query)  # Simulate an insert method
+#             print("Insertion Status:", result)
+#         elif query.startswith("DELETE"):
+#             print("\nDeleting:", query)
+#             result = dml_manager.delete(query)  # Simulate a delete method
+#             print("Deletion Status:", result)

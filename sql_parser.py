@@ -33,7 +33,6 @@ def parse_sql(sql):
 
     # Parsing logic based on type of SQL command
     if command_type == 'select':
-                
         return parse_select(sql)
 
     elif command_type == 'update':
@@ -79,18 +78,62 @@ def parse_sql(sql):
         if where_index != -1:
             parsed_details['where_condition'] = sql[where_index + 7:].strip()
         return parse_delete(sql)
+    
         
-    elif command_type == 'drop':
-        # Extract table name from the DROP TABLE command
-        table_name = tokens[2].strip()
-        return {'type': 'drop', 'table_name': table_name}
+    # More conditions here for other SQL types
+    # elif command_type == 'drop':
+    #     # Extract table name from the DROP TABLE command
+    #     table_name = tokens[2].strip()
+    #     return {'type': 'drop', 'table_name': table_name}
 
+    # elif command_type == 'create' and 'table' in tokens:
+    #     return parse_create_table(sql)
+        
+    elif command_type == 'create' and 'index' in tokens:
+        return parse_create_index(sql)
+    
+    elif command_type == 'drop' and 'index' in tokens:
+        return parse_drop_index(sql)
     elif command_type == 'create' and 'table' in tokens:
         return parse_create_table(sql)
+    elif command_type == 'drop' and 'table' in tokens:
+        table_name = tokens[2].strip()
+        return parse_drop_table(sql)
+    
+
     
     else:
         return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
-    
+
+
+def parse_create_index(sql):
+    # Updated regex to handle optional spaces more flexibly
+    match = re.match(r"CREATE INDEX\s+(\w+)\s+ON\s+(\w+)\s+\((\w+)\)", sql, re.I)
+    if match:
+        index_name, table_name, column_name = match.groups()
+        return {'type': 'CREATE_INDEX', 'index_name': index_name, 'table_name': table_name, 'column_name': column_name}
+    else:
+        return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
+
+def parse_drop_index(sql):
+    # Match the 'DROP INDEX index_name ON table_name;' pattern
+    match = re.match(r"DROP INDEX\s+(\w+)\s+ON\s+(\w+);", sql.strip(), re.I)
+    if match:
+        index_name, table_name = match.groups()
+        return {'type': 'DROP_INDEX', 'index_name': index_name, 'table_name': table_name}
+    else:
+        return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
+
+
+def parse_drop_table(sql):
+    match = re.match(r"DROP TABLE\s+(\w+);", sql, re.I)
+    if match:
+        table_name = match.group(1)
+        return {'type': 'DROP_TABLE', 'table_name': table_name}
+    else:
+        return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
+
+
 def parse_select(sql):
     logging.debug(f"Parsing SELECT SQL: {sql}")
     # Simplified and corrected regex pattern to handle SQL syntax variations
@@ -266,16 +309,16 @@ def parse_insert(sql):
         'data': data
     }
 
-def parse_drop(sql):
-    """Parses a DROP TABLE statement"""
-    pattern = r'\bDROP\s+TABLE\s+(\w+)\s+;?\b'
-    match = re.match(pattern, sql, re.IGNORECASE)
-    if not match:
-        return {'error': 'Invalid DROP TABLE syntax'}
-    return {
-        'type': 'drop',
-        'table': match.group(1)
-    }
+# def parse_drop_table(sql):
+#     """Parses a DROP TABLE statement"""
+#     pattern = r'\bDROP\s+TABLE\s+(\w+)\s+;?\b'
+#     match = re.match(pattern, sql, re.IGNORECASE)
+#     if not match:
+#         return {'error': 'Invalid DROP TABLE syntax'}
+#     return {
+#         'type': 'drop',
+#         'table': match.group(1)
+#     }
 
 def parse_delete(sql):
     """Parses a DELETE FROM SQL statement."""
@@ -317,14 +360,18 @@ if __name__ == "__main__":
         # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a LEFT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a RIGHT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-        "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
-        "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
-        "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
+        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
+        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
+        # "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
         # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
         # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A",
         # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
+        "CREATE INDEX index_id ON TestTable1 (A);",
+        "CREATE TABLE employees_7 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);",
+        "DROP TABLE employees_5;",
+        "DROP INDEX index_id ON TestTable1;"
         
     ]
 

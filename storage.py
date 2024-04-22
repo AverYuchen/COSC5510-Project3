@@ -289,21 +289,128 @@ class StorageManager:
             logging.error(f"update failed: {e}")
             return 0
 
+    def create_index(self, table_name, column_name, index_name):
+        """Create an index on a specific column of a table."""
+        schema = self.get_schema(table_name)
+        if not schema:
+            return "Error: Table does not exist."
+
+        # Check if column exists
+        if column_name not in schema['columns']:
+            return f"Error: Column '{column_name}' does not exist in table '{table_name}'."
+
+        # Check if index already exists
+        for index in schema['indexes']:
+            if index['name'] == index_name:
+                return f"Error: Index '{index_name}' already exists on table '{table_name}'."
+
+        # Add the index to schema
+        schema['indexes'].append({
+            'name': index_name,
+            'column': column_name
+        })
+
+        # Update the schema file
+        self.update_schema(table_name, schema)
+        return f"Index '{index_name}' created on '{table_name}({column_name})'."
+
+    def drop_index(self, table_name, index_name):
+        """Drop an index from a table."""
+        schema = self.get_schema(table_name)
+        if not schema:
+            return "Error: Table does not exist."
+
+        # Remove the index from schema
+        initial_length = len(schema['indexes'])
+        schema['indexes'] = [index for index in schema['indexes'] if index['name'] != index_name]
+
+        if len(schema['indexes']) == initial_length:
+            return f"Error: Index '{index_name}' does not exist on table '{table_name}'."
+
+        # Update the schema file
+        self.update_schema(table_name, schema)
+        return f"Index '{index_name}' dropped from '{table_name}'."
+
+    def update_schema(self, table_name, schema):
+        """Update the schema file after a change."""
+        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+        try:
+            with open(schema_file, 'w') as file:
+                json.dump(schema, file, indent=4)
+            self.schemas[table_name] = schema
+            return "Schema updated successfully."
+        except Exception as e:
+            logging.error(f"Failed to update schema for {table_name}: {e}")
+            return f"Error updating schema: {e}"
+
+    def table_exists(self, table_name):
+        """Check if the specified table exists in the database."""
+        exists = table_name in self.schemas
+        logging.debug(f"Checking if table exists ('{table_name}'): {exists}")
+        return exists
+
+    def column_exists(self, table_name, column_name):
+        """Check if the specified column exists in the specified table."""
+        if self.table_exists(table_name):
+            exists = column_name in self.schemas[table_name]['columns']
+            logging.debug(f"Checking if column exists ('{column_name}' in '{table_name}'): {exists}")
+            return exists
+        return False
+
+    def index_exists(self, table_name, index_name):
+        """Check if the specified index exists on the specified table."""
+        if self.table_exists(table_name):
+            # Assuming each index is stored as a dictionary in a list of indexes
+            exists = any(index['name'] == index_name for index in self.schemas[table_name].get('indexes', []))
+            logging.debug(f"Checking if index exists ('{index_name}' on '{table_name}'): {exists}")
+            return exists
+        return False
+
+    def update_index_metadata(self, table_name, index_name, column_name=None, action="create"):
+        """Update metadata for an index based on the action (create or drop)."""
+        if action == "create":
+            if 'indexes' not in self.schemas[table_name]:
+                self.schemas[table_name]['indexes'] = []
+            self.schemas[table_name]['indexes'].append({'name': index_name, 'column': column_name})
+            logging.debug(f"Index '{index_name}' created on '{table_name}({column_name})'")
+        elif action == "drop":
+            if self.index_exists(table_name, index_name):
+                self.schemas[table_name]['indexes'] = [idx for idx in self.schemas[table_name]['indexes'] if idx['name'] != index_name]
+                logging.debug(f"Index '{index_name}' dropped from '{table_name}'")
+                
+    def print_index_info(self, table_name):
+        """Prints information about indexes on a specified table."""
+        if self.table_exists(table_name):
+            indexes = self.schemas[table_name].get('indexes', [])
+            if indexes:
+                print(f"Indexes on table '{table_name}':")
+                for index in indexes:
+                    print(f"  Index Name: {index['name']}, Column: {index['column']}")
+            else:
+                print(f"No indexes found on table '{table_name}'.")
+        else:
+            print(f"Table '{table_name}' does not exist.")
+    
 if __name__ == "__main__":
-    storage = StorageManager()
+    # storage = StorageManager()
     
-    # Check the loaded schemas
-    print("Schemas Loaded:")
-    for table_name, schema in storage.schemas.items():
-        print(f"{table_name}: {schema}")
+    # # Check the loaded schemas
+    # print("Schemas Loaded:")
+    # for table_name, schema in storage.schemas.items():
+    #     print(f"{table_name}: {schema}")
     
-    # Attempt to read from the tables
-    print("\nSample Data from state_abbreviation:")
-    if 'state_abbreviation' in storage.data:
-        for row in storage.data['state_abbreviation'][:5]:  # display up to 5 records
-            print(row)
+    # # Attempt to read from the tables
+    # print("\nSample Data from state_abbreviation:")
+    # if 'state_abbreviation' in storage.data:
+    #     for row in storage.data['state_abbreviation'][:5]:  # display up to 5 records
+    #         print(row)
     
-    print("\nSample Data from state_population:")
-    if 'state_population' in storage.data:
-        for row in storage.data['state_population'][:5]:
-            print(row)
+    # print("\nSample Data from state_population:")
+    # if 'state_population' in storage.data:
+    #     for row in storage.data['state_population'][:5]:
+    #         print(row)
+        
+    # Usage
+    storage_manager = StorageManager()
+    # Assuming some indexes have been created
+    storage_manager.print_index_info('TestTable1')

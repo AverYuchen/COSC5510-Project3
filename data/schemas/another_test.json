@@ -1,1 +1,0 @@
-{"columns": {"id": {"type": "INT"}, "name": {"type": "VARCHAR(50)"}}, "primary_key": ["name"], "foreign_keys": [], "indexes": ["name"]}

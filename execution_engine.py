@@ -16,14 +16,22 @@ class ExecutionEngine:
         self.dml_manager = DMLManager(self.storage_manager)
         self.ddl_manager = DDLManager()
 
+    # def execute_query(self, command):
+    #     try:
+    #         handler = getattr(self, f"handle_{command['type']}", self.handle_unsupported)
+    #         return handler(command)
+    #     except Exception as e:
+    #         logging.error(f"Execution error: {e}")
+    #         return f"Execution error: {e}"
+
     def execute_query(self, command):
         try:
-            handler = getattr(self, f"handle_{command['type']}", self.handle_unsupported)
+            # Mapping command types to handler functions
+            handler = getattr(self, f"handle_{command['type'].lower()}", self.handle_unsupported)
             return handler(command)
         except Exception as e:
             logging.error(f"Execution error: {e}")
             return f"Execution error: {e}"
-
 
     def handle_select(self, command):
         main_table = command['main_table']
@@ -34,10 +42,6 @@ class ExecutionEngine:
             if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
                 # If an aggregation function is found, handle the aggregation
                 return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
-
-        # if 'join' in command and command['join']:
-        #     for join in command['join']:
-        #         data = self.handle_join(data, join, main_table)
         
         if 'join' in command and command['join']:
             select_columns = command['columns']  # This assumes that columns are specified in command.
@@ -81,31 +85,12 @@ class ExecutionEngine:
         except ValueError:
             logging.error(f"Invalid join condition format: {condition}")
             raise
-
-
-    
+        
     def parse_table_alias(self, table_expression):
         parts = table_expression.split(' AS ')
         if len(parts) == 2:
             return parts[0].strip(), parts[1].strip()
         return table_expression.strip(), table_expression.strip()
-
-    # def handle_join(self, main_data, join, main_table):
-    #     main_table_name, main_alias = self.parse_table_alias(main_table)
-    #     join_table_name, join_alias = self.parse_table_alias(join['join_table'])
-    #     main_data = self.storage_manager.get_table_data(main_table_name)
-    #     join_data = self.storage_manager.get_table_data(join_table_name)
-    #     left_field, right_field = self.parse_join_condition(join['join_condition'])
-
-    #     join_type = join.get('join_type', 'INNER').upper()
-    #     method = {
-    #         'LEFT JOIN': self.left_join,
-    #         'RIGHT JOIN': self.right_join,
-    #         'INNER JOIN': self.inner_join,
-    #         'JOIN': self.inner_join  # Treat generic JOIN as INNER JOIN
-    #     }.get(join_type, self.unsupported_join)
-
-    #     return method(main_data, join_data, left_field, right_field, join_alias)    
     
     def handle_join(self, main_data, join, main_table, select_columns):
         main_table_name, main_alias = self.parse_table_alias(main_table)
@@ -123,7 +108,6 @@ class ExecutionEngine:
         }.get(join_type, self.unsupported_join)
 
         return method(main_data, join_data, left_field, right_field, join_alias, select_columns)
-
         
     def parse_join_condition(self, condition):
         left, _, right = condition.partition('=')
@@ -155,7 +139,6 @@ class ExecutionEngine:
                 joined_data.append({**main_row, **null_row})
         return joined_data
 
-    
     def left_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
         return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN', select_columns)
 
@@ -165,34 +148,6 @@ class ExecutionEngine:
     def inner_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
         return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN', select_columns)
     
-    # def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type):
-    #     joined_data = []
-    #     for main_row in main_data:
-    #         matched = False
-    #         main_value = main_row.get(left_field.split('.')[-1])  # Get the field without alias
-    #         for join_row in join_data:
-    #             join_value = join_row.get(right_field.split('.')[-1])  # Get the field without alias
-    #             if main_value == join_value:
-    #                 matched = True
-    #                 merged_row = {**main_row, **{f"{join_alias}.{k}": v for k, v in join_row.items()}}
-    #                 joined_data.append(merged_row)
-    #         if not matched and join_type in ['LEFT JOIN', 'RIGHT JOIN']:
-    #             null_row = {f"{join_alias}.{k}": None for k in join_data[0].keys()}
-    #             if join_type == 'LEFT JOIN':
-    #                 joined_data.append({**main_row, **null_row})
-    #             else:
-    #                 joined_data.append({**null_row, **join_row})
-    #     return joined_data
-
-    # def left_join(self, main_data, join_data, left_field, right_field, join_alias):
-    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'LEFT JOIN')
-
-    # def right_join(self, main_data, join_data, left_field, right_field, join_alias):
-    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'RIGHT JOIN')
-
-    # def inner_join(self, main_data, join_data, left_field, right_field, join_alias):
-    #     return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN')
-
     def unsupported_join(self, main_data, join_data, left_field, right_field, join_alias):
         logging.error("Unsupported join type")
         return main_data
@@ -257,7 +212,7 @@ class ExecutionEngine:
 
     def handle_unsupported(self, command):
         return "Unsupported command type"
-    
+        
     @staticmethod
     def safe_convert_to_numeric(value):
         try:
@@ -308,74 +263,55 @@ class ExecutionEngine:
             result.append(aggregated_row)
 
         return result
+    
+    def handle_create_index(self, command):
+        """Handle the creation of an index."""
+        try:
+            # Assuming DDLManager can handle index creation
+            return self.ddl_manager.create_index(command['table_name'], command['column_name'], command['index_name'])
+        except Exception as e:
+            logging.error(f"Error creating index: {e}")
+            return f"Error creating index: {e}"
 
-
-
-    # def handle_group_by(self, data, group_by_column, columns):
-    #     # Initialize an empty dictionary to emulate defaultdict(list)
-    #     grouped_data = {}
-    #     agg_funcs = {}
-    #     for col in columns:
-    #         match = re.match(r'(\w+)\((\w+)\)', col)
-    #         if match:
-    #             agg_func, column_name = match.groups()
-    #             agg_funcs[column_name] = agg_func.upper()
-
-    #     # Group the data by the specified column
-    #     for row in data:
-    #         key = row[group_by_column]
-    #         if key not in grouped_data:
-    #             grouped_data[key] = []
-    #         grouped_data[key].append(row)
-
-    #     # Process grouped data
-    #     result = []
-    #     for key, rows in grouped_data.items():
-    #         aggregated_row = {group_by_column: key}
-    #         for column_name, agg_func in agg_funcs.items():
-    #             # Ensure values are converted properly
-    #             column_values = [ExecutionEngine.safe_convert_to_numeric(row[column_name]) 
-    #                              for row in rows if column_name in row and row[column_name] is not None]
-
-    #             if column_values:
-    #                 if agg_func == 'AVG':
-    #                     aggregated_row[column_name] = sum(column_values) / len(column_values)
-    #                 elif agg_func == 'SUM':
-    #                     aggregated_row[column_name] = sum(column_values)
-    #                 elif agg_func == 'MAX':
-    #                     aggregated_row[column_name] = max(column_values)
-    #                 elif agg_func == 'MIN':
-    #                     aggregated_row[column_name] = min(column_values)
-    #                 elif agg_func == 'COUNT':
-    #                     aggregated_row[column_name] = len(column_values)
-    #         result.append(aggregated_row)
-    #     return result
-                            
+    def handle_drop_index(self, command):
+        """Handle the dropping of an index."""
+        try:
+            # Assuming DDLManager can handle index dropping
+            return self.ddl_manager.drop_index(command['table_name'], command['index_name'])
+        except Exception as e:
+            logging.error(f"Error dropping index: {e}")
+            return f"Error dropping index: {e}"
 
 
 # Example usage
 if __name__ == "__main__":
     engine = ExecutionEngine()
     
-    command_1 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    command_2 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
-    command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    # command_1 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    # command_2 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
+    # command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
     # command_5 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'monthly_state_population'], 'join': [], 'where_clause': None, 'group_by': None, 'order_by': 'monthly_state_population ASC', 'having': None}
     # command_6 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'monthly_state_population'], 'join': [], 'where_clause': None, 'group_by': None, 'order_by': 'monthly_state_population DESC', 'having': None}
     
-    print(command_1)
-    print(engine.execute_query(command_1))
-    print(command_2)
-    print(engine.execute_query(command_2))
-    print(command_3)
-    print(engine.execute_query(command_3))
-    print(command_4)
-    print(engine.execute_query(command_4))
-    # print(command_5)
-    # print(engine.execute_query(command_5))
-    # print(command_6)
-    # print(engine.execute_query(command_6))
+    command_5 = {'type': 'DROP_INDEX', 'index_name': 'index_id', 'table_name': 'TestTable1'}
+    command_6 = {'type': 'CREATE_INDEX', 'index_name': 'index_id', 'table_name': 'TestTable1', 'column_name': 'A'}
+
+
+    # print(command_1)
+    # print(engine.execute_query(command_1))
+    # print(command_2)
+    # print(engine.execute_query(command_2))
+    # print(command_3)
+    # print(engine.execute_query(command_3))
+    # print(command_4)
+    # print(engine.execute_query(command_4))
+    
+    
+    print(command_5)
+    print(engine.execute_query(command_5))
+    print(command_6)
+    print(engine.execute_query(command_6))
 
 
     

@@ -20,7 +20,7 @@ SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
 
 <INSERT>
 
-INSERT INTO test_table (id, name) VALUES (2, 'Hachii')
+INSERT INTO test_table (id, name) VALUES (485, 'Hachii')
 
 <DELETE>
 
@@ -40,15 +40,14 @@ SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbrevi
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
-SELECT * FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
 
 
 <CREATE>
-CREATE TABLE employees_3 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+CREATE TABLE employees_2 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
 <INSERT: successful>
 
-INSERT INTO test_table (id, name) VALUES (5, 'Ellen');
+INSERT INTO test_table (id, name) VALUES (1, 'Ellen');
 
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
@@ -58,7 +57,7 @@ INSERT INTO test_table (id, name) VALUES (798, 'Yelia');
 INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
 
 <DELETE>
-DELETE FROM test_table WHERE id = 173
+DELETE FROM test_table WHERE id = 1
 
 <UPDATE: successful> - BREAK
 UPDATE test_table SET name = 'Vera' WHERE id = 798; 
@@ -74,7 +73,6 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC
 
-
 <GROUP BY>
 
 SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
@@ -88,4 +86,8 @@ SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP B
 <HAVING> - NOT DONE
 
 SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
+
+<INDEX>
+CREATE INDEX index_id ON TestTable1 (A);
+DROP INDEX index_id ON TestTable1;
 
