@@ -97,7 +97,6 @@ def parse_sql(sql):
     elif command_type == 'create' and 'table' in tokens:
         return parse_create_table(sql)
     elif command_type == 'drop' and 'table' in tokens:
-        table_name = tokens[2].strip()
         return parse_drop_table(sql)
     
 
@@ -135,7 +134,7 @@ def parse_drop_index(sql):
 
 
 def parse_drop_table(sql):
-    match = re.match(r"DROP TABLE\s+(\w+);", sql, re.I)
+    match = re.match(r"DROP TABLE\s+(\w+)\;", sql, re.I)
     if match:
         table_name = match.group(1)
         return {'type': 'DROP_TABLE', 'table_name': table_name}
@@ -318,16 +317,6 @@ def parse_insert(sql):
         'data': data
     }
 
-# def parse_drop_table(sql):
-#     """Parses a DROP TABLE statement"""
-#     pattern = r'\bDROP\s+TABLE\s+(\w+)\s+;?\b'
-#     match = re.match(pattern, sql, re.IGNORECASE)
-#     if not match:
-#         return {'error': 'Invalid DROP TABLE syntax'}
-#     return {
-#         'type': 'drop',
-#         'table': match.group(1)
-#     }
 
 def parse_delete(sql):
     """Parses a DELETE FROM SQL statement."""
@@ -377,10 +366,11 @@ if __name__ == "__main__":
         # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
-        "CREATE INDEX index_id ON TestTable1 (A);",
+        #"CREATE INDEX index_id ON TestTable1 (A);",
         # "CREATE TABLE employees_7 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);",
         # "DROP TABLE employees_5;",
-        "DROP INDEX index_id ON TestTable1;"
+        #"DROP INDEX index_id ON TestTable1;"
+        "DROP TABLE test_table;"
         
     ]
 
