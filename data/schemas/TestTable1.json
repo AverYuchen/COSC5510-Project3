@@ -11,10 +11,5 @@
         "A"
     ],
     "foreign_keys": [],
-    "indexes": [
-        {
-            "name": "index_id",
-            "column": "A"
-        }
-    ]
+    "indexes": []
 }

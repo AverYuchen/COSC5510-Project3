@@ -115,6 +115,15 @@ def parse_create_index(sql):
     else:
         return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
 
+def parse_create_index_statement(statement):
+    # Example parsing logic; needs a real parser for robustness
+    tokens = statement.split()
+    index_name = tokens[2]
+    table_name = tokens[4]
+    column_name = tokens[5].strip('();')
+    return index_name, table_name, column_name
+
+
 def parse_drop_index(sql):
     # Match the 'DROP INDEX index_name ON table_name;' pattern
     match = re.match(r"DROP INDEX\s+(\w+)\s+ON\s+(\w+);", sql.strip(), re.I)
@@ -369,8 +378,8 @@ if __name__ == "__main__":
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
         "CREATE INDEX index_id ON TestTable1 (A);",
-        "CREATE TABLE employees_7 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);",
-        "DROP TABLE employees_5;",
+        # "CREATE TABLE employees_7 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);",
+        # "DROP TABLE employees_5;",
         "DROP INDEX index_id ON TestTable1;"
         
     ]

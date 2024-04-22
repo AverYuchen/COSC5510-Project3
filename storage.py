@@ -4,7 +4,10 @@ import csv
 import json
 import os
 import logging
+from BTrees.OOBTree import BTree
 import unittest
+
+# conda install blist
 
 class StorageManager:
     def __init__(self, data_directory="data"):
@@ -17,9 +20,11 @@ class StorageManager:
                     os.makedirs(self.schema_directory)
             self.schemas = {}
             self.data = {}
+            self.indexes = {}  # Dictionary to hold BTree indexes for each table
             self.define_schemas()
             self.load_schemas()
             self.load_all_data()
+            # self.initialize_indexes()
             
     def define_schemas(self):
         # Manually defining schemas for each table
@@ -289,30 +294,42 @@ class StorageManager:
             logging.error(f"update failed: {e}")
             return 0
 
+    # def create_index(self, table_name, column_name, index_name):
+    #     index_key = (table_name, column_name)
+    #     if index_key not in self.indexes:
+    #         self.indexes[index_key] = BTree()
+    #     for row in self.data[table_name]:
+    #         key = row[column_name]
+    #         self.indexes[index_key].insert(key, row)
+    #     print(f"Index {index_name} created on {table_name}({column_name})")
+    
+
     def create_index(self, table_name, column_name, index_name):
-        """Create an index on a specific column of a table."""
-        schema = self.get_schema(table_name)
-        if not schema:
-            return "Error: Table does not exist."
+        # Construct the index key based on table, column names and index name for unique identification
+        index_key = (table_name, column_name, index_name)
+        
+        # Check if an index with the same name already exists
+        if index_key in self.indexes:
+            return "Error: Index {} already exists on {}({}).".format(index_name, table_name, column_name)
+        
+        # Create a new BTree for the index if it does not exist
+        self.indexes[index_key] = BTree()
 
-        # Check if column exists
-        if column_name not in schema['columns']:
-            return f"Error: Column '{column_name}' does not exist in table '{table_name}'."
+        # Iterate through each row in the table data and populate the BTree
+        for row in self.data.get(table_name, []):
+            # Extract the key from the specified column
+            key = row[column_name]
 
-        # Check if index already exists
-        for index in schema['indexes']:
-            if index['name'] == index_name:
-                return f"Error: Index '{index_name}' already exists on table '{table_name}'."
+            # If the key already exists in the index, append the row to the existing list
+            if key in self.indexes[index_key]:
+                self.indexes[index_key][key].append(row)
+            else:
+                # Otherwise, create a new entry in the BTree with this key and initialize with a list
+                self.indexes[index_key][key] = [row]
 
-        # Add the index to schema
-        schema['indexes'].append({
-            'name': index_name,
-            'column': column_name
-        })
-
-        # Update the schema file
-        self.update_schema(table_name, schema)
-        return f"Index '{index_name}' created on '{table_name}({column_name})'."
+        # Print a confirmation message indicating successful index creation
+        print(f"Index {index_name} created on {table_name}({column_name})")
+        return "Index {} created on {}({}).".format(index_name, table_name, column_name)
 
     def drop_index(self, table_name, index_name):
         """Drop an index from a table."""
@@ -391,26 +408,48 @@ class StorageManager:
         else:
             print(f"Table '{table_name}' does not exist.")
     
-if __name__ == "__main__":
-    # storage = StorageManager()
-    
-    # # Check the loaded schemas
-    # print("Schemas Loaded:")
-    # for table_name, schema in storage.schemas.items():
-    #     print(f"{table_name}: {schema}")
-    
-    # # Attempt to read from the tables
-    # print("\nSample Data from state_abbreviation:")
-    # if 'state_abbreviation' in storage.data:
-    #     for row in storage.data['state_abbreviation'][:5]:  # display up to 5 records
-    #         print(row)
-    
-    # print("\nSample Data from state_population:")
-    # if 'state_population' in storage.data:
-    #     for row in storage.data['state_population'][:5]:
-    #         print(row)
+    # def initialize_indexes(self):
+    #     for table, schema in self.schemas.items():
+    #         if 'indexes' in schema:
+    #             for index in schema['indexes']:
+    #                 self.indexes[(table, index)] = BTree()
+                    
+class TestStorageManager(unittest.TestCase):
+    def setUp(self):
+        # Initialize the StorageManager with a specific data set
+        self.storage_manager = StorageManager(data_directory="test_data")
+        self.storage_manager.data = {
+            'TestTable1': [
+                {'A': '1', 'B': 'Alpha'},
+                {'A': '2', 'B': 'Beta'},
+                {'A': '3', 'B': 'Gamma'}
+            ]
+        }
+        # Define schema for simplicity in the test environment
+        self.storage_manager.schemas['TestTable1'] = {
+            "columns": { "A": { "type": "int" }, "B": { "type": "varchar" } },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+        }
+
+    def test_create_index(self):
+        # Test the creation of an index
+        self.storage_manager.create_index('TestTable1', 'A', 'index_A')
+        index_key = ('TestTable1', 'A')
         
-    # Usage
-    storage_manager = StorageManager()
-    # Assuming some indexes have been created
-    storage_manager.print_index_info('TestTable1')
+        # Verify that the index exists
+        self.assertIn(index_key, self.storage_manager.indexes)
+        
+        # Verify the content of the index
+        btree = self.storage_manager.indexes[index_key]
+        expected_keys = ['1', '2', '3']
+        for key in expected_keys:
+            self.assertIn(key, btree)
+
+        # Verify that the values are correct (can be extended based on data integrity needs)
+        for row in self.storage_manager.data['TestTable1']:
+            self.assertEqual(btree[row['A']], row)
+
+if __name__ == '__main__':
+    unittest.main()

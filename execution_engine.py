@@ -201,12 +201,6 @@ class ExecutionEngine:
     def handle_delete(self, command):
         return self.dml_manager.delete(command['table'], command['conditions'])
 
-    def handle_create(self, command):
-        return self.ddl_manager.create_table(command['table_name'], command['columns'])
-
-    def handle_drop(self, command):
-        return self.ddl_manager.drop_table(command['table_name'])
-
     def handle_update(self, command):
         return self.dml_manager.update(command['tables'], command['values'], command['where_condition'])
 
@@ -264,24 +258,47 @@ class ExecutionEngine:
 
         return result
     
+    # def handle_create_index(self, command):
+    #     """Handle the creation of an index."""
+    #     try:
+    #         # Assuming DDLManager can handle index creation
+    #         return self.ddl_manager.create_index(command['table_name'], command['column_name'], command['index_name'])
+    #     except Exception as e:
+    #         logging.error(f"Error creating index: {e}")
+    #         return f"Error creating index: {e}"
+    
+    def handle_create(self, command):
+        return self.ddl_manager.create_table(command['table_name'], command['columns'])
+
+    def handle_drop(self, command):
+        return self.ddl_manager.drop_table(command['table_name'])
+    
     def handle_create_index(self, command):
         """Handle the creation of an index."""
         try:
-            # Assuming DDLManager can handle index creation
-            return self.ddl_manager.create_index(command['table_name'], command['column_name'], command['index_name'])
+            index_name = command['index_name']
+            table_name = command['table_name']
+            column_name = command['column_name']
+            return self.execute_create_index(index_name, table_name, column_name)
         except Exception as e:
             logging.error(f"Error creating index: {e}")
             return f"Error creating index: {e}"
 
+    def execute_create_index(self, index_name, table_name, column_name):
+        """Executes index creation in the storage manager."""
+        if not self.storage_manager.table_exists(table_name):
+            return "Error: Table does not exist."
+        if not self.storage_manager.column_exists(table_name, column_name):
+            return "Error: Column does not exist."
+        return self.storage_manager.create_index(table_name, column_name, index_name)
+    
     def handle_drop_index(self, command):
         """Handle the dropping of an index."""
         try:
-            # Assuming DDLManager can handle index dropping
             return self.ddl_manager.drop_index(command['table_name'], command['index_name'])
         except Exception as e:
             logging.error(f"Error dropping index: {e}")
             return f"Error dropping index: {e}"
-
 
 # Example usage
 if __name__ == "__main__":
