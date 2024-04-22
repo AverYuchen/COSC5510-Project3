@@ -46,7 +46,8 @@ SELECT * FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
 <CREATE>
 CREATE TABLE employees_3 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
-<INSERT: successful>
+<INSERT: successful>SELECT SUM(monthly_state_population) FROM state_population
+
 INSERT INTO test_table (id, name) VALUES (5, 'Ellen');
 
 <INSERT: fail due to primary key confliction>

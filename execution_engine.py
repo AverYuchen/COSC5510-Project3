@@ -24,35 +24,7 @@ class ExecutionEngine:
             logging.error(f"Execution error: {e}")
             return f"Execution error: {e}"
 
-    # def handle_select(self, command):
-    #     main_table = command['main_table']
-    #     data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
-        
-    #     if 'join' in command and command['join']:
-    #         for join in command['join']:
-    #             data = self.handle_join(data, join, main_table)
-        
-    #     if 'group_by' in command and command['group_by']:
-    #         data = self.handle_group_by(data, command['group_by'], command['columns'])
-    #         print("Data after grouping:", data)  # Debug output to verify structure
-        
-    #     if 'order_by' in command and command['order_by']:
-    #         data = self.handle_order_by(data, command['order_by'])
 
-    #     if 'having' in command and command['having']:
-    #         data = self.handle_having(data, command['having'])
-        
-        
-    #     # # Aggregation handling remains unchanged
-    #     # for col in command['columns']:
-    #     #     if any(agg in col.upper() for agg in ['MAX', 'MIN', 'SUM', 'COUNT', 'AVG']):
-    #     #         agg_match = re.match(r'(\w+)\((\w+)\)', col)
-    #     #         if agg_match:
-    #     #             agg_func, column_name = agg_match.groups()
-    #     #             data = [{col: self.handle_aggregations(data, agg_func.upper(), column_name)}]
-    #     #             break
-    #     return data
-    
     def handle_select(self, command):
         main_table = command['main_table']
         data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
@@ -155,6 +127,33 @@ class ExecutionEngine:
     #     else:
     #         return None
     
+    # def handle_aggregations(self, command, data_manager, conditions=None):
+    #     table = command['main_table']
+    #     column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
+    #     match = re.match(r'(\w+)\((\w+)\)', column)
+    #     if match:
+    #         agg_func, agg_column = match.groups()
+    #         data = data_manager.select(table, [agg_column], conditions)
+
+    #         # Perform the aggregation
+    #         if agg_func.upper() == 'MAX':
+    #             result = max(item[agg_column] for item in data if item[agg_column] is not None)
+    #         elif agg_func.upper() == 'MIN':
+    #             result = min(item[agg_column] for item in data if item[agg_column] is not None)
+    #         elif agg_func.upper() == 'SUM':
+    #             result = sum(item[agg_column] for item in data if item[agg_column] is not None)
+    #         elif agg_func.upper() == 'AVG':
+    #             values = [item[agg_column] for item in data if item[agg_column] is not None]
+    #             result = sum(values) / len(values) if values else None
+    #         elif agg_func.upper() == 'COUNT':
+    #             result = len([item for item in data if item[agg_column] is not None])
+    #         else:
+    #             return "Unsupported aggregation function"
+
+    #         return {column: result}
+
+    #     return "No valid aggregation found"
+    
     def handle_aggregations(self, command, data_manager, conditions=None):
         table = command['main_table']
         column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
@@ -163,24 +162,27 @@ class ExecutionEngine:
             agg_func, agg_column = match.groups()
             data = data_manager.select(table, [agg_column], conditions)
 
+            # Convert data to numeric values
+            numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
+
             # Perform the aggregation
             if agg_func.upper() == 'MAX':
-                result = max(item[agg_column] for item in data if item[agg_column] is not None)
+                result = max(numeric_data)
             elif agg_func.upper() == 'MIN':
-                result = min(item[agg_column] for item in data if item[agg_column] is not None)
+                result = min(numeric_data)
             elif agg_func.upper() == 'SUM':
-                result = sum(item[agg_column] for item in data if item[agg_column] is not None)
+                result = sum(numeric_data)
             elif agg_func.upper() == 'AVG':
-                values = [item[agg_column] for item in data if item[agg_column] is not None]
-                result = sum(values) / len(values) if values else None
+                result = sum(numeric_data) / len(numeric_data) if numeric_data else None
             elif agg_func.upper() == 'COUNT':
-                result = len([item for item in data if item[agg_column] is not None])
+                result = len(numeric_data)
             else:
                 return "Unsupported aggregation function"
 
             return {column: result}
 
         return "No valid aggregation found"
+
 
 
     def handle_order_by(self, data, order_by_clause):
