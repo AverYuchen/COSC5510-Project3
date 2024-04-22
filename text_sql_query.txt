@@ -2,6 +2,7 @@
 
 SELECT state FROM state_abbreviation
 SELECT * FROM state_abbreviation
+SELECT * FROM Reli11000
 
 <WHERE>
 
@@ -19,11 +20,11 @@ SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
 
 <INSERT>
 
-INSERT INTO test_table (id, name) VALUES (1, 'Hachii')
+INSERT INTO test_table (id, name) VALUES (2, 'Hachii')
 
 <DELETE>
 
-DELETE FROM test_table WHERE id = 0
+DELETE FROM test_table WHERE id = 2
 
 <MAX, MIN, SUM, AVG, COUNT> 
 SELECT MAX(monthly_state_population) FROM state_population
@@ -35,12 +36,17 @@ SELECT COUNT(monthly_state_population) FROM state_population
 <JOIN>
 
 SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
+SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code
+SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A
+SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A
+SELECT t1.A, t2.A FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
+
 
 <CREATE>
-CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+CREATE TABLE employees_3 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
 <INSERT: successful>
-INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
+INSERT INTO test_table (id, name) VALUES (5, 'Ellen');
 
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
@@ -54,6 +60,8 @@ DELETE FROM test_table WHERE id = 173
 
 <UPDATE: successful>
 UPDATE test_table SET name = 'Vera' WHERE id = 798; 
+
+UPDATE test_table SET name = 'test' WHERE id = 1;
 
 <UPDATE: fail due to invalid datatype>
 UPDATE employees SET salary = 'test' WHERE id = 1;

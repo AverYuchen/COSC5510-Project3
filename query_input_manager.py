@@ -1,5 +1,7 @@
-from execution_engine import execute_query
+from execution_engine import ExecutionEngine
 from sql_parser import parse_sql
+
+engine = ExecutionEngine()
 
 def handle_input(user_input):
     print(f"Query_Input_debug: {user_input}")  # Log input SQL for debugging
@@ -8,7 +10,7 @@ def handle_input(user_input):
     if command:
         if 'error' in command:
             return None, command['error']  # Return None for result, error message for error
-        result = execute_query(command)
+        result = engine.execute_query(command)
         if result is None:
             return None, "No result found or error occurred"
         return result, None  # Return result, None for error

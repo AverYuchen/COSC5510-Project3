@@ -192,28 +192,6 @@ class DMLManager:
         if isinstance(value, str):
             return value.strip().replace("‘", "'").replace("’", "'").replace("’", "'").replace("’", "'")
         return value
-    
-    # def select(self, table_name, columns, conditions):
-    #     data = self.storage_manager.get_table_data(table_name)
-    #     print(f"Debug DML: Data retrieved from {table_name}: {data}") 
-    #     filtered_data = []
-
-    #     if conditions:
-    #         condition_function = self.parse_conditions(conditions)
-    #         filtered_data = [d for d in data if condition_function(d)]
-    #     else:
-    #         filtered_data = data  # No conditions specified, select all data
-
-    #     if columns is not None:
-    #         if "*" in columns:
-    #             return filtered_data
-    #         else:
-    #             selected_cols = [{k: v for k, v in single_entry.items() if k in columns} for single_entry in filtered_data]
-    #     else:
-    #         return None
-
-    #     return selected_cols
-    
 
     def select(self, table_name, columns, conditions=None):
         # Retrieve data from the storage manager
@@ -245,8 +223,6 @@ class DMLManager:
             filtered_data = [{k: v for k, v in item.items() if k in processed_columns} for item in data]
             return filtered_data
 
-
-
     def max(self, table, column, conditions=None):
         # Find the maximum value in the specified column
         data = self.storage_manager.get_table_data(table)
@@ -268,19 +244,6 @@ class DMLManager:
             data = [d for d in data if condition_function(d)]
         column_values = [d.get(column, float('inf')) for d in data]
         return min(column_values)
-
-    # def sum(self, table, column, conditions=None):
-    #     data = self.storage_manager.get_table_data(table)
-    #     # print(f"Debug: Retrieved data for sum: {data}")
-    #     if not data:
-    #         return "Table not found or no data available."
-    #     if conditions:
-    #         condition_function = self.parse_conditions(conditions)
-    #         data = [d for d in data if condition_function(d)]
-    #     # print(f"Debug: Filtered data for sum: {data}")
-    #     values_for_sum = [int(d.get(column, 0)) for d in data if d.get(column).isdigit()]
-    #     # print(f"Debug: Values for sum: {values_for_sum}")
-    #     return sum(values_for_sum)
 
     def sum(self, table, column, conditions=None):
         data = self.storage_manager.get_table_data(table)
@@ -467,4 +430,3 @@ class DMLManager:
             sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
             return sorted_data
         
-    

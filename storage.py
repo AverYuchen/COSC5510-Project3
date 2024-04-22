@@ -55,6 +55,42 @@ class StorageManager:
             'foreign_keys': [],
             'indexes': []
         }
+        
+        self.schemas['Reli11000'] = {
+            "columns": {
+                "A": {"type": "int"},
+                "B": {"type": "int"}
+            },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+            }
+        
+        self.schemas['Relii1000'] = {
+            "columns": {
+                "A": {"type": "int"},
+                "B": {"type": "int"}
+            },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+            }
+        
+        self.schemas['TestTable1'] = {
+            "columns": { "A": { "type": "int" }, "B": { "type": "varchar" } },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+        }
+        
+        self.schemas['TestTable2'] = {
+            "columns": { "A": { "type": "int" }, "B": { "type": "varchar" } },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+        }
+        
+
         file_1 = os.path.join(self.schema_directory, 'state_abbreviation.json')
         if os.path.exists(file_1) == False:
             with open(file_1, "w") as json_file:
@@ -67,6 +103,29 @@ class StorageManager:
         if os.path.exists(file_3) == False:
             with open(file_3, "w") as json_file:
                 json.dump(self.schemas['test_table'], json_file)
+        
+        
+        file_4 = os.path.join(self.schema_directory, 'Reli11000.json')
+        if os.path.exists(file_4) == False:
+            with open(file_4, "w") as json_file:
+                json.dump(self.schemas['Reli11000'], json_file)
+                
+        file_5 = os.path.join(self.schema_directory, 'Relii1000.json')
+        if os.path.exists(file_5) == False:
+            with open(file_5, "w") as json_file:
+                json.dump(self.schemas['Relii1000'], json_file)
+                
+        file_6 = os.path.join(self.schema_directory, 'TestTable1.json')
+        if os.path.exists(file_5) == False:
+            with open(file_6, "w") as json_file:
+                json.dump(self.schemas['TestTable1'], json_file)
+                
+        file_7 = os.path.join(self.schema_directory, 'TestTable2.json')
+        if os.path.exists(file_5) == False:
+            with open(file_7, "w") as json_file:
+                json.dump(self.schemas['TestTable2'], json_file)
+                
+                
         #print("Schemas defined for all tables.")
 
     def load_all_data(self):
@@ -230,53 +289,21 @@ class StorageManager:
             logging.error(f"update failed: {e}")
             return 0
 
-class TestStorageManager(unittest.TestCase):
-    def setUp(self):
-        """Prepare a test environment."""
-        self.storage = StorageManager()
-        # Assuming test_table schema already defined in your StorageManager setup
-        # Populate the table with test data
-        self.storage.data['test_table'] = [
-            {'id': '1', 'name': 'Alice'},
-            {'id': '2', 'name': 'Bob'},
-            {'id': '3', 'name': 'Charlie'},
-            {'id': '9', 'name': 'Joieho'}
-        ]
-        self.storage.write_csv('test_table')  # Write initial test data to CSV (optional)
-
-    def test_delete_specific_row(self):
-        """Test deleting a specific row identified by ID."""
-        # Check initial state
-        initial_count = len(self.storage.data['test_table'])
-        self.assertEqual(initial_count, 4)
-
-        # Perform deletion of id = 9
-        result = self.storage.delete_data('test_table', 'id = 2')
-        
-        # Check the results of the deletion
-        self.assertEqual(result, "Deleted 1 rows.")
-        self.assertEqual(len(self.storage.data['test_table']), initial_count - 1)
-        
-        # Verify that the specific item is removed
-        remaining_ids = [row['id'] for row in self.storage.data['test_table']]
-        self.assertNotIn('2', remaining_ids)
-
-        # Ensure the CSV file is updated correctly
-        with open(os.path.join(self.storage.data_directory, 'test_table.csv'), 'r', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
-            data_in_file = list(reader)
-            self.assertEqual(len(data_in_file), initial_count - 1)
-            ids_in_file = [row['id'] for row in data_in_file]
-            self.assertNotIn('2', ids_in_file)
-
-    def tearDown(self):
-        """Clean up after tests."""
-        # Optionally remove any files or other clean-up actions
-
-if __name__ == '__main__':
-    #unittest.main()
-    """
-    stor = StorageManager()
-    list = stor.schemas['test_table']['primary_key']
-    print(type(list))
-    """
+if __name__ == "__main__":
+    storage = StorageManager()
+    
+    # Check the loaded schemas
+    print("Schemas Loaded:")
+    for table_name, schema in storage.schemas.items():
+        print(f"{table_name}: {schema}")
+    
+    # Attempt to read from the tables
+    print("\nSample Data from state_abbreviation:")
+    if 'state_abbreviation' in storage.data:
+        for row in storage.data['state_abbreviation'][:5]:  # display up to 5 records
+            print(row)
+    
+    print("\nSample Data from state_population:")
+    if 'state_population' in storage.data:
+        for row in storage.data['state_population'][:5]:
+            print(row)

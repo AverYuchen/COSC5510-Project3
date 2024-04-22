@@ -4,8 +4,8 @@ import re
 import logging
 
 # from sql_parser import parse_sql
-from execution_engine import execute_query
-from storage_manager import StorageManager  # Assuming this exists for testing
+from execution_engine import ExecutionEngine
+# from storage_manager import StorageManager  # Assuming this exists for testing
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,39 +27,15 @@ def parse_sql(sql):
         'aggregation': None
     }
 
-    # Detect SQL command type
+   # Detect SQL command type
     command_type = tokens[0]
     parsed_details['type'] = command_type.upper()
 
     # Parsing logic based on type of SQL command
     if command_type == 'select':
-        # Handle SELECT fields and FROM clause
-        from_index = lower_sql.find(' from ') + 6
-        select_contents = sql[7:from_index - 6].strip()
-        parsed_details['select_fields'] = [field.strip() for field in select_contents.split(',')]
-
-        # Handle JOINs
-        join_index = lower_sql.find(' join ')
-        if join_index != -1:
-            join_type_start = lower_sql.rfind(' ', 0, join_index) + 1
-            parsed_details['join_type'] = lower_sql[join_type_start:join_index].strip().upper() + ' JOIN'
-            on_index = lower_sql.find(' on ', join_index)
-            parsed_details['join_table'] = sql[join_index + 6:on_index].strip().split()[0]
-            parsed_details['join_condition'] = sql[on_index + 4:].strip()
-
-        # Handle WHERE clause
-        where_index = lower_sql.find(' where ')
-        if where_index != -1:
-            parsed_details['where_condition'] = sql[where_index + 7:].strip()
-
-        # Determine table or tables involved
-        table_end = where_index if where_index != -1 else len(sql)
-        parsed_details['tables'] = [part.strip().split()[0] for part in sql[from_index:table_end].split(',')]
-
-        # Extend parsing to handle other clauses such as GROUP BY, ORDER BY, etc.
+                
         return parse_select(sql)
 
-     # Parsing logic based on type of SQL command
     elif command_type == 'update':
         # Handle UPDATE
         set_index = lower_sql.find(' set ') + 5
@@ -114,9 +90,61 @@ def parse_sql(sql):
     
     else:
         return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
-
     
-    return parsed_details
+def parse_select(sql):
+    logging.debug(f"Parsing SELECT SQL: {sql}")
+    # Simplified and corrected regex pattern to handle SQL syntax variations
+    pattern = r'''
+    SELECT\s+(.*?)\s+FROM\s+([\w]+(?:\s+AS\s+\w+)?)
+    (.*?);?$
+    '''
+
+    match = re.match(pattern, sql, re.IGNORECASE | re.VERBOSE)
+    if not match:
+        logging.error("Invalid SELECT syntax: " + sql)
+        return {'error': 'Invalid SELECT syntax'}
+
+    select_fields, main_table, remaining = match.groups()
+
+    result = {
+        'type': 'select',
+        'main_table': main_table.strip(),
+        'columns': [col.strip() for col in select_fields.split(',')],
+        'join': [],
+        'where_clause': None,
+        'group_by': None,
+        'order_by': None,
+        'having': None
+    }
+
+    # Process remaining clauses dynamically
+    if 'JOIN' in remaining.upper():
+        join_pattern = r'(LEFT|RIGHT|FULL|INNER|OUTER)?\s+JOIN\s+([\w]+(?:\s+AS\s+\w+)?|\w+)\s+ON\s+([\w\s\.=]+)'
+        join_matches = re.finditer(join_pattern, remaining, re.IGNORECASE)
+        for jmatch in join_matches:
+            join_type, join_table, join_condition = jmatch.groups()
+            result['join'].append({
+                'join_type': (join_type + ' JOIN').strip() if join_type else 'JOIN',
+                'join_table': join_table.strip(),
+                'join_condition': join_condition.strip()
+            })
+
+    # Handle WHERE, GROUP BY, ORDER BY, HAVING clauses
+    where_match = re.search(r'WHERE\s+(.*)', remaining, re.IGNORECASE)
+    group_by_match = re.search(r'GROUP BY\s+(.*)', remaining, re.IGNORECASE)
+    order_by_match = re.search(r'ORDER BY\s+(.*)', remaining, re.IGNORECASE)
+    having_match = re.search(r'HAVING\s+(.*)', remaining, re.IGNORECASE)
+
+    if where_match:
+        result['where_clause'] = where_match.group(1).strip()
+    if group_by_match:
+        result['group_by'] = group_by_match.group(1).strip()
+    if order_by_match:
+        result['order_by'] = order_by_match.group(1).strip()
+    if having_match:
+        result['having'] = having_match.group(1).strip()
+
+    return result
 
 def parse_update(parsed_details, sql):
     # This function could further process or validate the parsed details
@@ -124,43 +152,6 @@ def parse_update(parsed_details, sql):
     parsed_details['type'] = 'update' #lower the string and keep the format
     parsed_details['tables'] = parsed_details['tables'][0]
     return parsed_details
-
-
-def parse_select(sql):
-    """Parses a SELECT SQL statement with better handling for aliases and joins."""
-    pattern = r'''
-    SELECT\s+(.*?)\s+FROM\s+([\w]+(?:\s+AS\s+\w+)?|\w+)   # Capture SELECT fields and main table with optional alias
-    (\s+JOIN\s+[\w]+(?:\s+AS\s+\w+)?\s+ON\s+[\w\s\.=]+)?  # Optionally capture JOIN with alias
-    (\s+WHERE\s+[\w\s\.\'=]+)?                           # Optionally capture WHERE clause
-    (\s+GROUP\s+BY\s+[\w\s\.,]+)?                        # Optionally capture GROUP BY
-    (\s+ORDER\s+BY\s+[\w\s\.,]+)?                        # Optionally capture ORDER BY
-    (\s+HAVING\s+[\w\s\.\'=]+)?;*                        # Optionally capture HAVING
-    '''
-
-    match = re.match(pattern, sql, re.IGNORECASE | re.VERBOSE)
-    if not match:
-        return {'error': 'Invalid SELECT syntax'}
-
-    select_fields, main_table, join_part, where_part, group_by, order_by, having = match.groups()
-    
-    # Parsing the table and alias correctly
-    if ' AS ' in main_table:
-        table_name, alias = main_table.split(' AS ')
-        main_table = f"{table_name.strip()} AS {alias.strip()}"
-    else:
-        main_table = main_table.strip()
-
-    result = {
-        'type': 'select',
-        'main_table': main_table,
-        'columns': [col.strip() for col in select_fields.split(',')],
-        'join': join_part.strip() if join_part else None,
-        'where_clause': where_part[6:].strip() if where_part else None,
-        'group_by': group_by[9:].strip() if group_by else None,
-        'order_by': order_by[9:].strip() if order_by else None,
-        'having': having[7:].strip() if having else None
-    }
-    return result
 
 def parse_where_clause(where_clause):
     """Parses the WHERE clause into a list of conditions."""
@@ -313,46 +304,33 @@ def parse_additional_clauses(clause):
     return additional
 
 
-# if __name__ == "__main__":
-#     logging.info("Starting SQL functionalities tests")
-
-#     # Mock queries to test
-#     queries = [
-#         # "SELECT state FROM state_abbreviation",
-#         # "SELECT * FROM state_abbreviation",
-#         # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-#         "SELECT monthly_state_population FROM state_population WHERE monthly_state_population > 5886320",
-#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-#         # "INSERT INTO test_table (id, name) VALUES (45, 'Jihasd')",
-#         # "DELETE FROM test_table WHERE id = 9",
-#         "SELECT MAX(monthly_state_population) FROM state_population",
-#         "SELECT MIN(monthly_state_population) FROM state_population",
-#         "SELECT SUM(monthly_state_population) FROM state_population",
-#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-#         "SELECT sp.state_code, sa.state, sp.monthly_state_population FROM state_population AS sp JOIN state_abbreviation AS sa ON sp.state_code = sa.state_code WHERE sp.monthly_state_population > 6897721",
-#         "SELECT state_name, population, year FROM state_population ORDER BY population DESC",
-#         "SELECT state_name FROM state_population GROUP BY month HAVING SUM(population) > 1000000"
-#     ]
-
-#     # Mock storage manager for testing
-#     storage_manager = StorageManager()
-
-#     for query in queries:
-#         logging.debug(f"Testing query: {query}")
-#         parsed_command = parse_sql(query)
-#         if 'error' in parsed_command:
-#             logging.error(f"Parsing error in query: {query}")
-#             continue
-
-#         result = execute_query(parsed_command)
-#         logging.info(f"Result for query '{query}': {result}")
-
-#     logging.info("SQL functionalities tests completed")
-
+# Test various SQL queries
 if __name__ == "__main__":
+    queries = [
+        # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
+        # "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
+        # "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
+        # "INSERT INTO test_table (id, name) VALUES (1, 'Hachii')",
+        # "DELETE FROM test_table WHERE id = 0",
+        # "SELECT MAX(monthly_state_population) FROM state_population",
+        # "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        # "SELECT a.state_code, b.state FROM state_population AS a LEFT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        # "SELECT a.state_code, b.state FROM state_population AS a RIGHT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
+        # "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A",
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
+        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
+        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
+        
+    ]
 
-    
-    # Print the result to verify the output
-    print("Parsed SQL details:")
-    print(result)
+    for query in queries:
+        result = parse_sql(query)
+        print("Testing Query:")
+        print(query)
+        print("Result from parse_sql function:")
+        print(result)
+        print("\n")
