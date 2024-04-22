@@ -23,3 +23,5 @@ if __name__ == "__main__":
     print("Result:", result, "Error:", error)
     result, error = handle_input("SELECT * FROM test_table;")
     print("Result:", result, "Error:", error)
+    result, error = handle_input("DROP TABLE test_table;")
+    print("Result:", result, "Error:", error)

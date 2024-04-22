@@ -270,7 +270,7 @@ class ExecutionEngine:
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])
 
-    def handle_drop(self, command):
+    def handle_drop_table(self, command):
         return self.ddl_manager.drop_table(command['table_name'])
     
     def handle_create_index(self, command):
