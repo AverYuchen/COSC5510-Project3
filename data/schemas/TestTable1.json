@@ -1,0 +1,15 @@
+{
+    "columns": {
+        "A": {
+            "type": "int"
+        },
+        "B": {
+            "type": "varchar"
+        }
+    },
+    "primary_key": [
+        "A"
+    ],
+    "foreign_keys": [],
+    "indexes": []
+}

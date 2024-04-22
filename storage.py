@@ -81,6 +81,26 @@ class StorageManager:
             "indexes": []
             }
         
+        self.schemas['Reli110000'] = {
+            "columns": {
+                "A": {"type": "int"},
+                "B": {"type": "int"}
+            },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+            }
+        
+        self.schemas['Relii10000'] = {
+            "columns": {
+                "A": {"type": "int"},
+                "B": {"type": "int"}
+            },
+            "primary_key": ["A"],
+            "foreign_keys": [],
+            "indexes": []
+            }
+        
         self.schemas['TestTable1'] = {
             "columns": { "A": { "type": "int" }, "B": { "type": "varchar" } },
             "primary_key": ["A"],
@@ -108,8 +128,6 @@ class StorageManager:
         if os.path.exists(file_3) == False:
             with open(file_3, "w") as json_file:
                 json.dump(self.schemas['test_table'], json_file)
-        
-        
         file_4 = os.path.join(self.schema_directory, 'Reli11000.json')
         if os.path.exists(file_4) == False:
             with open(file_4, "w") as json_file:
@@ -120,8 +138,18 @@ class StorageManager:
             with open(file_5, "w") as json_file:
                 json.dump(self.schemas['Relii1000'], json_file)
                 
+        file_8 = os.path.join(self.schema_directory, 'Reli110000.json')
+        if os.path.exists(file_8) == False:
+            with open(file_8, "w") as json_file:
+                json.dump(self.schemas['Reli110000'], json_file)
+                
+        file_9 = os.path.join(self.schema_directory, 'Relii10000.json')
+        if os.path.exists(file_9) == False:
+            with open(file_9, "w") as json_file:
+                json.dump(self.schemas['Relii10000'], json_file)
+                
         file_6 = os.path.join(self.schema_directory, 'TestTable1.json')
-        if os.path.exists(file_5) == False:
+        if os.path.exists(file_6) == False:
             with open(file_6, "w") as json_file:
                 json.dump(self.schemas['TestTable1'], json_file)
                 
