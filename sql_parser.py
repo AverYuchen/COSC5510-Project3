@@ -355,22 +355,29 @@ if __name__ == "__main__":
         # "DELETE FROM test_table WHERE id = 0",
         # "SELECT MAX(monthly_state_population) FROM state_population",
         # "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-        # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code",
+        # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code WHERE b.state = 'Alaska'",
         # "SELECT a.state_code, b.state FROM state_population AS a LEFT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a RIGHT JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
         # "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
-        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A"
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A > 7",
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A != 7",
+        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A BETWEEN 4 and 8"
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
         #"CREATE INDEX index_id ON TestTable1 (A);",
         # "CREATE TABLE employees_7 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);",
         # "DROP TABLE employees_5;",
         #"DROP INDEX index_id ON TestTable1;"
-        "DROP TABLE test_table;"
+        # "DROP TABLE test_table;",
+        # "SELECT A, B FROM TestTable1 WHERE A = 5",
+        # "SELECT A, B FROM TestTable1 WHERE A != 5",
+        # "SELECT A, B FROM TestTable1 WHERE A > 5",
+        # "SELECT A, B FROM TestTable1 WHERE A < 5",
+        # "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
+        # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
+        # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
         
     ]
 

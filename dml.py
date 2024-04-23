@@ -196,7 +196,7 @@ class DMLManager:
     def select(self, table_name, columns, conditions=None):
         # Retrieve data from the storage manager
         data = self.storage_manager.get_table_data(table_name)
-        print(f"Debug: Data retrieved from {table_name}: {data}")
+        # print(f"Debug: Data retrieved from {table_name}: {data}")
 
         # Apply conditions if specified
         if conditions:

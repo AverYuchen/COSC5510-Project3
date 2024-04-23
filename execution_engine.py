@@ -16,26 +16,22 @@ class ExecutionEngine:
         self.dml_manager = DMLManager(self.storage_manager)
         self.ddl_manager = DDLManager()
 
-    # def execute_query(self, command):
-    #     try:
-    #         handler = getattr(self, f"handle_{command['type']}", self.handle_unsupported)
-    #         return handler(command)
-    #     except Exception as e:
-    #         logging.error(f"Execution error: {e}")
-    #         return f"Execution error: {e}"
-
     def execute_query(self, command):
         try:
-            # Mapping command types to handler functions
             handler = getattr(self, f"handle_{command['type'].lower()}", self.handle_unsupported)
             return handler(command)
         except Exception as e:
-            logging.error(f"Execution error: {e}")
+            logging.error(f"Execution error: {e}", exc_info=True)
             return f"Execution error: {e}"
 
+
     def handle_select(self, command):
+        if 'main_table' not in command or not command['columns']:
+            logging.error("Select command is missing 'main_table' or 'columns'")
+            return "Invalid command format"
         main_table = command['main_table']
-        data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
+        data = self.dml_manager.select(main_table, command['columns'])
+        # data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
         
         # Check for the presence of any aggregation functions in the columns specification
         if 'columns' in command and command['columns']:
@@ -47,6 +43,9 @@ class ExecutionEngine:
             select_columns = command['columns']  # This assumes that columns are specified in command.
             for join in command['join']:
                 data = self.handle_join(data, join, main_table, select_columns)
+            
+        if 'where_clause' in command:
+            data = self.filter_data_by_condition(data, command['where_clause'])
 
 
         if 'group_by' in command and command['group_by']:
@@ -61,6 +60,15 @@ class ExecutionEngine:
 
         return data
     
+    def filter_data_by_condition(self, data, where_clause):
+        if where_clause is None:
+            logging.debug("No where_clause provided, returning original data.")
+            return data
+        condition_function = self.parse_condition_to_function(where_clause)
+        filtered_data = [row for row in data if condition_function(row)]
+        return filtered_data
+
+
     def filter_select_columns(self, data, select_columns):
         filtered_data = []
         for row in data:
@@ -93,13 +101,22 @@ class ExecutionEngine:
         return table_expression.strip(), table_expression.strip()
     
     def handle_join(self, main_data, join, main_table, select_columns):
+        logging.debug(f"Starting join operation: main_table={main_table}, join={join}")
         main_table_name, main_alias = self.parse_table_alias(main_table)
         join_table_name, join_alias = self.parse_table_alias(join['join_table'])
+
         main_data = self.storage_manager.get_table_data(main_table_name)
         join_data = self.storage_manager.get_table_data(join_table_name)
-        left_field, right_field = self.parse_join_condition(join['join_condition'])
+        
+        if main_data is None or join_data is None:
+            logging.error("Failed to retrieve data for joining: main_data or join_data is None")
+            return []
 
+        left_field, right_field = self.parse_join_condition(join['join_condition'])
         join_type = join.get('join_type', 'INNER').upper()
+
+        logging.debug(f"Joining {main_table_name} with {join_table_name} on {left_field} = {right_field}")
+        
         method = {
             'LEFT JOIN': self.left_join,
             'RIGHT JOIN': self.right_join,
@@ -107,11 +124,25 @@ class ExecutionEngine:
             'JOIN': self.inner_join  # Treat generic JOIN as INNER JOIN
         }.get(join_type, self.unsupported_join)
 
-        return method(main_data, join_data, left_field, right_field, join_alias, select_columns)
+        result = method(main_data, join_data, left_field, right_field, join_alias, select_columns)
+        logging.debug(f"Join result: {result}")
+        return result
+
+
         
     def parse_join_condition(self, condition):
-        left, _, right = condition.partition('=')
-        return left.strip(), right.strip()
+        try:
+            left, _, right = condition.partition('=')
+            left_table, left_column = left.strip().split('.')
+            right_table, right_column = right.strip().split('.')
+            logging.debug(f"Parsed join condition: {left_table}.{left_column} = {right_table}.{right_column}")
+            return (f"{left_table}.{left_column}", f"{right_table}.{right_column}")
+        except ValueError as e:
+            logging.error(f"Error parsing join condition '{condition}': {e}")
+            raise
+
+
+
     
     def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type, select_columns):
         joined_data = []
@@ -146,7 +177,13 @@ class ExecutionEngine:
         return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'RIGHT JOIN', select_columns)
 
     def inner_join(self, main_data, join_data, left_field, right_field, join_alias, select_columns):
-        return self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN', select_columns)
+        if not main_data or not join_data:
+            logging.error("One of the datasets for joining is empty.")
+            return []
+        joined_data = self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN', select_columns)
+        logging.debug(f"Joined data: {joined_data}")
+        return joined_data
+
     
     def unsupported_join(self, main_data, join_data, left_field, right_field, join_alias):
         logging.error("Unsupported join type")
@@ -257,16 +294,7 @@ class ExecutionEngine:
             result.append(aggregated_row)
 
         return result
-    
-    # def handle_create_index(self, command):
-    #     """Handle the creation of an index."""
-    #     try:
-    #         # Assuming DDLManager can handle index creation
-    #         return self.ddl_manager.create_index(command['table_name'], command['column_name'], command['index_name'])
-    #     except Exception as e:
-    #         logging.error(f"Error creating index: {e}")
-    #         return f"Error creating index: {e}"
-    
+
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])
 
@@ -299,34 +327,93 @@ class ExecutionEngine:
         except Exception as e:
             logging.error(f"Error dropping index: {e}")
             return f"Error dropping index: {e}"
+    
+    
+    def parse_condition_to_function(self, where_clause):
+        def eval_condition(row, conditions):
+            if 'AND' in conditions:
+                left, right = conditions.split('AND', 1)
+                return eval_condition(row, left.strip()) and eval_condition(row, right.strip())
+            if 'OR' in conditions:
+                left, right = conditions.split('OR', 1)
+                return eval_condition(row, left.strip()) or eval_condition(row, right.strip())
+            
+            pattern = r"(\w+)\s*(=|!=|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
+            match = re.match(pattern, conditions.strip(), re.IGNORECASE)
+            if not match:
+                raise ValueError("Invalid WHERE clause format")
+            column, operator, value = match.groups()
+            return self.apply_operator(row, column.strip(), operator.strip().upper(), value.strip().strip("'"))
 
+        return lambda row: eval_condition(row, where_clause)
+    
+    
+    def apply_operator(self, row, column, operator, value):
+        logging.debug(f"Applying operator: {operator} on column: {column} with value: {value}")
+        
+        if operator == "IN":
+            values = eval(value)
+            result = self.safe_convert_to_numeric_where(row.get(column)) in values
+            logging.debug(f"IN operator result: {result}")
+            return result
+        elif operator == "LIKE":
+            regex = re.compile("^" + value.replace('%', '.*') + "$")
+            result = regex.match(row.get(column)) is not None
+            logging.debug(f"LIKE operator result: {result}")
+            return result
+        elif "BETWEEN" in operator:
+            # Ensure proper handling of BETWEEN
+            value = value[len("BETWEEN"):].strip()  # Remove the 'BETWEEN' keyword and strip any leading/trailing whitespace
+        else:
+            value = self.safe_convert_to_numeric_where(value)
+            if operator == "=": operator = "=="
+            result = self.compare_values(row.get(column), value, operator)
+            logging.debug(f"Comparison operator {operator} result: {result}")
+            return result
+    
+    def compare_values(self, row_value, value, operator):
+        row_value = self.safe_convert_to_numeric_where(row_value)
+        if operator == "==":
+            return row_value == value
+        elif operator == "!=":
+            return row_value != value
+        elif operator == "<":
+            return row_value < value
+        elif operator == ">":
+            return row_value > value
+        elif operator == "<=":
+            return row_value <= value
+        elif operator == ">=":
+            return row_value >= value
+
+    def safe_convert_to_numeric_where(self, value):
+        try:
+            return float(value) if '.' in value or 'e' in value.lower() else int(value)
+        except ValueError:
+            return value  # Return as string if conversion isn't possible
+        
 # Example usage
 if __name__ == "__main__":
     engine = ExecutionEngine()
     
-    # command_1 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    command_1 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
     # command_2 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
     # command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    # command_5 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'monthly_state_population'], 'join': [], 'where_clause': None, 'group_by': None, 'order_by': 'monthly_state_population ASC', 'having': None}
-    # command_6 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'monthly_state_population'], 'join': [], 'where_clause': None, 'group_by': None, 'order_by': 'monthly_state_population DESC', 'having': None}
-    
-    command_5 = {'type': 'DROP_INDEX', 'index_name': 'index_id', 'table_name': 'TestTable1'}
-    command_6 = {'type': 'CREATE_INDEX', 'index_name': 'index_id', 'table_name': 'TestTable1', 'column_name': 'A'}
+    # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A > 7', 'group_by': None, 'order_by': None, 'having': None}
+    # command_5 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A != 7', 'group_by': None, 'order_by': None, 'having': None}
+    command_6 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A IN (2,3,4)', 'group_by': None, 'order_by': None, 'having': None}
 
 
-    # print(command_1)
-    # print(engine.execute_query(command_1))
+    print(command_1)
+    print(engine.execute_query(command_1))
     # print(command_2)
     # print(engine.execute_query(command_2))
     # print(command_3)
     # print(engine.execute_query(command_3))
     # print(command_4)
     # print(engine.execute_query(command_4))
-    
-    
-    print(command_5)
-    print(engine.execute_query(command_5))
+    # print(command_5)
+    # print(engine.execute_query(command_5))
     print(command_6)
     print(engine.execute_query(command_6))
 
