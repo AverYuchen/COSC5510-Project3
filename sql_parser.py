@@ -48,7 +48,7 @@ def parse_sql(sql):
             where_index = len(sql)
 
         # Table name
-        parsed_details['tables'].append(sql[7:set_index - 5].strip())
+        parsed_details['tables'].append(sql[13:set_index - 5].strip())
 
         # Parse set values
         parsed_details['values'] = {}
@@ -320,7 +320,7 @@ def parse_insert(sql):
 
 def parse_delete(sql):
     """Parses a DELETE FROM SQL statement."""
-    pattern = r'DELETE FROM (\w+)( WHERE (.*))?'
+    pattern = r'DELETE FROM (\w+)( WHERE (.*))?\;'
     match = re.match(pattern, sql, re.IGNORECASE)
     if not match:
         return {'error': 'Invalid DELETE syntax'}
@@ -361,9 +361,9 @@ if __name__ == "__main__":
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
         # "SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code"
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A > 7",
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A != 7",
-        "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A BETWEEN 4 and 8"
+        #"SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A > 7",
+        #"SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A != 7",
+        #"SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A WHERE t1.A BETWEEN 4 and 8"
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC",
         # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC"
         #"CREATE INDEX index_id ON TestTable1 (A);",
@@ -378,6 +378,8 @@ if __name__ == "__main__":
         # "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
         # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
         # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
+       " UPDATE TABLE TestTable1 SET B = 'Data2_10' WHERE A = '10';",
+       "DELETE FROM TestTable2 WHERE A = 11;"
         
     ]
 

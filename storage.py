@@ -301,11 +301,8 @@ class StorageManager:
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
     
-    def update_table_data(self, table_name, value, parsed_condition, conditions):
+    def update_table_data(self, table_name, value, retrieved_data, conditions):
         try:
-            initial_data = self.get_table_data(table_name)
-            retrieved_data = [row for row in initial_data if parsed_condition(row)]
-            print(retrieved_data)
             updated_data = []
             changed_rows = 0
             for row in retrieved_data:
@@ -313,10 +310,10 @@ class StorageManager:
                     row[col] = content
                 updated_data.append(row)
                 changed_rows += 1
-            
+            print(updated_data)
             self.delete_data(table_name, conditions)
-            self.insert_data(table_name, updated_data[0])
-
+            for row in updated_data:
+                self.insert_data(table_name, row)
             return changed_rows
         except Exception as e:
             logging.error(f"update failed: {e}")

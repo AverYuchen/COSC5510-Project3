@@ -21,7 +21,7 @@ class DMLManager:
             logging.error(f"Insert operation failed: Table {table_name} does not exist.")
             return "Error: Table does not exist."
 
-        if not self.validate_data(table_name, data):
+        if not self.validate_data(table_name, data, command='insert'):
             logging.error("Insert operation failed: Data validation failed.")
             return "Error: PK exist - Data validation failed."
 
@@ -33,7 +33,7 @@ class DMLManager:
             logging.error(f"Insert operation failed: {e}")
             return "Error: Failed to insert data."
 
-    def validate_data(self, table_name, data):
+    def validate_data(self, table_name, data, command):
         schema = self.storage_manager.get_schema(table_name)
         if not schema:
             logging.error(f"No schema available for table {table_name}")
@@ -58,49 +58,20 @@ class DMLManager:
                 logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
                 return False
         #verify if the inserted data matched the primary key condition
-        if not self.check_primary_key_constraint(table_name, data, schema):
-            print(self.check_primary_key_constraint(table_name, data, schema))
+        if not self.check_primary_key_constraint(table_name, data, schema, command):
+            print(self.check_primary_key_constraint(table_name, data, schema, command))
             logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
             return False
 
         return True
 
-    def delete(self, table_name, conditions):
-        condition_func = self.parse_conditions_delete(conditions)
-        if not condition_func:
-            logging.error("Failed to parse delete conditions")
-            return "Error: Invalid delete conditions."
-
+    def delete(self, table_name, conditions): 
         try:
-            initial_data = self.storage_manager.data[table_name]
-            filtered_data = [row for row in initial_data if not condition_func(row)]
-            rows_deleted = len(initial_data) - len(filtered_data)
-            if rows_deleted > 0:
-                self.storage_manager.data[table_name] = filtered_data
-                self.storage_manager.write_csv(table_name)
-                return f"Deleted {rows_deleted} rows."
-            else:
-                return "No rows matched the condition."
+            result = self.storage_manager.delete_data(table_name, conditions)
+            return result
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
-            return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
-            condition_func = self.parse_conditions_delete(conditions)
-            if not condition_func:
-                logging.error("Failed to parse delete conditions")
-                return "Error: Invalid delete conditions."
-
-            try:
-                # Filter out rows that do not meet the condition
-                initial_data = self.storage_manager.data[table_name]
-                filtered_data = [row for row in initial_data if not condition_func(row)]
-                if len(filtered_data) == len(initial_data):
-                    return "No rows matched the condition."
-                
-                self.storage_manager.data[table_name] = filtered_data
-                return f"Deleted {len(initial_data) - len(filtered_data)} rows."
-            except Exception as e:
-                logging.error(f"Delete operation failed: {str(e)}")
-                return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
+       
     
     def parse_conditions_delete(self, conditions):
         import re
@@ -126,34 +97,27 @@ class DMLManager:
 
     def update(self, table_name, value, conditions):
         #check validation:
-        for col, content in value.items():
-            expected_type = self.storage_manager.schemas[table_name]['columns'][col]['type']
-            if expected_type == 'int' and not isinstance(content, int):
-                try:
-                    content = int(content)  # Convert to int if necessary
-                    value[col] = content
-                except ValueError:
-                    logging.error(f"Type conversion error for col ‘{col}’: expected int, got {content}")
-                    return "Error: update data fail due to invalid datatype"
-            elif expected_type == 'varchar' and not isinstance(content, str):
-                logging.error(f"Type validation error for col ‘{col}’: expected string, got {type(content).__name__}")
-                return "Error: update data fail due to invalid datatype"
-
-        logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
-        try:
-            parsed_conditions = self.parse_conditions(conditions)
-            rows_updated = self.storage_manager.update_table_data(table_name, value, parsed_conditions, conditions)
-            if rows_updated > 0:
-                logging.info(f"Updated {rows_updated} rows in {table_name}.")
-                return f"Updated {rows_updated} rows."
-            else:
-                logging.warning(f"No rows updated in {table_name}.")
-                return "No rows matched the conditions."
-        except Exception as e:
-            logging.error(f"Update operation failed: {e}")
-            return "Error: Failed to update data."
         
-    def check_primary_key_constraint(self, table_name, data, schema):
+        if self.validate_data(table_name, value, command='update'):
+            logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
+            try:
+                data = self.storage_manager.get_table_data(table_name)
+                condition_function = self.parse_conditions(conditions)
+                retrieved_data = [d for d in data if condition_function(d)]
+                rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, conditions)
+                if rows_updated > 0:
+                    logging.info(f"Updated {rows_updated} rows in {table_name}.")
+                    return f"Updated {rows_updated} rows."
+                else:
+                    logging.warning(f"No rows updated in {table_name}.")
+                    return "No rows matched the conditions."
+            except Exception as e:
+                logging.error(f"Update operation failed: {e}")
+                return "Error: Failed to update data."
+        else:
+            return "new data does not match the datatype or conflict with primary key uniqueness"
+        
+    def check_primary_key_constraint(self, table_name, data, schema, command):
         """
         Check if the data violates primary key constraints.
         """
@@ -164,8 +128,10 @@ class DMLManager:
             if isinstance(primary_keys, str):
                 primary_keys = [primary_keys] 
             for primary_key in primary_keys:
-                if primary_key not in data:
+                if primary_key not in data and command == 'insert':
                     return False
+                if primary_key not in data and command == 'update':
+                    return True
                 for row in existing_data:
                     if schema['columns'][primary_key]['type'] == "int":
                         row[primary_key] = int(row[primary_key])
