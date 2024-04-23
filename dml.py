@@ -65,49 +65,13 @@ class DMLManager:
 
         return True
 
-    def delete(self, table_name, conditions):
+    def delete(self, table_name, conditions): 
         try:
             result = self.storage_manager.delete_data(table_name, conditions)
             return result
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
-        """
-        condition_func = self.parse_conditions_delete(conditions)
-        if not condition_func:
-            logging.error("Failed to parse delete conditions")
-            return "Error: Invalid delete conditions."
-
-        try:
-            initial_data = self.storage_manager.data[table_name]
-            filtered_data = [row for row in initial_data if not condition_func(row)]
-            rows_deleted = len(initial_data) - len(filtered_data)
-            if rows_deleted > 0:
-                self.storage_manager.data[table_name] = filtered_data
-                self.storage_manager.write_csv(table_name)
-                return f"Deleted {rows_deleted} rows."
-            else:
-                return "No rows matched the condition."
-        except Exception as e:
-            logging.error(f"Delete operation failed: {str(e)}")
-            return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
-            condition_func = self.parse_conditions_delete(conditions)
-            if not condition_func:
-                logging.error("Failed to parse delete conditions")
-                return "Error: Invalid delete conditions."
-
-            try:
-                # Filter out rows that do not meet the condition
-                initial_data = self.storage_manager.data[table_name]
-                filtered_data = [row for row in initial_data if not condition_func(row)]
-                if len(filtered_data) == len(initial_data):
-                    return "No rows matched the condition."
-                
-                self.storage_manager.data[table_name] = filtered_data
-                return f"Deleted {len(initial_data) - len(filtered_data)} rows."
-            except Exception as e:
-                logging.error(f"Delete operation failed: {str(e)}")
-                return f"Error: Failed to delete data. Details: {str(e)} from dml.py"
-        """
+       
     
     def parse_conditions_delete(self, conditions):
         import re
@@ -133,20 +97,7 @@ class DMLManager:
 
     def update(self, table_name, value, conditions):
         #check validation:
-        '''
-        for col, content in value.items():
-            expected_type = self.storage_manager.schemas[table_name]['columns'][col]['type']
-            if expected_type == 'int' and not isinstance(content, int):
-                try:
-                    content = int(content)  # Convert to int if necessary
-                    value[col] = content
-                except ValueError:
-                    logging.error(f"Type conversion error for col ‘{col}’: expected int, got {content}")
-                    return "Error: update data fail due to invalid datatype"
-            elif expected_type == 'varchar' and not isinstance(content, str):
-                logging.error(f"Type validation error for col ‘{col}’: expected string, got {type(content).__name__}")
-                return "Error: update data fail due to invalid datatype"
-        '''
+        
         if self.validate_data(table_name, value, command='update'):
             logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
             try:
