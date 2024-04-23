@@ -48,7 +48,7 @@ def parse_sql(sql):
             where_index = len(sql)
 
         # Table name
-        parsed_details['tables'].append(sql[13:set_index - 5].strip())
+        parsed_details['tables'].append(sql[7:set_index - 5].strip())
 
         # Parse set values
         parsed_details['values'] = {}
@@ -379,6 +379,7 @@ if __name__ == "__main__":
         # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
         # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
        " UPDATE TABLE TestTable1 SET B = 'Data2_10' WHERE A = '10';",
+       "UPDATE test_table SET name = 'test' WHERE id = 485; ",
        " INSERT INTO employees_7 (employee_id, name, salary) VALUES (1, 'Emma', 140000);"
        "DELETE FROM TestTable2 WHERE A = 11;"
         
