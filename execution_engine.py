@@ -402,7 +402,7 @@ if __name__ == "__main__":
     # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A > 7', 'group_by': None, 'order_by': None, 'having': None}
     # command_5 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A != 7', 'group_by': None, 'order_by': None, 'having': None}
     command_6 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A IN (2,3,4)', 'group_by': None, 'order_by': None, 'having': None}
-
+    
 
     print(command_1)
     print(engine.execute_query(command_1))
