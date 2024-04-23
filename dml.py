@@ -97,13 +97,14 @@ class DMLManager:
 
     def update(self, table_name, value, conditions):
         #check validation:
-        
         if self.validate_data(table_name, value, command='update'):
             logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
             try:
                 data = self.storage_manager.get_table_data(table_name)
+                print(data)
                 condition_function = self.parse_conditions(conditions)
                 retrieved_data = [d for d in data if condition_function(d)]
+                print(retrieved_data)
                 rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, conditions)
                 if rows_updated > 0:
                     logging.info(f"Updated {rows_updated} rows in {table_name}.")
@@ -116,7 +117,7 @@ class DMLManager:
                 return "Error: Failed to update data."
         else:
             return "new data does not match the datatype or conflict with primary key uniqueness"
-        
+    
     def check_primary_key_constraint(self, table_name, data, schema, command):
         """
         Check if the data violates primary key constraints.
@@ -306,7 +307,7 @@ class DMLManager:
                         value = value.strip("'")
                         condition_str = f"(d['{column}'] {operators[op]} '{value}')"
                     elif value.isdigit():
-                        condition_str = f"(d['{column}'] {operators[op]} {value})"
+                        condition_str = f"(d['{column}'] {operators[op]} '{value}')"
                     else:
                         value = value.strip("'")
                         condition_str = f"(d['{column}'] {operators[op]} '{value}')"
