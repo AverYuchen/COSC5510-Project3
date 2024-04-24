@@ -62,6 +62,7 @@ class ExecutionEngine:
         final_data = self.filter_select_columns(data, command['columns'])
 
         return final_data
+
     
     def filter_data_by_condition(self, data, where_clause):
         if where_clause is None:
@@ -70,7 +71,6 @@ class ExecutionEngine:
         condition_function = self.parse_condition_to_function(where_clause)
         filtered_data = [row for row in data if condition_function(row)]
         return filtered_data
-
 
     def filter_select_columns(self, data, select_columns):
         if '*' in select_columns:
@@ -141,9 +141,7 @@ class ExecutionEngine:
         result = method(main_data, join_data, left_field, right_field, join_alias, select_columns)
         logging.debug(f"Join result: {result}")
         return result
-
-
-        
+    
     def parse_join_condition(self, condition):
         try:
             left, _, right = condition.partition('=')
@@ -155,9 +153,6 @@ class ExecutionEngine:
             logging.error(f"Error parsing join condition '{condition}': {e}")
             raise
 
-
-
-    
     def join_data(self, main_data, join_data, left_field, right_field, join_alias, join_type, select_columns):
         joined_data = []
         for main_row in main_data:
@@ -197,7 +192,6 @@ class ExecutionEngine:
         joined_data = self.join_data(main_data, join_data, left_field, right_field, join_alias, 'INNER JOIN', select_columns)
         logging.debug(f"Joined data: {joined_data}")
         return joined_data
-
     
     def unsupported_join(self, main_data, join_data, left_field, right_field, join_alias):
         logging.error("Unsupported join type")
@@ -269,45 +263,6 @@ class ExecutionEngine:
                 logging.error(f"Conversion to numeric failed for value: {value}")
                 return None
             
-    # def handle_group_by(self, data, group_by_column, columns):
-    #     # Setup
-    #     grouped_data = {}
-    #     agg_funcs = {}
-        
-    #     # Parsing columns for aggregate functions and their intended aliases
-    #     for col in columns:
-    #         agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
-    #         if agg_match:
-    #             agg_func, column_name, alias = agg_match.groups()
-    #             agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
-
-    #     # Grouping data
-    #     for row in data:
-    #         key = row[group_by_column]
-    #         if key not in grouped_data:
-    #             grouped_data[key] = []
-    #         grouped_data[key].append(row)
-
-    #     # Applying aggregation
-    #     result = []
-    #     for key, rows in grouped_data.items():
-    #         aggregated_row = {group_by_column: key}
-    #         for column_name, (agg_func, alias) in agg_funcs.items():
-    #             column_values = [self.safe_convert_to_numeric(row[column_name]) for row in rows if column_name in row and row[column_name] is not None]
-    #             if column_values:
-    #                 if agg_func == 'AVG':
-    #                     aggregated_row[alias] = sum(column_values) / len(column_values)
-    #                 elif agg_func == 'SUM':
-    #                     aggregated_row[alias] = sum(column_values)
-    #                 elif agg_func == 'MAX':
-    #                     aggregated_row[alias] = max(column_values)
-    #                 elif agg_func == 'MIN':
-    #                     aggregated_row[alias] = min(column_values)
-    #                 elif agg_func == 'COUNT':
-    #                     aggregated_row[alias] = len(column_values)
-    #         result.append(aggregated_row)
-
-    #     return result
     def handle_group_by(self, data, group_by_column, columns):
         # Setup
         grouped_data = {}
@@ -351,7 +306,6 @@ class ExecutionEngine:
 
         return result
 
-
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])
 
@@ -385,7 +339,6 @@ class ExecutionEngine:
             logging.error(f"Error dropping index: {e}")
             return f"Error dropping index: {e}"
     
-    
     def parse_condition_to_function(self, where_clause):
         def eval_condition(row, conditions):
             if 'AND' in conditions:
@@ -403,7 +356,6 @@ class ExecutionEngine:
             return self.apply_operator(row, column.strip(), operator.strip().upper(), value.strip().strip("'"))
 
         return lambda row: eval_condition(row, where_clause)
-    
     
     def apply_operator(self, row, column, operator, value):
         logging.debug(f"Applying operator: {operator} on column: {column} with value: {value}")

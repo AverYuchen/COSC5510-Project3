@@ -161,16 +161,6 @@ class StorageManager:
                 
         #print("Schemas defined for all tables.")
 
-    # def load_all_data(self):
-    #     # Load data files if present
-    #     for filename in os.listdir(self.data_directory):
-    #         if filename.endswith('.csv'):
-    #             table_name = filename[:-4]  # Strip the '.csv' part
-    #             if table_name in self.schemas:  # Only load data for defined schemas
-    #                 file_path = os.path.join(self.data_directory, filename)
-    #                 self.data[table_name] = self.read_csv(file_path)
-
-                    
     def load_all_data(self):
         # Load data files if present
         for filename in os.listdir(self.data_directory):

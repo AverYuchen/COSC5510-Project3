@@ -84,10 +84,6 @@ SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY 
 
 SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
 
-<HAVING> - NOT DONE
-
-SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
-
 <INDEX>
 CREATE INDEX index_id ON TestTable1 (B);
 DROP INDEX index_id ON TestTable1;
@@ -100,3 +96,7 @@ SELECT A, B FROM TestTable1 WHERE A < 5
 SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - NOT DONE
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
+
+<HAVING> - NOT DONE
+
+SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
