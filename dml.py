@@ -67,7 +67,9 @@ class DMLManager:
 
     def delete(self, table_name, conditions): 
         try:
-            result = self.storage_manager.delete_data(table_name, conditions)
+            condition_function = self.parse_conditions(conditions)
+
+            result = self.storage_manager.delete_data(table_name, condition_function)
             return result
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
@@ -100,12 +102,13 @@ class DMLManager:
         if self.validate_data(table_name, value, command='update'):
             logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
             try:
-                data = self.storage_manager.get_table_data(table_name)
+                data = self.storage_manager.get_table_data_w_datatype(table_name)
+
                 print(data)
                 condition_function = self.parse_conditions(conditions)
                 retrieved_data = [d for d in data if condition_function(d)]
                 print(retrieved_data)
-                rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, conditions)
+                rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, condition_function)
                 if rows_updated > 0:
                     logging.info(f"Updated {rows_updated} rows in {table_name}.")
                     return f"Updated {rows_updated} rows."
@@ -303,11 +306,12 @@ class DMLManager:
                     column, op, value = match.groups()
                     column, value = column.strip(), value.strip()
 
-                    if column in ['id']:  # Add more columns if needed
+                    """if column in ['id']:  # Add more columns if needed
                         value = value.strip("'")
                         condition_str = f"(d['{column}'] {operators[op]} '{value}')"
-                    elif value.isdigit():
-                        condition_str = f"(d['{column}'] {operators[op]} '{value}')"
+                    el"""
+                    if value.isdigit():
+                        condition_str = f"(d['{column}'] {operators[op]} {value})"
                     else:
                         value = value.strip("'")
                         condition_str = f"(d['{column}'] {operators[op]} '{value}')"

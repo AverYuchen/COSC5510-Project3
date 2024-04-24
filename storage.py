@@ -239,14 +239,14 @@ class StorageManager:
         else:
             return "Error: Drop schema task fail, the schema file not existed."
 
-    def delete_data(self, table_name, conditions):
-        condition_func = self.parse_conditions_safe(conditions)
+    def delete_data(self, table_name, condition_func):
         if condition_func is None:
             logging.error("Deletion failed: Invalid condition syntax")
             return "Error: Invalid condition syntax"
 
         try:
-            initial_data = self.data.get(table_name, [])
+            initial_data = self.get_table_data(table_name)
+            print(initial_data)
             new_data = [row for row in initial_data if not condition_func(row)]
             rows_deleted = len(initial_data) - len(new_data)
 
@@ -276,7 +276,7 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Failed to write to {filename}: {e}")
             return f"Error: Failed to write data due to {e}"
-
+    """
     def parse_conditions_safe(self, conditions):
         import re
         # This regex now captures both digits and non-digits for values
@@ -300,7 +300,7 @@ class StorageManager:
         else:
             logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
             return None
- 
+    """ 
     def insert_data(self, table_name, data):
         # Check if schema exists for the table
         if table_name in self.schemas:
@@ -317,7 +317,21 @@ class StorageManager:
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
     
-    def update_table_data(self, table_name, value, retrieved_data, conditions):
+    def get_table_data_w_datatype(self, table_name):
+        table_data = self.data.get(table_name, [])
+        table_schema = self.get_schema(table_name)
+        int_col = []
+        for col in table_schema['columns']:
+            if(table_schema['columns'][col]['type']) == 'int':
+                int_col.append(col)
+        for data in table_data:
+            data.update((k, int(v)) for k, v in data.items() if k in int_col)
+
+        # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
+        return table_data
+
+    
+    def update_table_data(self, table_name, value, retrieved_data, condition_func):
         try:
             updated_data = []
             changed_rows = 0
@@ -327,7 +341,7 @@ class StorageManager:
                 updated_data.append(row)
                 changed_rows += 1
             print(updated_data)
-            self.delete_data(table_name, conditions)
+            self.delete_data(table_name, condition_func)
             for row in updated_data:
                 self.insert_data(table_name, row)
             return changed_rows
