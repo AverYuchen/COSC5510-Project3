@@ -24,7 +24,7 @@ INSERT INTO test_table (id, name) VALUES (485, 'Hachii')
 
 <DELETE>
 
-DELETE FROM test_table WHERE id = 2
+DELETE FROM test_table WHERE id = 2;
 
 <MAX, MIN, SUM, AVG, COUNT> 
 SELECT MAX(monthly_state_population) FROM state_population
@@ -92,7 +92,7 @@ SELECT state_name, COUNT(population) AS total_population FROM state_population G
 CREATE INDEX index_id ON TestTable1 (B);
 DROP INDEX index_id ON TestTable1;
 
-<>
+<comparison operators>
 SELECT A, B FROM TestTable1 WHERE A = 5
 SELECT A, B FROM TestTable1 WHERE A != 5
 SELECT A, B FROM TestTable1 WHERE A > 5

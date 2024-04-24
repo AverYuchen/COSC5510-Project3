@@ -73,6 +73,9 @@ class ExecutionEngine:
 
 
     def filter_select_columns(self, data, select_columns):
+        if '*' in select_columns:
+            return data  # If selecting all columns, return the data as is.
+    
         final_data = []
         """
         for row in data:
@@ -266,20 +269,62 @@ class ExecutionEngine:
                 logging.error(f"Conversion to numeric failed for value: {value}")
                 return None
             
+    # def handle_group_by(self, data, group_by_column, columns):
+    #     # Setup
+    #     grouped_data = {}
+    #     agg_funcs = {}
+        
+    #     # Parsing columns for aggregate functions and their intended aliases
+    #     for col in columns:
+    #         agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
+    #         if agg_match:
+    #             agg_func, column_name, alias = agg_match.groups()
+    #             agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
+
+    #     # Grouping data
+    #     for row in data:
+    #         key = row[group_by_column]
+    #         if key not in grouped_data:
+    #             grouped_data[key] = []
+    #         grouped_data[key].append(row)
+
+    #     # Applying aggregation
+    #     result = []
+    #     for key, rows in grouped_data.items():
+    #         aggregated_row = {group_by_column: key}
+    #         for column_name, (agg_func, alias) in agg_funcs.items():
+    #             column_values = [self.safe_convert_to_numeric(row[column_name]) for row in rows if column_name in row and row[column_name] is not None]
+    #             if column_values:
+    #                 if agg_func == 'AVG':
+    #                     aggregated_row[alias] = sum(column_values) / len(column_values)
+    #                 elif agg_func == 'SUM':
+    #                     aggregated_row[alias] = sum(column_values)
+    #                 elif agg_func == 'MAX':
+    #                     aggregated_row[alias] = max(column_values)
+    #                 elif agg_func == 'MIN':
+    #                     aggregated_row[alias] = min(column_values)
+    #                 elif agg_func == 'COUNT':
+    #                     aggregated_row[alias] = len(column_values)
+    #         result.append(aggregated_row)
+
+    #     return result
     def handle_group_by(self, data, group_by_column, columns):
         # Setup
         grouped_data = {}
         agg_funcs = {}
-        
+
         # Parsing columns for aggregate functions and their intended aliases
         for col in columns:
+            # This regex extracts the aggregation function, the column it acts on, and an alias if provided
             agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
             if agg_match:
                 agg_func, column_name, alias = agg_match.groups()
+                # If an alias is specified, it should be used as the key in the output
                 agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
 
         # Grouping data
         for row in data:
+            # The key for grouping
             key = row[group_by_column]
             if key not in grouped_data:
                 grouped_data[key] = []
@@ -305,6 +350,7 @@ class ExecutionEngine:
             result.append(aggregated_row)
 
         return result
+
 
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])
@@ -409,26 +455,28 @@ class ExecutionEngine:
 if __name__ == "__main__":
     engine = ExecutionEngine()
     
-    command_1 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    # command_2 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
+    # command_1 = {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'join': [], 'where_clause': "state_code = 'AK' AND year = '2018'", 'group_by': None, 'order_by': None, 'having': None}
+    # {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    command_2 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'AVG(monthly_state_population) AS average_population'], 'join': [], 'where_clause': None, 'group_by': 'state_code', 'order_by': None, 'having': None}
+    # {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
     # command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
     # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A > 7', 'group_by': None, 'order_by': None, 'having': None}
     # command_5 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A != 7', 'group_by': None, 'order_by': None, 'having': None}
-    command_6 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A IN (2,3,4)', 'group_by': None, 'order_by': None, 'having': None}
+    # command_6 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A IN (2,3,4)', 'group_by': None, 'order_by': None, 'having': None}
     
 
-    print(command_1)
-    print(engine.execute_query(command_1))
-    # print(command_2)
-    # print(engine.execute_query(command_2))
+    # print(command_1)
+    # print(engine.execute_query(command_1))
+    print(command_2)
+    print(engine.execute_query(command_2))
     # print(command_3)
     # print(engine.execute_query(command_3))
     # print(command_4)
     # print(engine.execute_query(command_4))
     # print(command_5)
     # print(engine.execute_query(command_5))
-    print(command_6)
-    print(engine.execute_query(command_6))
+    # print(command_6)
+    # print(engine.execute_query(command_6))
 
 
     
