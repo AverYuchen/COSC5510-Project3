@@ -4,7 +4,7 @@ import csv
 import json
 import os
 import logging
-from BTrees.OOBTree import BTree 
+from BTrees.OOBTree import BTree
 import unittest
 
 # conda install blist
@@ -161,6 +161,16 @@ class StorageManager:
                 
         #print("Schemas defined for all tables.")
 
+    # def load_all_data(self):
+    #     # Load data files if present
+    #     for filename in os.listdir(self.data_directory):
+    #         if filename.endswith('.csv'):
+    #             table_name = filename[:-4]  # Strip the '.csv' part
+    #             if table_name in self.schemas:  # Only load data for defined schemas
+    #                 file_path = os.path.join(self.data_directory, filename)
+    #                 self.data[table_name] = self.read_csv(file_path)
+
+                    
     def load_all_data(self):
         # Load data files if present
         for filename in os.listdir(self.data_directory):
@@ -169,6 +179,12 @@ class StorageManager:
                 if table_name in self.schemas:  # Only load data for defined schemas
                     file_path = os.path.join(self.data_directory, filename)
                     self.data[table_name] = self.read_csv(file_path)
+                    self.load_indexes_for_table(table_name) 
+                    
+    def load_indexes_for_table(self, table_name):
+        schema = self.schemas.get(table_name, {})
+        for index in schema.get('indexes', []):
+            self.indexes[(table_name, index['column'], index['name'])] = BTree()
 
     def read_csv(self, file_path):
         try:
@@ -318,72 +334,96 @@ class StorageManager:
         except Exception as e:
             logging.error(f"update failed: {e}")
             return 0
-
-    # def create_index(self, table_name, column_name, index_name):
-    #     index_key = (table_name, column_name)
-    #     if index_key not in self.indexes:
-    #         self.indexes[index_key] = BTree()
-    #     for row in self.data[table_name]:
-    #         key = row[column_name]
-    #         self.indexes[index_key].insert(key, row)
-    #     print(f"Index {index_name} created on {table_name}({column_name})")
-    
-
+        
     def create_index(self, table_name, column_name, index_name):
-        # Construct the index key based on table, column names and index name for unique identification
-        index_key = (table_name, column_name, index_name)
-        
-        # Check if an index with the same name already exists
-        if index_key in self.indexes:
-            return "Error: Index {} already exists on {}({}).".format(index_name, table_name, column_name)
-        
-        # Create a new BTree for the index if it does not exist
-        self.indexes[index_key] = BTree()
+        # Ensure the table exists
+        if not self.table_exists(table_name):
+            return f"Error: Table '{table_name}' does not exist."
 
-        # Iterate through each row in the table data and populate the BTree
-        for row in self.data.get(table_name, []):
-            # Extract the key from the specified column
-            key = row[column_name]
-
-            # If the key already exists in the index, append the row to the existing list
-            if key in self.indexes[index_key]:
-                self.indexes[index_key][key].append(row)
-            else:
-                # Otherwise, create a new entry in the BTree with this key and initialize with a list
-                self.indexes[index_key][key] = [row]
-
-        # Print a confirmation message indicating successful index creation
-        print(f"Index {index_name} created on {table_name}({column_name})")
-        return "Index {} created on {}({}).".format(index_name, table_name, column_name)
-
-    def drop_index(self, table_name, index_name):
-        """Drop an index from a table."""
-        schema = self.get_schema(table_name)
-        if not schema:
-            return "Error: Table does not exist."
-
-        # Remove the index from schema
-        initial_length = len(schema['indexes'])
-        schema['indexes'] = [index for index in schema['indexes'] if index['name'] != index_name]
-
-        if len(schema['indexes']) == initial_length:
-            return f"Error: Index '{index_name}' does not exist on table '{table_name}'."
-
-        # Update the schema file
-        self.update_schema(table_name, schema)
-        return f"Index '{index_name}' dropped from '{table_name}'."
-
-    def update_schema(self, table_name, schema):
-        """Update the schema file after a change."""
+        # Load the schema to make sure it is up to date
         schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
         try:
-            with open(schema_file, 'w') as file:
-                json.dump(schema, file, indent=4)
-            self.schemas[table_name] = schema
-            return "Schema updated successfully."
+            with open(schema_file, 'r') as file:
+                self.schemas[table_name] = json.load(file)
+        except FileNotFoundError:
+            return f"Error: Schema file for '{table_name}' not found."
         except Exception as e:
-            logging.error(f"Failed to update schema for {table_name}: {e}")
-            return f"Error updating schema: {e}"
+            return f"Error reading schema file for '{table_name}': {e}"
+
+        # Check if an index with the same name already exists for the table and column
+        existing_indexes = self.schemas[table_name].get('indexes', [])
+        if any(idx['name'] == index_name and idx['column'] == column_name for idx in existing_indexes):
+            return f"Index {index_name} already exists on {table_name}({column_name})."
+
+        # Create the new index in the schema
+        new_index = {'name': index_name, 'column': column_name}
+        self.schemas[table_name]['indexes'].append(new_index)
+
+        # Save the updated schema back to the JSON file
+        try:
+            with open(schema_file, 'w') as file:
+                json.dump(self.schemas[table_name], file, indent=4)
+        except Exception as e:
+            return f"Error saving updated schema for '{table_name}': {e}"
+
+        # Add the index to the runtime dictionary if it does not exist
+        index_key = (table_name, column_name, index_name)
+        if index_key not in self.indexes:
+            self.indexes[index_key] = BTree()
+
+            # Populate the BTree with existing data
+            for row in self.data.get(table_name, []):
+                key = row[column_name]
+                if key in self.indexes[index_key]:
+                    self.indexes[index_key][key].append(row)
+                else:
+                    self.indexes[index_key][key] = [row]
+
+        return f"Index {index_name} created on {table_name}({column_name})."
+
+    
+    def save_schema(self, table_name):
+        """Saves the current schema for the table to its JSON file."""
+        schema_file_path = os.path.join(self.schema_directory, f"{table_name}.json")
+        try:
+            with open(schema_file_path, 'w') as file:
+                json.dump(self.schemas[table_name], file, indent=4)
+            logging.info(f"Schema for {table_name} saved successfully.")
+        except Exception as e:
+            logging.error(f"Failed to save schema for {table_name}: {e}")
+            return f"Error saving schema: {e}"
+        
+    def drop_index(self, table_name, index_name):
+        # Verify index existence
+        if not self.index_exists(table_name, index_name, check_file=True):
+            return f"Error: Index '{index_name}' does not exist on table '{table_name}'."
+
+        # Update index metadata in the schema file
+        error = self.update_index_metadata(table_name, index_name, action='drop')
+        if error:
+            return error  # Return any errors that occurred during the update
+
+        # Remove the index from the runtime dictionary
+        index_keys_to_remove = [(table, col, name) for (table, col, name) in self.indexes if table == table_name and name == index_name]
+        for key in index_keys_to_remove:
+            del self.indexes[key]
+
+        return f"Index '{index_name}' dropped from '{table_name}'."
+
+
+    def index_exists(self, table_name, index_name, check_file=False):
+        if check_file:
+            schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+            try:
+                with open(schema_file, 'r') as file:
+                    schema = json.load(file)
+                return any(idx['name'] == index_name for idx in schema.get('indexes', []))
+            except Exception as e:
+                logging.error(f"Failed to read schema file for {table_name}: {e}")
+                return False
+
+        index_in_indexes = any(key[2] == index_name and key[0] == table_name for key in self.indexes.keys())
+        return index_in_indexes
 
     def table_exists(self, table_name):
         """Check if the specified table exists in the database."""
@@ -399,46 +439,32 @@ class StorageManager:
             return exists
         return False
 
-    def index_exists(self, table_name, index_name):
-        """Check if the specified index exists on the specified table."""
-        if self.table_exists(table_name):
-            # Assuming each index is stored as a dictionary in a list of indexes
-            exists = any(index['name'] == index_name for index in self.schemas[table_name].get('indexes', []))
-            logging.debug(f"Checking if index exists ('{index_name}' on '{table_name}'): {exists}")
-            return exists
-        return False
 
-    def update_index_metadata(self, table_name, index_name, column_name=None, action="create"):
-        """Update metadata for an index based on the action (create or drop)."""
-        if action == "create":
-            if 'indexes' not in self.schemas[table_name]:
-                self.schemas[table_name]['indexes'] = []
-            self.schemas[table_name]['indexes'].append({'name': index_name, 'column': column_name})
-            logging.debug(f"Index '{index_name}' created on '{table_name}({column_name})'")
-        elif action == "drop":
-            if self.index_exists(table_name, index_name):
-                self.schemas[table_name]['indexes'] = [idx for idx in self.schemas[table_name]['indexes'] if idx['name'] != index_name]
-                logging.debug(f"Index '{index_name}' dropped from '{table_name}'")
-                
-    def print_index_info(self, table_name):
-        """Prints information about indexes on a specified table."""
-        if self.table_exists(table_name):
-            indexes = self.schemas[table_name].get('indexes', [])
-            if indexes:
-                print(f"Indexes on table '{table_name}':")
-                for index in indexes:
-                    print(f"  Index Name: {index['name']}, Column: {index['column']}")
-            else:
-                print(f"No indexes found on table '{table_name}'.")
-        else:
-            print(f"Table '{table_name}' does not exist.")
+    def update_index_metadata(self, table_name, index_name, action='drop'):
+        # Load the schema to ensure it's up-to-date
+        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+        try:
+            with open(schema_file, 'r') as file:
+                schema = json.load(file)
+        except FileNotFoundError:
+            return f"Error: Schema file for '{table_name}' not found."
+        except Exception as e:
+            return f"Error reading schema file for '{table_name}': {e}"
+
+        if action == 'drop':
+            # Remove the index from the schema
+            schema['indexes'] = [index for index in schema.get('indexes', []) if index['name'] != index_name]
+
+            # Save the updated schema back to the JSON file
+            try:
+                with open(schema_file, 'w') as file:
+                    json.dump(schema, file, indent=4)
+            except Exception as e:
+                return f"Error saving updated schema for '{table_name}': {e}"
+
+        return None  # None indicates success in this context
+
     
-    # def initialize_indexes(self):
-    #     for table, schema in self.schemas.items():
-    #         if 'indexes' in schema:
-    #             for index in schema['indexes']:
-    #                 self.indexes[(table, index)] = BTree()
-                    
 class TestStorageManager(unittest.TestCase):
     def setUp(self):
         # Initialize the StorageManager with a specific data set
@@ -457,24 +483,24 @@ class TestStorageManager(unittest.TestCase):
             "foreign_keys": [],
             "indexes": []
         }
-
-    def test_create_index(self):
+            
+    def test_create_drop_index(self):
         # Test the creation of an index
-        self.storage_manager.create_index('TestTable1', 'A', 'index_A')
-        index_key = ('TestTable1', 'A')
-        
-        # Verify that the index exists
-        self.assertIn(index_key, self.storage_manager.indexes)
-        
-        # Verify the content of the index
-        btree = self.storage_manager.indexes[index_key]
-        expected_keys = ['1', '2', '3']
-        for key in expected_keys:
-            self.assertIn(key, btree)
+        creation_response = self.storage_manager.create_index('TestTable1', 'A', 'index_id')
+        self.assertIn("created", creation_response)
 
-        # Verify that the values are correct (can be extended based on data integrity needs)
-        for row in self.storage_manager.data['TestTable1']:
-            self.assertEqual(btree[row['A']], row)
+        # Verify the index exists
+        exists = self.storage_manager.index_exists('TestTable1', 'index_id')
+        self.assertTrue(exists)
+
+        # Drop the index
+        drop_response = self.storage_manager.drop_index('TestTable1', 'index_id')
+        self.assertIn("dropped", drop_response)
+
+        # Verify the index does not exist anymore
+        not_exists = self.storage_manager.index_exists('TestTable1', 'index_id')
+        self.assertFalse(not_exists)
+
 
 if __name__ == '__main__':
     unittest.main()

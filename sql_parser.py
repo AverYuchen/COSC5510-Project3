@@ -351,8 +351,8 @@ if __name__ == "__main__":
         # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
         # "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
         # "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-         "INSERT INTO test_table (id, name) VALUES (1, 'Hachii')",
-        # "DELETE FROM test_table WHERE id = 0",
+        #  "INSERT INTO test_table (id, name) VALUES (1, 'Hachii')",
+        "DELETE FROM test_table WHERE id = 0",
         # "SELECT MAX(monthly_state_population) FROM state_population",
         # "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
         # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code WHERE b.state = 'Alaska'",
@@ -378,10 +378,10 @@ if __name__ == "__main__":
         # "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
         # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
         # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
-       " UPDATE TABLE TestTable1 SET B = 'Data2_10' WHERE A = '10';",
-       "UPDATE test_table SET name = 'test' WHERE id = 485; ",
-       " INSERT INTO employees_7 (employee_id, name, salary) VALUES (1, 'Emma', 140000);"
-       "DELETE FROM TestTable2 WHERE A = 11;"
+    #    " UPDATE TABLE TestTable1 SET B = 'Data2_10' WHERE A = '10';",
+    #    "UPDATE test_table SET name = 'test' WHERE id = 485; ",
+    #    " INSERT INTO employees_7 (employee_id, name, salary) VALUES (1, 'Emma', 140000);"
+    #    "DELETE FROM TestTable2 WHERE A = 11;"
         
     ]
 

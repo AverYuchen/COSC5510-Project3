@@ -1,15 +1,18 @@
 {
-    "columns": {
-        "A": {
-            "type": "int"
-        },
-        "B": {
-            "type": "varchar"
-        }
+  "columns": {
+    "A": {
+      "type": "int"
     },
-    "primary_key": [
-        "A"
-    ],
-    "foreign_keys": [],
-    "indexes": []
+    "B": {
+      "type": "varchar"
+    }
+  },
+  "primary_key": ["A"],
+  "foreign_keys": [],
+  "indexes": [
+    {
+      "name": "index_id",
+      "column": "B"
+    }
+  ]
 }
