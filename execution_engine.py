@@ -30,7 +30,7 @@ class ExecutionEngine:
             logging.error("Select command is missing 'main_table' or 'columns'")
             return "Invalid command format"
         main_table = command['main_table']
-        data = self.dml_manager.select(main_table, command['columns'])
+        data = self.dml_manager.select(main_table, ['*'])
         # data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
         
         # Check for the presence of any aggregation functions in the columns specification
@@ -58,7 +58,10 @@ class ExecutionEngine:
         if 'having' in command and command['having']:
             data = self.handle_having(data, command['having'])
 
-        return data
+        #get the needed columns
+        final_data = self.filter_select_columns(data, command['columns'])
+
+        return final_data
     
     def filter_data_by_condition(self, data, where_clause):
         if where_clause is None:
@@ -70,7 +73,8 @@ class ExecutionEngine:
 
 
     def filter_select_columns(self, data, select_columns):
-        filtered_data = []
+        final_data = []
+        """
         for row in data:
             filtered_row = {}
             for col in select_columns:
@@ -82,7 +86,14 @@ class ExecutionEngine:
                 except ValueError:
                     logging.error(f"Invalid column format: {col}")
             filtered_data.append(filtered_row)
-        return filtered_data
+        """
+        for row in data:
+            filtered_data = {}
+            for key, value in row.items():
+                if key in select_columns:
+                    filtered_data[key] = value
+            final_data.append(filtered_data)
+        return final_data
 
     def parse_join_condition(self, condition):
         try:
@@ -367,11 +378,13 @@ class ExecutionEngine:
         else:
             value = self.safe_convert_to_numeric_where(value)
             if operator == "=": operator = "=="
+            print(row)
             result = self.compare_values(row.get(column), value, operator)
             logging.debug(f"Comparison operator {operator} result: {result}")
             return result
     
     def compare_values(self, row_value, value, operator):
+        print(row_value)
         row_value = self.safe_convert_to_numeric_where(row_value)
         if operator == "==":
             return row_value == value
