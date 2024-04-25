@@ -72,7 +72,6 @@ class DMLManager:
         self.storage_manager.load_latest_schema()
         try:
             condition_function = self.parse_conditions(conditions)
-
             result = self.storage_manager.delete_data(table_name, condition_function)
             return result
         except Exception as e:
@@ -411,18 +410,7 @@ class DMLManager:
         except ValueError:
             return 0
     
-    def having(self, aggregated_data, condition):
-        print("Debug dml: Applying HAVING condition:", condition)
-        
-        # Parse the condition
-        condition_function = self.parse_conditions(condition)
-        
-        # Filter aggregated data based on the condition
-        filtered_data = {key: value for key, value in aggregated_data.items() if condition_function(value)}
-        
-        print("Debug: Filtered data after HAVING condition:", filtered_data)
-        
-        return filtered_data
+
 
     def order_by(self, data, order_column, ascending=True):
             # Convert string numeric data to integers before sorting

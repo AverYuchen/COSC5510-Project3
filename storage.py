@@ -246,7 +246,7 @@ class StorageManager:
             return "Error: Invalid condition syntax"
 
         try:
-            initial_data = self.get_table_data(table_name)
+            initial_data = self.get_table_data_w_datatype(table_name)
             print(initial_data)
             new_data = [row for row in initial_data if not condition_func(row)]
             rows_deleted = len(initial_data) - len(new_data)
@@ -351,6 +351,7 @@ class StorageManager:
         
     def create_index(self, table_name, column_name, index_name):
         # Ensure the table exists
+        self.load_latest_data()
         if not self.table_exists(table_name):
             return f"Error: Table '{table_name}' does not exist."
 
@@ -393,6 +394,7 @@ class StorageManager:
                 else:
                     self.indexes[index_key][key] = [row]
 
+        self.load_latest_schema()
         return f"Index {index_name} created on {table_name}({column_name})."
 
     def save_schema(self, table_name):
@@ -408,6 +410,7 @@ class StorageManager:
         
     def drop_index(self, table_name, index_name):
         # Verify index existence
+        self.load_latest_schema()
         if not self.index_exists(table_name, index_name, check_file=True):
             return f"Error: Index '{index_name}' does not exist on table '{table_name}'."
 
@@ -421,6 +424,7 @@ class StorageManager:
         for key in index_keys_to_remove:
             del self.indexes[key]
 
+        self.load_latest_schema()
         return f"Index '{index_name}' dropped from '{table_name}'."
 
     def index_exists(self, table_name, index_name, check_file=False):
