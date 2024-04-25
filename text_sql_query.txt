@@ -8,7 +8,7 @@ SELECT B FROM TestTable1
 <WHERE>
 
 SELECT state FROM state_abbreviation WHERE state = 'Alaska'
-(Debug - Returning all column when where is included) SELECT B FROM TestTable1 WHERE B = 'Data1_3'
+SELECT B FROM TestTable1 WHERE B = 'Data1_3'
 SELECT A, B FROM TestTable1 WHERE B = 'Data1_3'
 
 

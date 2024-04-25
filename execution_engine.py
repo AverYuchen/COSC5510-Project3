@@ -77,6 +77,7 @@ class ExecutionEngine:
         final_data = self.filter_select_columns(data, command['columns'])
 
         return final_data
+
     
     def select_with_index(self, command):
         main_table = command['main_table']
@@ -86,23 +87,26 @@ class ExecutionEngine:
         # Initialize data collection
         data = []
 
-        # If a WHERE clause exists and is not empty
         if where_clause:
-            for column in columns:
-                # Regex to find the value for the indexed column in WHERE clause
-                pattern = rf"{column}\s*=\s*['\"]?([^'\"]+)['\"]?"
-                match = re.search(pattern, where_clause)
-                if match and self.storage_manager.column_has_index(main_table, column):
-                    value = match.group(1)
-                    indexed_data = self.dml_manager.select_with_index(main_table, column, value)
-                    data.extend(indexed_data)
-                    break  # Assume only one index is used
+            # Regex to find the value for the indexed column in WHERE clause
+            pattern = rf"{columns[0]}\s*=\s*['\"]?([^'\"]+)['\"]?"  # Assuming column[0] is the indexed column
+            match = re.search(pattern, where_clause)
+            if match and self.storage_manager.column_has_index(main_table, columns[0]):
+                value = match.group(1)
+                # Fetch only the requested column using the index
+                indexed_data = self.dml_manager.select_with_index(main_table, columns[0], value)
+                # Format data to include only requested columns
+                data.extend([{col: row.get(col) for col in columns} for row in indexed_data])
+            else:
+                # No match found in WHERE clause for indexed column, fall back to full table scan but limited to requested columns
+                data = self.dml_manager.select(main_table, columns)
         else:
-            # Perform a regular select if no suitable index is found
+            # If no WHERE clause, perform a regular select on specified columns
             logging.debug("No WHERE clause or no index match, performing full table scan.")
-            return self.dml_manager.select(main_table, columns)
+            data = self.dml_manager.select(main_table, columns)
 
         return data
+
 
 
     def finalize_selection(self, data, command):
@@ -260,35 +264,7 @@ class ExecutionEngine:
         logging.error("Unsupported join type")
         return main_data
     
-    # def handle_aggregations(self, command, data_manager, conditions=None):
-    #     table = command['main_table']
-    #     column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
-    #     match = re.match(r'(\w+)\((\w+)\)', column)
-    #     if match:
-    #         agg_func, agg_column = match.groups()
-    #         data = data_manager.select(table, [agg_column], conditions)
 
-    #         # Convert data to numeric values
-    #         numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
-
-    #         # Perform the aggregation
-    #         if agg_func.upper() == 'MAX':
-    #             result = max(numeric_data)
-    #         elif agg_func.upper() == 'MIN':
-    #             result = min(numeric_data)
-    #         elif agg_func.upper() == 'SUM':
-    #             result = sum(numeric_data)
-    #         elif agg_func.upper() == 'AVG':
-    #             result = sum(numeric_data) / len(numeric_data) if numeric_data else None
-    #         elif agg_func.upper() == 'COUNT':
-    #             result = len(numeric_data)
-    #         else:
-    #             return "Unsupported aggregation function"
-
-    #         return {column: result}
-
-    #     return "No valid aggregation found"
-    
     def parse_columns_for_aggregation(self, columns):
         # This regex now correctly captures potential spaces around the AS keyword
         agg_funcs = {}
