@@ -38,52 +38,87 @@ class ExecutionEngine:
         else:
             logging.debug("No index found, selecting without index.")
             return self.select_no_index(command)
-
-        
+    
     def select_no_index(self, command):
         if 'main_table' not in command or not command['columns']:
             logging.error("Select command is missing 'main_table' or 'columns'")
             return "Invalid command format"
-        main_table = command['main_table']
-        data = self.dml_manager.select(main_table, ['*'])
-        # data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
         
-        # Check for the presence of any aggregation functions in the columns specification
-        if 'columns' in command and command['columns']:
-            if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
-                # If an aggregation function is found, handle the aggregation
-                return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
-                result =  self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
-                if 'having' in command and command['having']:
-                    data = self.handle_having(result, command['having'])
-                return result
-        if 'join' in command and command['join']:
-            select_columns = command['columns']  # This assumes that columns are specified in command.
-            for join in command['join']:
-                data = self.handle_join(data, join, main_table, select_columns)
-            
+        main_table = command['main_table']
+        data = self.dml_manager.select(main_table, ['*'])  # Fetch all rows from the table
+
+        # Apply WHERE clause filtering at the very beginning
         if 'where_clause' in command:
             data = self.filter_data_by_condition(data, command['where_clause'])
 
+        # Process JOINs if specified
+        if 'join' in command:
+            for join in command['join']:
+                data = self.handle_join(data, join, main_table, command['columns'])
 
-        if 'group_by' in command and command['group_by']:
+        # Check for the presence of aggregation functions
+        aggregation_needed = any(
+            func in col.upper() for col in command['columns'] for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']
+        )
+
+        # Handle GROUP BY with or without aggregation
+        if 'group_by' in command and command['group_by'] is not None:
             data = self.handle_group_by(data, command['group_by'], command['columns'])
+            # Apply HAVING clause if present
             if 'having' in command and command['having']:
                 data = self.handle_having(data, command['having'])
-            print("Data after grouping:", data)
+        elif aggregation_needed:
+            # Process non-grouped aggregations
+            data = self.handle_aggregations(command, data)
 
+        # If ORDER BY is specified, sort the data accordingly
         if 'order_by' in command and command['order_by']:
             data = self.handle_order_by(data, command['order_by'])
-       
-        """
-        if 'having' in command and command['having']:
-            data = self.handle_having(data, command['having'])
-        """
-        #get the needed columns
+
+        # Only return the columns specified in the SELECT clause
         final_data = self.filter_select_columns(data, command['columns'])
-
         return final_data
+    
+    def handle_aggregations(self, command, data):
+        # Assume data is a list of dictionaries, each representing a row
+        results = {}
+        for column in command['columns']:
+            # Extract the function and column name (e.g., "MAX(monthly_state_population)")
+            match = re.match(r"(\w+)\((\w+)\)", column)
+            if match:
+                func, col_name = match.groups()
+                try:
+                    # Attempt to convert data to numeric types before aggregation
+                    values = [self.safe_convert_to_numeric(row[col_name]) for row in data if col_name in row and row[col_name] is not None]
+                except ValueError as e:
+                    logging.error(f"Error converting data to numeric type for column {col_name}: {e}")
+                    continue  # Skip this column if conversion fails
 
+                # Perform the aggregation operation
+                if func.upper() == 'MAX':
+                    results[column] = max(values) if values else None
+                elif func.upper() == 'MIN':
+                    results[column] = min(values) if values else None
+                elif func.upper() == 'SUM':
+                    results[column] = sum(values) if values else None
+                elif func.upper() == 'AVG':
+                    results[column] = sum(values) / len(values) if values else None
+                elif func.upper() == 'COUNT':
+                    results[column] = len(values)
+
+        return [results]  # Return a list containing a single dictionary
+
+    @staticmethod
+    def safe_convert_to_numeric(value):
+        try:
+            # Convert to float if possible, otherwise to int
+            return float(value)
+        except ValueError:
+            try:
+                return int(value)
+            except ValueError:
+                logging.error(f"Conversion to numeric failed for value: {value}")
+                return None
     
     def select_with_index(self, command):
         main_table = command['main_table']
@@ -146,6 +181,10 @@ class ExecutionEngine:
         return filtered_data
     
     def filter_select_columns(self, data, select_columns):
+        
+        if '*' in select_columns:
+            return data
+        
         final_data = []
         for row in data:
             filtered_row = {}
@@ -397,37 +436,6 @@ class ExecutionEngine:
                 agg_funcs[column_name] = (agg_func.upper(), alias)
         return agg_funcs
 
-    
-    def handle_aggregations(self, command, data_manager, conditions=None):
-        table = command['main_table']
-        agg_requests = command['columns']  # Support multiple aggregation requests
-        results = []
-
-        for column in agg_requests:
-            match = re.match(r'(\w+)\((\w+)\)\s*(AS\s*\w+)?', column)
-            if match:
-                agg_func, agg_column, alias = match.groups()
-                alias = alias[3:].strip() if alias else agg_column  # Correctly handle alias
-                data = data_manager.select(table, [agg_column], conditions)
-                numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
-
-                # Perform the aggregation and respect the alias
-                if agg_func.upper() == 'AVG':
-                    result = sum(numeric_data) / len(numeric_data) if numeric_data else None
-                elif agg_func.upper() == 'SUM':
-                    result = sum(numeric_data)
-                elif agg_func.upper() == 'MAX':
-                    result = max(numeric_data)
-                elif agg_func.upper() == 'MIN':
-                    result = min(numeric_data)
-                elif agg_func.upper() == 'COUNT':
-                    result = len(numeric_data)
-
-                results.append({alias: result})
-
-        return results
-
-
     def handle_order_by(self, data, order_by_clause):
         import re
         column, order = re.split(r'\s+', order_by_clause)
@@ -450,17 +458,7 @@ class ExecutionEngine:
 
     def handle_unsupported(self, command):
         return "Unsupported command type"
-        
-    @staticmethod
-    def safe_convert_to_numeric(value):
-        try:
-            return float(value)
-        except ValueError:
-            try:
-                return int(value)
-            except ValueError:
-                logging.error(f"Conversion to numeric failed for value: {value}")
-                return None
+
         
     
     def handle_group_by(self, data, group_by_column, columns):
@@ -570,7 +568,7 @@ class ExecutionEngine:
             if 'OR' in conditions:
                 left, right = conditions.split('OR', 1)
                 return eval_condition(row, left.strip()) or eval_condition(row, right.strip())
-            pattern = r"\(?(.*)\)?\s*(=|!=|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
+            pattern = r"\(?(.*)\)?\s*(=|!|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
             match = re.match(pattern, conditions.strip(), re.IGNORECASE)
             if not match:
                 raise ValueError("Invalid WHERE clause format")
@@ -600,17 +598,24 @@ class ExecutionEngine:
         else:
             value = self.safe_convert_to_numeric_where(value)
             if operator == "=": operator = "=="
+            # elif operator == "!=": operator = "!="  # No change needed, just making it explicit
             result = self.compare_values(row.get(column), value, operator)
             logging.debug(f"Comparison operator {operator} result: {result}")
             return result
+
     
     def compare_values(self, row_value, value, operator):
+        # First, ensure that values are properly converted or reported if None
         row_value = self.safe_convert_to_numeric_where(row_value)
+        value = self.safe_convert_to_numeric_where(value)
+
+        # Add logging to check values just before comparison
+        logging.debug(f"Pre-comparison: Row Value: {row_value} ({type(row_value)}), Value: {value} ({type(value)}), Operator: {operator}")
         
-        if operator == "==":
-            return row_value == value
-        elif operator == "!=":
+        if operator == "!":
             return row_value != value
+        elif operator == "==":
+            return row_value == value
         elif operator == "<":
             return row_value < value
         elif operator == ">":
@@ -620,42 +625,20 @@ class ExecutionEngine:
         elif operator == ">=":
             return row_value >= value
 
+
     def safe_convert_to_numeric_where(self, value):
         try:
-            if isinstance(value, int) or isinstance(value, float):
-                return value
-            else: 
-                return int(value)
-            #return float(value) if '.' in value or 'e' in value.lower() else int(value)
+            if value is None:
+                logging.debug("Received None value; original value is None.")
+                return None
+            return int(value)
         except ValueError:
-            return value  # Return as string if conversion isn't possible
-        
+            try:
+                return float(value)
+            except ValueError:
+                logging.error(f"Conversion failed for value: {value}, returning None.")
+                return None
+
 # Example usage
 if __name__ == "__main__":
     engine = ExecutionEngine()
-    
-    command_1 = {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'join': [], 'where_clause': "state_code = 'AK' AND year = '2018'", 'group_by': None, 'order_by': None, 'having': None}
-    {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    command_2 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'AVG(monthly_state_population) AS average_population'], 'join': [], 'where_clause': None, 'group_by': 'state_code', 'order_by': None, 'having': None}
-    {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
-    command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    # command_4 = 
-    # command_5 = 
-    # command_6 = 
-    
-
-    print(command_1)
-    print(engine.execute_query(command_1))
-    print(command_2)
-    print(engine.execute_query(command_2))
-    print(command_3)
-    print(engine.execute_query(command_3))
-    # print(command_4)
-    # print(engine.execute_query(command_4))
-    # print(command_5)
-    # print(engine.execute_query(command_5))
-    # print(command_6)
-    # print(engine.execute_query(command_6))
-
-
-    
