@@ -202,6 +202,15 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Error reading schema file {schema_path}: {e}")
         return schema
+    
+    def load_latest_schema(self):
+        self.schemas = {}
+        self.define_schemas()
+        self.load_schemas()
+    
+    def load_latest_data(self):
+        self.data = {}
+        self.load_all_data()
 
     def get_schema(self, table_name):
         schema = self.schemas.get(table_name)
@@ -212,11 +221,11 @@ class StorageManager:
         return schema
 
     def create_schema(self, table_name, schema):
-        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
-        with open(schema_file, "w") as json_file:
-            json.dump(schema, json_file)
         if table_name not in self.schemas:
             self.schemas[table_name] = schema
+            schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+            with open(schema_file, "w") as json_file:
+                json.dump(schema, json_file)
             return "Schema for {0} created successfully.".format(table_name)
         else:
             return "Error: Schema for {0} already exists.".format(table_name)
@@ -225,6 +234,8 @@ class StorageManager:
         schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
         if os.path.exists(schema_file):
             os.remove(schema_file)
+            self.load_latest_schema()
+            self.load_latest_data()
             return "Schema file {0} is dropped successfully".format(table_name)
         else:
             return "Error: Drop schema task fail, the schema file not existed."
@@ -235,7 +246,7 @@ class StorageManager:
             return "Error: Invalid condition syntax"
 
         try:
-            initial_data = self.get_table_data(table_name)
+            initial_data = self.get_table_data_w_datatype(table_name)
             print(initial_data)
             new_data = [row for row in initial_data if not condition_func(row)]
             rows_deleted = len(initial_data) - len(new_data)
@@ -340,6 +351,7 @@ class StorageManager:
         
     def create_index(self, table_name, column_name, index_name):
         # Ensure the table exists
+        self.load_latest_data()
         if not self.table_exists(table_name):
             return f"Error: Table '{table_name}' does not exist."
 
@@ -382,6 +394,7 @@ class StorageManager:
                 else:
                     self.indexes[index_key][key] = [row]
 
+        self.load_latest_schema()
         return f"Index {index_name} created on {table_name}({column_name})."
 
     def save_schema(self, table_name):
@@ -397,6 +410,7 @@ class StorageManager:
         
     def drop_index(self, table_name, index_name):
         # Verify index existence
+        self.load_latest_schema()
         if not self.index_exists(table_name, index_name, check_file=True):
             return f"Error: Index '{index_name}' does not exist on table '{table_name}'."
 
@@ -410,6 +424,7 @@ class StorageManager:
         for key in index_keys_to_remove:
             del self.indexes[key]
 
+        self.load_latest_schema()
         return f"Index '{index_name}' dropped from '{table_name}'."
 
     def index_exists(self, table_name, index_name, check_file=False):

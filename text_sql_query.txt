@@ -39,6 +39,8 @@ SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP B
 
 SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
 
+<HAVING> 
+SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code HAVING COUNT(monthly_state_population) > 4;
 
 <JOIN> 
 
@@ -62,16 +64,16 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 <comparison operators >
 SELECT A, B FROM TestTable1 WHERE A = 5 
-SELECT A, B FROM TestTable1 WHERE A != 5
+SELECT A, B FROM TestTable1 WHERE A != 5 
 SELECT A, B FROM TestTable1 WHERE A > 5
 SELECT A, B FROM TestTable1 WHERE A < 5
-SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - NOT DONE
+SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - DONE
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
 
 <HAVING> - NOT DONE
 
-SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
+SELECT state_code, COUNT(monthly_state_population) AS total_population FROM state_population GROUP BY state_code HAVING total_population > 10; 
 
 
 <CREATE>
@@ -81,13 +83,11 @@ CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary IN
 <INSERT: successful>
 INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
-CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
-
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
-<Debug>
-INSERT INTO employees (id, name, salary) VALUES (21, 'Ellen', 253789);
+<successful>
+INSERT INTO employees (employee_id, name, salary) VALUES (21, 'Ellen', 253789);
 
 <INSERT: fail due to datatype confliction>
 INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
@@ -103,8 +103,8 @@ UPDATE test_table SET id = 'test' WHERE name = DemoUpdate;
 
 <DELETE>
 
-DELETE FROM test_table WHERE id = 21;
+DELETE FROM test_table WHERE id = 21; 
 
 <INDEX>
 CREATE INDEX index_id ON TestTable1 (B);
-DROP INDEX index_id ON TestTable1;
+DROP INDEX index_id ON TestTable1; 

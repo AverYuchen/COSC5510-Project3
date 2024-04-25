@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 class ExecutionEngine:
     def __init__(self):
         self.storage_manager = StorageManager()
-        self.dml_manager = DMLManager(self.storage_manager)
         self.ddl_manager = DDLManager()
+        self.dml_manager = DMLManager()
 
     def execute_query(self, command):
         try:
@@ -53,7 +53,10 @@ class ExecutionEngine:
             if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
                 # If an aggregation function is found, handle the aggregation
                 return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
-        
+                result =  self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
+                if 'having' in command and command['having']:
+                    data = self.handle_having(result, command['having'])
+                return result
         if 'join' in command and command['join']:
             select_columns = command['columns']  # This assumes that columns are specified in command.
             for join in command['join']:
@@ -65,14 +68,17 @@ class ExecutionEngine:
 
         if 'group_by' in command and command['group_by']:
             data = self.handle_group_by(data, command['group_by'], command['columns'])
+            if 'having' in command and command['having']:
+                data = self.handle_having(data, command['having'])
             print("Data after grouping:", data)
 
         if 'order_by' in command and command['order_by']:
             data = self.handle_order_by(data, command['order_by'])
-
+       
+        """
         if 'having' in command and command['having']:
             data = self.handle_having(data, command['having'])
-
+        """
         #get the needed columns
         final_data = self.filter_select_columns(data, command['columns'])
 
@@ -429,11 +435,8 @@ class ExecutionEngine:
 
     def handle_having(self, grouped_data, having_clause):
         # Example simple HAVING clause handler; expand as needed
-        result = []
-        for item in grouped_data:
-            if eval(having_clause, {}, item):
-                result.append(item)
-        return result
+        data = self.filter_data_by_condition(grouped_data, having_clause)
+        return data
         
     def handle_insert(self, command):
         return self.dml_manager.insert(command['table'], command['data'])
@@ -551,14 +554,22 @@ class ExecutionEngine:
     
     def parse_condition_to_function(self, where_clause):
         def eval_condition(row, conditions):
-            if 'AND' in conditions:
+            if 'BETWEEN' in conditions and 'AND' in conditions:
+                pattern = r"(\w+)\s*(BETWEEN)\s*(.*)\s*(AND)\s*(.*)"
+                match = re.match(pattern, conditions.strip(), re.IGNORECASE)
+                if not match:
+                    raise ValueError("Invalid BETWEEN clause format")
+                column, between_operator, value_1, and_operator, value_2 = match.groups()
+                print([column, value_1, value_2])
+                return self.apply_operator(row, column.strip(), ">=", value_1.strip().strip("'")) and self.apply_operator(row, column.strip(), "<=", value_2.strip().strip("'"))
+            
+            if 'AND' in conditions and 'BETWEEN' not in conditions:
                 left, right = conditions.split('AND', 1)
                 return eval_condition(row, left.strip()) and eval_condition(row, right.strip())
             if 'OR' in conditions:
                 left, right = conditions.split('OR', 1)
                 return eval_condition(row, left.strip()) or eval_condition(row, right.strip())
-            
-            pattern = r"(\w+)\s*(=|!=|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
+            pattern = r"\(?(.*)\)?\s*(=|!=|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
             match = re.match(pattern, conditions.strip(), re.IGNORECASE)
             if not match:
                 raise ValueError("Invalid WHERE clause format")
@@ -580,20 +591,21 @@ class ExecutionEngine:
             result = regex.match(row.get(column)) is not None
             logging.debug(f"LIKE operator result: {result}")
             return result
+            """
         elif "BETWEEN" in operator:
             # Ensure proper handling of BETWEEN
             value = value[len("BETWEEN"):].strip()  # Remove the 'BETWEEN' keyword and strip any leading/trailing whitespace
+            """
         else:
             value = self.safe_convert_to_numeric_where(value)
             if operator == "=": operator = "=="
-            print(row)
             result = self.compare_values(row.get(column), value, operator)
             logging.debug(f"Comparison operator {operator} result: {result}")
             return result
     
     def compare_values(self, row_value, value, operator):
-        print(row_value)
         row_value = self.safe_convert_to_numeric_where(row_value)
+        
         if operator == "==":
             return row_value == value
         elif operator == "!=":
@@ -609,7 +621,11 @@ class ExecutionEngine:
 
     def safe_convert_to_numeric_where(self, value):
         try:
-            return float(value) if '.' in value or 'e' in value.lower() else int(value)
+            if isinstance(value, int) or isinstance(value, float):
+                return value
+            else: 
+                return int(value)
+            #return float(value) if '.' in value or 'e' in value.lower() else int(value)
         except ValueError:
             return value  # Return as string if conversion isn't possible
         

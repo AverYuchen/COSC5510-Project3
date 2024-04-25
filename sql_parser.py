@@ -179,7 +179,7 @@ def parse_select(sql):
     if where_match:
         result['where_clause'] = where_match.group(1).strip()
     if group_by_match:
-        result['group_by'] = group_by_match.group(1).strip()
+        result['group_by'] = group_by_match.group(1).strip().split(" ")[0]
     if order_by_match:
         result['order_by'] = order_by_match.group(1).strip()
     if having_match:
@@ -368,7 +368,8 @@ if __name__ == "__main__":
         'SELECT A, B FROM TestTable1 WHERE A > 5',
         "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
         "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
-        "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)"
+        "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
+        "SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country HAVING COUNT(CustomerID) > 5; "
         
     ]
 
