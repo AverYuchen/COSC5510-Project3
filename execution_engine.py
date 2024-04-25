@@ -23,9 +23,19 @@ class ExecutionEngine:
         except Exception as e:
             logging.error(f"Execution error: {e}", exc_info=True)
             return f"Execution error: {e}"
-
-
+        
     def handle_select(self, command):
+        if 'main_table' not in command or not command['columns']:
+            logging.error("Select command is missing 'main_table' or 'columns'")
+            return "Invalid command format"
+        
+        main_table = command['main_table']
+        if self.has_index(main_table, command):
+            return self.select_with_index(command)
+        else:
+            return self.select_no_index(command)
+        
+    def select_no_index(self, command):
         if 'main_table' not in command or not command['columns']:
             logging.error("Select command is missing 'main_table' or 'columns'")
             return "Invalid command format"
@@ -62,6 +72,87 @@ class ExecutionEngine:
         final_data = self.filter_select_columns(data, command['columns'])
 
         return final_data
+
+    def select_with_index(self, table, command):
+        logging.debug(f"Selecting with index on table {table}")
+        # Replicate the complex operations similar to the original handle_select
+        data = self.dml_manager.select_with_index(table, command['columns'], command.get('where_clause'))
+        
+        if 'join' in command and command['join']:
+            data = self.handle_joins(data, command['join'], command['main_table'], command['columns'])
+        
+        if 'where_clause' in command:
+            data = self.filter_data_by_condition(data, command['where_clause'])
+
+        if 'group_by' in command and command['group_by']:
+            data = self.handle_group_by(data, command['group_by'], command['columns'])
+
+        if 'order_by' in command and command['order_by']:
+            data = self.handle_order_by(data, command['order_by'])
+
+        if 'having' in command and command['having']:
+            data = self.handle_having(data, command['having'])
+
+        return self.filter_select_columns(data, command['columns'])
+
+    def finalize_selection(self, data, command):
+        # A more simplified processing suitable for non-indexed selects
+        # This method can be expanded or contracted based on specific needs
+        if 'where_clause' in command:
+            data = self.filter_data_by_condition(data, command['where_clause'])
+
+        return data  # Return data directly without further processing
+
+    def has_index(self, table, command):
+        # Assuming command['where_clause'] might indicate the column for which an index might exist
+        # This is a simplified assumption, you will need to adjust the logic based on your actual index structure and query needs
+        if 'where_clause' in command and command['where_clause']:
+            pattern = r"(\w+)\s*=\s*['\"]?\w+['\"]?"  # Simplified regex to extract column name from a simple equality where clause
+            matches = re.findall(pattern, command['where_clause'])
+            columns = [match[0] for match in matches]  # Extract column names from matches
+            for column in columns:
+                if self.storage_manager.index_exists(table, column):  # Check if an index exists for each column
+                    return True
+        return False
+
+
+    # def handle_select(self, command):
+    #     if 'main_table' not in command or not command['columns']:
+    #         logging.error("Select command is missing 'main_table' or 'columns'")
+    #         return "Invalid command format"
+    #     main_table = command['main_table']
+    #     data = self.dml_manager.select(main_table, ['*'])
+    #     # data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
+        
+    #     # Check for the presence of any aggregation functions in the columns specification
+    #     if 'columns' in command and command['columns']:
+    #         if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
+    #             # If an aggregation function is found, handle the aggregation
+    #             return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
+        
+    #     if 'join' in command and command['join']:
+    #         select_columns = command['columns']  # This assumes that columns are specified in command.
+    #         for join in command['join']:
+    #             data = self.handle_join(data, join, main_table, select_columns)
+            
+    #     if 'where_clause' in command:
+    #         data = self.filter_data_by_condition(data, command['where_clause'])
+
+
+    #     if 'group_by' in command and command['group_by']:
+    #         data = self.handle_group_by(data, command['group_by'], command['columns'])
+    #         print("Data after grouping:", data)
+
+    #     if 'order_by' in command and command['order_by']:
+    #         data = self.handle_order_by(data, command['order_by'])
+
+    #     if 'having' in command and command['having']:
+    #         data = self.handle_having(data, command['having'])
+
+    #     #get the needed columns
+    #     final_data = self.filter_select_columns(data, command['columns'])
+
+    #     return final_data
 
     
     def filter_data_by_condition(self, data, where_clause):
@@ -407,22 +498,22 @@ class ExecutionEngine:
 if __name__ == "__main__":
     engine = ExecutionEngine()
     
-    # command_1 = {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'join': [], 'where_clause': "state_code = 'AK' AND year = '2018'", 'group_by': None, 'order_by': None, 'having': None}
-    # {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    command_1 = {'type': 'select', 'main_table': 'state_population', 'columns': ['*'], 'join': [], 'where_clause': "state_code = 'AK' AND year = '2018'", 'group_by': None, 'order_by': None, 'having': None}
+    {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
     command_2 = {'type': 'select', 'main_table': 'state_population', 'columns': ['state_code', 'AVG(monthly_state_population) AS average_population'], 'join': [], 'where_clause': None, 'group_by': 'state_code', 'order_by': None, 'having': None}
-    # {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
-    # command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
-    # command_4 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A > 7', 'group_by': None, 'order_by': None, 'having': None}
-    # command_5 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A != 7', 'group_by': None, 'order_by': None, 'having': None}
-    # command_6 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't2.A', 't2.B'], 'join': [{'join_type': 'INNER JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': 't1.A IN (2,3,4)', 'group_by': None, 'order_by': None, 'having': None}
+    {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t1.A', 't1.B', 't2.B'], 'join': [{'join_type': 'LEFT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}  
+    command_3 = {'type': 'select', 'main_table': 'TestTable1 AS t1', 'columns': ['t2.A', 't1.B', 't2.B'], 'join': [{'join_type': 'RIGHT JOIN', 'join_table': 'TestTable2 AS t2', 'join_condition': 't1.A = t2.A'}], 'where_clause': None, 'group_by': None, 'order_by': None, 'having': None}
+    # command_4 = 
+    # command_5 = 
+    # command_6 = 
     
 
-    # print(command_1)
-    # print(engine.execute_query(command_1))
+    print(command_1)
+    print(engine.execute_query(command_1))
     print(command_2)
     print(engine.execute_query(command_2))
-    # print(command_3)
-    # print(engine.execute_query(command_3))
+    print(command_3)
+    print(engine.execute_query(command_3))
     # print(command_4)
     # print(engine.execute_query(command_4))
     # print(command_5)

@@ -1,8 +1,9 @@
-<SELECT>
+<SELECT FUNCTION>
 
 SELECT state FROM state_abbreviation
 SELECT * FROM state_abbreviation
 SELECT * FROM Reli11000
+SELECT B FROM TestTable1 WHERE B = 'Data1_3'
 
 <WHERE>
 
@@ -18,28 +19,55 @@ SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texa
 
 SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'
 
-<INSERT>
-
-INSERT INTO test_table (id, name) VALUES (485, 'Hachii')
-
-<DELETE>
-
-DELETE FROM test_table WHERE id = 2;
-
-<MAX, MIN, SUM, AVG, COUNT> 
+<MAX, MIN, SUM, AVG, COUNT>  
 SELECT MAX(monthly_state_population) FROM state_population
 SELECT MIN(monthly_state_population) FROM state_population
 SELECT SUM(monthly_state_population) FROM state_population
 SELECT AVG(monthly_state_population) FROM state_population
 SELECT COUNT(monthly_state_population) FROM state_population
 
-<JOIN>
+<JOIN> - Need Debug
 
 SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
 SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
+
+
+<ORDER BY>
+
+SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC
+
+SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC
+
+<GROUP BY>
+
+SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
+
+SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
+
+SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code 
+
+SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
+
+
+<comparison operators>
+SELECT A, B FROM TestTable1 WHERE A = 5
+SELECT A, B FROM TestTable1 WHERE A != 5
+SELECT A, B FROM TestTable1 WHERE A > 5
+SELECT A, B FROM TestTable1 WHERE A < 5
+SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - NOT DONE
+SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
+SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
+
+<INDEX>
+CREATE INDEX index_id ON TestTable1 (B);
+DROP INDEX index_id ON TestTable1;
+
+<HAVING> - NOT DONE
+
+SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
 
 
 <CREATE>
@@ -62,41 +90,18 @@ DELETE FROM test_table WHERE id = 1;
 
 <UPDATE: successful> - BREAK
 UPDATE test_table SET name = 'Vera' WHERE id = 798; 
+UPDATE test_table SET name = 'tsetj' WHERE id = 798; 
+
 
 UPDATE test_table SET name = 'test' WHERE id = 1;
 
 <UPDATE: fail due to invalid datatype>
 UPDATE employees SET salary = 'test' WHERE id = 1;
 
-<ORDER BY>
+<INSERT>
 
-SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC
+INSERT INTO test_table (id, name) VALUES (54, 'Hachii')
 
-SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC
+<DELETE>
 
-<GROUP BY>
-
-SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
-
-SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
-
-SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code 
-
-SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
-
-<INDEX>
-CREATE INDEX index_id ON TestTable1 (B);
-DROP INDEX index_id ON TestTable1;
-
-<comparison operators>
-SELECT A, B FROM TestTable1 WHERE A = 5
-SELECT A, B FROM TestTable1 WHERE A != 5
-SELECT A, B FROM TestTable1 WHERE A > 5
-SELECT A, B FROM TestTable1 WHERE A < 5
-SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - NOT DONE
-SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
-SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
-
-<HAVING> - NOT DONE
-
-SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
+DELETE FROM test_table WHERE id = 54;
