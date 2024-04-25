@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 class ExecutionEngine:
     def __init__(self):
         self.storage_manager = StorageManager()
-        self.dml_manager = DMLManager(self.storage_manager)
         self.ddl_manager = DDLManager()
+        self.dml_manager = DMLManager()
 
     def execute_query(self, command):
         try:

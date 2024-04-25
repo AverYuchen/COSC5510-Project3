@@ -11,12 +11,14 @@ import csv
 # logging.basicConfig(filename='dbms_debug.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DMLManager:
-    def __init__(self, storage_manager):
-        self.storage_manager = storage_manager  # Use the passed instance
+    def __init__(self):
+        self.storage_manager = StorageManager()  # Use the passed instance
         self.ddl_manager = DDLManager() 
         logging.debug("DMLManager initialized with provided storage manager.")
 
     def insert(self, table_name, data):
+        self.storage_manager.load_latest_data()
+        self.storage_manager.load_latest_schema()
         if table_name not in self.storage_manager.schemas:  # Correct method to check table existence
             logging.error(f"Insert operation failed: Table {table_name} does not exist.")
             return "Error: Table does not exist."
@@ -66,6 +68,8 @@ class DMLManager:
         return True
 
     def delete(self, table_name, conditions): 
+        self.storage_manager.load_latest_data()
+        self.storage_manager.load_latest_schema()
         try:
             condition_function = self.parse_conditions(conditions)
 
@@ -165,6 +169,8 @@ class DMLManager:
 
     def select(self, table_name, columns, conditions=None):
         # Retrieve data from the storage manager
+        self.storage_manager.load_latest_data()
+        self.storage_manager.load_latest_schema()
         data = self.storage_manager.get_table_data(table_name)
         # print(f"Debug: Data retrieved from {table_name}: {data}")
 

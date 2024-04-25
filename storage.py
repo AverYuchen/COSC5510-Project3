@@ -202,6 +202,15 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Error reading schema file {schema_path}: {e}")
         return schema
+    
+    def load_latest_schema(self):
+        self.schemas = {}
+        self.define_schemas()
+        self.load_schemas()
+    
+    def load_latest_data(self):
+        self.data = {}
+        self.load_all_data()
 
     def get_schema(self, table_name):
         schema = self.schemas.get(table_name)
@@ -212,11 +221,11 @@ class StorageManager:
         return schema
 
     def create_schema(self, table_name, schema):
-        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
-        with open(schema_file, "w") as json_file:
-            json.dump(schema, json_file)
         if table_name not in self.schemas:
             self.schemas[table_name] = schema
+            schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+            with open(schema_file, "w") as json_file:
+                json.dump(schema, json_file)
             return "Schema for {0} created successfully.".format(table_name)
         else:
             return "Error: Schema for {0} already exists.".format(table_name)
@@ -225,6 +234,8 @@ class StorageManager:
         schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
         if os.path.exists(schema_file):
             os.remove(schema_file)
+            self.load_latest_schema()
+            self.load_latest_data()
             return "Schema file {0} is dropped successfully".format(table_name)
         else:
             return "Error: Drop schema task fail, the schema file not existed."

@@ -86,8 +86,8 @@ CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary IN
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
-<Debug>
-INSERT INTO employees (id, name, salary) VALUES (21, 'Ellen', 253789);
+<successful>
+INSERT INTO employees (employee_id, name, salary) VALUES (21, 'Ellen', 253789);
 
 <INSERT: fail due to datatype confliction>
 INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
