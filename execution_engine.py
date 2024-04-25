@@ -30,10 +30,15 @@ class ExecutionEngine:
             return "Invalid command format"
         
         main_table = command['main_table']
+        # Log initial action of checking for index
+        logging.debug(f"Checking for index on table {main_table}")
         if self.has_index(main_table, command):
+            logging.debug("Index found, selecting with index.")
             return self.select_with_index(command)
         else:
+            logging.debug("No index found, selecting without index.")
             return self.select_no_index(command)
+
         
     def select_no_index(self, command):
         if 'main_table' not in command or not command['columns']:
@@ -73,27 +78,55 @@ class ExecutionEngine:
 
         return final_data
 
-    def select_with_index(self, table, command):
-        logging.debug(f"Selecting with index on table {table}")
-        # Replicate the complex operations similar to the original handle_select
-        data = self.dml_manager.select_with_index(table, command['columns'], command.get('where_clause'))
+    def select_with_index(self, command):
+        logging.debug("Selecting with index")
+        main_table = command['main_table']
+        select_columns = command['columns']
+
+        # Data collection variable to gather results
+        data = []
+
+        # Check for the presence of a WHERE clause
+        if 'where_clause' in command and command['where_clause']:
+            # If there is a WHERE clause, process the query using index
+            for column in select_columns:
+                # Construct a regex to find the value for the indexed column in the WHERE clause
+                pattern = rf"{column}\s*=\s*['\"]?(\w+)['\"]?"
+                match = re.search(pattern, command['where_clause'])
+                if match:
+                    value = match.group(1)
+                    # Assuming there's a method to handle indexed selections in DMLManager
+                    if self.storage_manager.column_has_index(main_table, column):
+                        indexed_data = self.dml_manager.select_with_index(main_table, column, value)
+                        data.extend(indexed_data)
+                    else:
+                        # Fallback to normal selection if no index is found
+                        logging.debug(f"No index found for column {column}, using standard selection.")
+                        additional_data = self.dml_manager.select(main_table, column, command.get('where_clause'))
+                        data.extend(additional_data)
+        else:
+            # If there's no WHERE clause, perform a normal select (this should ideally not reach here for index selection)
+            logging.debug("No where_clause provided, performing a standard select.")
+            data = self.dml_manager.select(main_table, select_columns)
+
+        # # Further processing of the data (join, group by, etc.) as needed
+        # if 'join' in command and command['join']:
+        #     data = self.handle_join(data, command['join'], main_table, select_columns)
         
-        if 'join' in command and command['join']:
-            data = self.handle_joins(data, command['join'], command['main_table'], command['columns'])
-        
-        if 'where_clause' in command:
-            data = self.filter_data_by_condition(data, command['where_clause'])
+        # if 'where_clause' in command and 'group_by' not in command:
+        #     data = self.filter_data_by_condition(data, command['where_clause'])
 
-        if 'group_by' in command and command['group_by']:
-            data = self.handle_group_by(data, command['group_by'], command['columns'])
+        # if 'group_by' in command and command['group_by']:
+        #     data = self.handle_group_by(data, command['group_by'], command['columns'])
 
-        if 'order_by' in command and command['order_by']:
-            data = self.handle_order_by(data, command['order_by'])
+        # if 'order_by' in command and command['order_by']:
+        #     data = self.handle_order_by(data, command['order_by'])
 
-        if 'having' in command and command['having']:
-            data = self.handle_having(data, command['having'])
+        # if 'having' in command and command['having']:
+        #     data = self.handle_having(data, command['having'])
 
         return self.filter_select_columns(data, command['columns'])
+
 
     def finalize_selection(self, data, command):
         # A more simplified processing suitable for non-indexed selects
@@ -104,55 +137,19 @@ class ExecutionEngine:
         return data  # Return data directly without further processing
 
     def has_index(self, table, command):
-        # Assuming command['where_clause'] might indicate the column for which an index might exist
-        # This is a simplified assumption, you will need to adjust the logic based on your actual index structure and query needs
-        if 'where_clause' in command and command['where_clause']:
-            pattern = r"(\w+)\s*=\s*['\"]?\w+['\"]?"  # Simplified regex to extract column name from a simple equality where clause
-            matches = re.findall(pattern, command['where_clause'])
-            columns = [match[0] for match in matches]  # Extract column names from matches
-            for column in columns:
-                if self.storage_manager.index_exists(table, column):  # Check if an index exists for each column
-                    return True
+        # Retrieve column information if available from the command or assume all columns
+        requested_columns = command.get('columns', [])
+        if not requested_columns:
+            # If no specific columns are requested, consider all columns of the table
+            requested_columns = self.storage_manager.get_table_columns(table)
+
+        # Check for each column if an index exists
+        for column in requested_columns:
+            if self.storage_manager.column_has_index(table, column):
+                logging.debug(f"Index found on column: {column}")
+                return True
+        logging.debug("No index found on any requested columns.")
         return False
-
-
-    # def handle_select(self, command):
-    #     if 'main_table' not in command or not command['columns']:
-    #         logging.error("Select command is missing 'main_table' or 'columns'")
-    #         return "Invalid command format"
-    #     main_table = command['main_table']
-    #     data = self.dml_manager.select(main_table, ['*'])
-    #     # data = self.dml_manager.select(main_table, command['columns'], command.get('where_clause'))
-        
-    #     # Check for the presence of any aggregation functions in the columns specification
-    #     if 'columns' in command and command['columns']:
-    #         if any(func in command['columns'][0].upper() for func in ['MAX', 'MIN', 'SUM', 'AVG', 'COUNT']):
-    #             # If an aggregation function is found, handle the aggregation
-    #             return self.handle_aggregations(command, self.dml_manager, command.get('where_clause'))
-        
-    #     if 'join' in command and command['join']:
-    #         select_columns = command['columns']  # This assumes that columns are specified in command.
-    #         for join in command['join']:
-    #             data = self.handle_join(data, join, main_table, select_columns)
-            
-    #     if 'where_clause' in command:
-    #         data = self.filter_data_by_condition(data, command['where_clause'])
-
-
-    #     if 'group_by' in command and command['group_by']:
-    #         data = self.handle_group_by(data, command['group_by'], command['columns'])
-    #         print("Data after grouping:", data)
-
-    #     if 'order_by' in command and command['order_by']:
-    #         data = self.handle_order_by(data, command['order_by'])
-
-    #     if 'having' in command and command['having']:
-    #         data = self.handle_having(data, command['having'])
-
-    #     #get the needed columns
-    #     final_data = self.filter_select_columns(data, command['columns'])
-
-    #     return final_data
 
     
     def filter_data_by_condition(self, data, where_clause):

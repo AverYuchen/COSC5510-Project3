@@ -306,6 +306,11 @@ def parse_insert(sql):
         'table': table_name,
         'data': data
     }
+    
+def get_table_columns(self, table):
+    # Assuming a method that retrieves a list of all column names for a given table
+    return list(self.tables[table].columns.keys())
+
 
 
 def parse_delete(sql):

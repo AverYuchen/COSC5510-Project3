@@ -319,8 +319,7 @@ class StorageManager:
 
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
-
-    
+ 
     def update_table_data(self, table_name, value, retrieved_data, condition_func):
         try:
             updated_data = []
@@ -385,7 +384,6 @@ class StorageManager:
 
         return f"Index {index_name} created on {table_name}({column_name})."
 
-    
     def save_schema(self, table_name):
         """Saves the current schema for the table to its JSON file."""
         schema_file_path = os.path.join(self.schema_directory, f"{table_name}.json")
@@ -413,7 +411,6 @@ class StorageManager:
             del self.indexes[key]
 
         return f"Index '{index_name}' dropped from '{table_name}'."
-
 
     def index_exists(self, table_name, index_name, check_file=False):
         if check_file:
@@ -467,6 +464,45 @@ class StorageManager:
                 return f"Error saving updated schema for '{table_name}': {e}"
 
         return None  # None indicates success in this context
+    
+    def column_has_index(self, table, column):
+        """
+        Check if the specified column of a table has an index.
+
+        Args:
+            table (str): The name of the table.
+            column (str): The name of the column.
+
+        Returns:
+            bool: True if an index exists, False otherwise.
+        """
+        schema = self.get_schema_index(table)
+        if schema:
+            indexes = schema.get('indexes', [])
+            return any(index['column'] == column for index in indexes)
+        return False
+    
+    def get_schema_index(self, table_name):
+        """
+        Fetch schema for the given table from JSON file.
+
+        Args:a
+            table_name (str): Table name to fetch the schema for.
+
+        Returns:
+            dict: Schema dictionary if found, else None.
+        """
+        schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
+        try:
+            with open(schema_file, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            logging.error(f"Schema file {schema_file} not found for table {table_name}.")
+        except Exception as e:
+            logging.error(f"Error reading schema file {schema_file}: {e}")
+        return None
+
+
 
     
 class TestStorageManager(unittest.TestCase):

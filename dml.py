@@ -192,6 +192,33 @@ class DMLManager:
             # Filter data to only include specified columns
             filtered_data = [{k: v for k, v in item.items() if k in processed_columns} for item in data]
             return filtered_data
+        
+    def select_with_index(self, table_name, column, value):
+        """
+        Perform an indexed select on the specified table and column.
+
+        Args:
+            table_name (str): The name of the table to query.
+            column (str): The column to query.
+            value (str): The value to match in the indexed column.
+
+        Returns:
+            list[dict]: A list of dictionaries representing the rows that match the query.
+        """
+        # Check if the BTree index exists for the specified column
+        index_key = (table_name, column)
+        if index_key in self.storage_manager.indexes:
+            # Retrieve using BTree index
+            try:
+                # This assumes that the BTree index is keyed by the column value
+                indexed_rows = self.storage_manager.indexes[index_key][value]
+                return indexed_rows
+            except KeyError:
+                # If the value is not found in the index, return an empty list
+                return []
+        else:
+            # Fallback to full table scan if no index exists
+            return [row for row in self.storage_manager.get_table_data(table_name) if row[column] == value]
 
     def max(self, table, column, conditions=None):
         # Find the maximum value in the specified column

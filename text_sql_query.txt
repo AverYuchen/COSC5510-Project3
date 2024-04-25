@@ -3,11 +3,13 @@
 SELECT state FROM state_abbreviation
 SELECT * FROM state_abbreviation
 SELECT * FROM Reli11000
-SELECT B FROM TestTable1 WHERE B = 'Data1_3'
+SELECT B FROM TestTable1
 
 <WHERE>
 
 SELECT state FROM state_abbreviation WHERE state = 'Alaska'
+SELECT B FROM TestTable1 WHERE B = 'Data1_3'
+
 
 <AND>
 
@@ -61,10 +63,6 @@ SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - NOT DONE
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
 
-<INDEX>
-CREATE INDEX index_id ON TestTable1 (B);
-DROP INDEX index_id ON TestTable1;
-
 <HAVING> - NOT DONE
 
 SELECT state_name, COUNT(population) AS total_population FROM state_population GROUP BY state_name HAVING COUNT(population) > 10; 
@@ -105,3 +103,7 @@ INSERT INTO test_table (id, name) VALUES (54, 'Hachii')
 <DELETE>
 
 DELETE FROM test_table WHERE id = 54;
+
+<INDEX>
+CREATE INDEX index_id ON TestTable1 (B);
+DROP INDEX index_id ON TestTable1;
