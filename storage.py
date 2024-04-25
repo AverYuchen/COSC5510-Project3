@@ -394,11 +394,10 @@ class StorageManager:
                 else:
                     self.indexes[index_key][key] = [row]
 
+        self.save_schema(table_name)
         self.load_latest_schema()
         return f"Index {index_name} created on {table_name}({column_name})."
-
     def save_schema(self, table_name):
-        """Saves the current schema for the table to its JSON file."""
         schema_file_path = os.path.join(self.schema_directory, f"{table_name}.json")
         try:
             with open(schema_file_path, 'w') as file:
@@ -407,6 +406,7 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Failed to save schema for {table_name}: {e}")
             return f"Error saving schema: {e}"
+
         
     def drop_index(self, table_name, index_name):
         # Verify index existence
@@ -424,22 +424,28 @@ class StorageManager:
         for key in index_keys_to_remove:
             del self.indexes[key]
 
+        # self.save_schema(table_name)
         self.load_latest_schema()
         return f"Index '{index_name}' dropped from '{table_name}'."
 
+
     def index_exists(self, table_name, index_name, check_file=False):
+        # Check in-memory first
+        in_memory_check = any(key[2] == index_name and key[0] == table_name for key in self.indexes.keys())
+        if in_memory_check:
+            return True
+
+        # Optionally check in the file if specified
         if check_file:
-            schema_file = os.path.join(self.schema_directory, f"{table_name}.json")
             try:
-                with open(schema_file, 'r') as file:
+                with open(os.path.join(self.schema_directory, f"{table_name}.json"), 'r') as file:
                     schema = json.load(file)
-                return any(idx['name'] == index_name for idx in schema.get('indexes', []))
+                    return any(idx['name'] == index_name for idx in schema.get('indexes', []))
             except Exception as e:
                 logging.error(f"Failed to read schema file for {table_name}: {e}")
                 return False
 
-        index_in_indexes = any(key[2] == index_name and key[0] == table_name for key in self.indexes.keys())
-        return index_in_indexes
+        return False
 
     def table_exists(self, table_name):
         """Check if the specified table exists in the database."""

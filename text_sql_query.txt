@@ -5,13 +5,14 @@ SELECT * FROM state_abbreviation
 SELECT * FROM Reli11000
 SELECT * FROM Reli11000
 SELECT B FROM TestTable1
+SELECT * FROM TestTable1
+
 SELECT name FROM test_table
 
 
 <WHERE>
 
 SELECT state FROM state_abbreviation WHERE state = 'Alaska'
-SELECT B FROM TestTable1 WHERE B = 'Data1_3'
 
 
 <AND>
@@ -45,9 +46,6 @@ SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY 
 SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code ORDER BY AVG(monthly_state_population) DESC
 
 
-
-
-
 <HAVING>
 SELECT state_code, COUNT(monthly_state_population) AS FROM state_population GROUP BY state_code HAVING COUNT(monthly_state_population) > 4;
 
@@ -75,19 +73,18 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 <comparison operators >
 SELECT A, B FROM TestTable1 WHERE A = 5 
-
-!!!!!
-SELECT A, B FROM TestTable1 WHERE A != 5 
-!!!!!
-
+SELECT A, B FROM TestTable1 WHERE A ! 5
 SELECT A, B FROM TestTable1 WHERE A > 5
 SELECT A, B FROM TestTable1 WHERE A < 5
 SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
+SELECT A, B FROM TestTable1 WHERE A = 5 
 
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4) AND A < 3
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4) AND A = 2
+SELECT A, B FROM TestTable1 WHERE A IN (2,3,4) OR A = 5
+
 
 
 <HAVING> 
@@ -127,3 +124,24 @@ DELETE FROM test_table WHERE id = 21;
 <INDEX>
 CREATE INDEX index_id ON TestTable1 (B);
 DROP INDEX index_id ON TestTable1; 
+
+<INDEX TIME COMPARISION>
+SELECT B FROM TestTable1 WHERE B = 'Data1_3' 
+DROP INDEX index_id ON TestTable1; 
+
+<INDEX TIME COMPARISION>
+CREATE INDEX index_id ON TestTable1 (A);
+DROP INDEX index_id ON TestTable1; 
+
+SELECT A, B FROM TestTable1 WHERE A = 5 
+SELECT A, B FROM TestTable1 WHERE A ! 5
+SELECT A, B FROM TestTable1 WHERE A > 5
+SELECT A, B FROM TestTable1 WHERE A < 5
+SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5
+SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
+SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
+SELECT A, B FROM TestTable1 WHERE A = 5 
+
+<INDEX TIME COMPARISION>
+CREATE INDEX index_id ON state_population (state_code);
+DROP INDEX index_id ON state_population; 

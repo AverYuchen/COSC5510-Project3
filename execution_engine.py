@@ -38,6 +38,42 @@ class ExecutionEngine:
         else:
             logging.debug("No index found, selecting without index.")
             return self.select_no_index(command)
+        
+    
+    def select_with_index(self, command):
+        main_table = command['main_table']
+        columns = command.get('columns', [])
+        where_clause = command.get('where_clause', '')
+        data = []
+
+        # Assuming the first column is the indexed column for simplicity in this example
+        indexed_column = columns[0] if columns else None
+
+        # Check if the main table column is indexed
+        if indexed_column and self.storage_manager.column_has_index(main_table, indexed_column):
+            # Find the value for the indexed column in the WHERE clause
+            pattern = rf"{indexed_column}\s*=\s*['\"]?([^'\"]+)['\"]?"
+            match = re.search(pattern, where_clause) if where_clause else None
+
+            if match:
+                value = match.group(1)
+                # Fetch data using the index
+                indexed_data = self.dml_manager.select_with_index(main_table, indexed_column, value)
+                data = [{col: row.get(col) for col in columns} for row in indexed_data]
+            else:
+                # If no suitable index condition is found, fall back to a full table scan for these columns
+                logging.debug("No indexable condition found, performing a full scan on indexed columns.")
+                data = self.dml_manager.select(main_table, columns)
+        else:
+            # No index exists on the supposed indexed column, perform a full scan
+            logging.debug("No index found on the column, performing a full table scan.")
+            data = self.dml_manager.select(main_table, columns)
+
+        # Apply further WHERE clause filtering if necessary (for conditions not handled by the index)
+        if where_clause:
+            data = self.filter_data_by_condition(data, where_clause)
+
+        return data
     
     def select_no_index(self, command):
         if 'main_table' not in command or not command['columns']:
@@ -119,34 +155,6 @@ class ExecutionEngine:
             except ValueError:
                 logging.error(f"Conversion to numeric failed for value: {value}")
                 return None
-    
-    def select_with_index(self, command):
-        main_table = command['main_table']
-        columns = command.get('columns', [])
-        where_clause = command.get('where_clause', '')
-
-        # Initialize data collection
-        data = []
-
-        if where_clause:
-            # Regex to find the value for the indexed column in WHERE clause
-            pattern = rf"{columns[0]}\s*=\s*['\"]?([^'\"]+)['\"]?"  # Assuming column[0] is the indexed column
-            match = re.search(pattern, where_clause)
-            if match and self.storage_manager.column_has_index(main_table, columns[0]):
-                value = match.group(1)
-                # Fetch only the requested column using the index
-                indexed_data = self.dml_manager.select_with_index(main_table, columns[0], value)
-                # Format data to include only requested columns
-                data.extend([{col: row.get(col) for col in columns} for row in indexed_data])
-            else:
-                # No match found in WHERE clause for indexed column, fall back to full table scan but limited to requested columns
-                data = self.dml_manager.select(main_table, columns)
-        else:
-            # If no WHERE clause, perform a regular select on specified columns
-            logging.debug("No WHERE clause or no index match, performing full table scan.")
-            data = self.dml_manager.select(main_table, columns)
-
-        return data
 
     def finalize_selection(self, data, command):
         # A more simplified processing suitable for non-indexed selects
