@@ -3,13 +3,15 @@
 SELECT state FROM state_abbreviation
 SELECT * FROM state_abbreviation
 SELECT * FROM Reli11000
+SELECT * FROM Reli11000
 SELECT B FROM TestTable1
+SELECT name FROM test_table
+
 
 <WHERE>
 
 SELECT state FROM state_abbreviation WHERE state = 'Alaska'
 SELECT B FROM TestTable1 WHERE B = 'Data1_3'
-SELECT A, B FROM TestTable1 WHERE B = 'Data1_3'
 
 
 <AND>
@@ -29,7 +31,16 @@ SELECT SUM(monthly_state_population) FROM state_population
 SELECT AVG(monthly_state_population) FROM state_population
 SELECT COUNT(monthly_state_population) FROM state_population
 
-<JOIN> - Need Debug
+<GROUP BY>
+
+SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
+SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code 
+SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
+
+SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
+
+
+<JOIN> 
 
 SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code
 SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code
@@ -37,9 +48,9 @@ SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 JOIN TestTable2 AS t2 ON t1.A = t2.A
+
 SELECT t1.A, t2.A, t2.B FROM Reli110000 AS t1 JOIN Relii10000 AS t2 ON t1.A = t2.A
 SELECT t1.A, t2.A, t2.B FROM Reli11000 AS t1 JOIN Relii1000 AS t2 ON t1.A = t2.A
-
 
 
 <ORDER BY>
@@ -48,18 +59,8 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC
 
-<GROUP BY>
 
-SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
-
-SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
-
-SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code 
-
-SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
-
-
-<comparison operators - This function will break if index exist>
+<comparison operators >
 SELECT A, B FROM TestTable1 WHERE A = 5 
 SELECT A, B FROM TestTable1 WHERE A != 5
 SELECT A, B FROM TestTable1 WHERE A > 5
@@ -74,40 +75,35 @@ SELECT state_name, COUNT(population) AS total_population FROM state_population G
 
 
 <CREATE>
-CREATE TABLE employees_3 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+
+CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
 <INSERT: successful>
+INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
-INSERT INTO test_table (id, name) VALUES (2, 'Ellen');
+CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
 <INSERT: fail due to primary key confliction>
-INSERT INTO test_table (id, name) VALUES (798, 'Ellen');
-INSERT INTO test_table (id, name) VALUES (798, 'Yelia');
+INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
-<INSERt: fail due to datatype confliction>
+<Debug>
+INSERT INTO employees (id, name, salary) VALUES (21, 'Ellen', 253789);
+
+<INSERT: fail due to datatype confliction>
 INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
 
+<UPDATE: successful>
+UPDATE test_table SET name = 'DemoUpdate' WHERE id = 21; 
+
 <DELETE>
-DELETE FROM test_table WHERE id = 1;
-
-
-<UPDATE: successful> - BREAK
-UPDATE test_table SET name = 'Vera' WHERE id = 798; 
-UPDATE test_table SET name = 'tsetj' WHERE id = 798; 
-
-
-UPDATE test_table SET name = 'test' WHERE id = 1;
+DELETE FROM test_table WHERE id = 21;
 
 <UPDATE: fail due to invalid datatype>
-UPDATE employees_3 SET salary = 'test' WHERE id = 1;
-
-<INSERT>
-
-INSERT INTO test_table (id, name) VALUES (54, 'Hachii')
+UPDATE test_table SET id = 'test' WHERE name = DemoUpdate;
 
 <DELETE>
 
-DELETE FROM test_table WHERE id = 5;
+DELETE FROM test_table WHERE id = 21;
 
 <INDEX>
 CREATE INDEX index_id ON TestTable1 (B);

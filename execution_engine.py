@@ -175,27 +175,6 @@ class ExecutionEngine:
             return parts[0].strip(), parts[1].strip()
         return table_expression.strip(), table_expression.strip()
     
-    # def handle_join(self, main_data, join, main_table, select_columns):
-    #     logging.debug(f"Starting join operation: main_table={main_table}, join={join}")
-    #     main_table_name, main_alias = self.parse_table_alias(main_table)
-    #     join_table_name, join_alias = self.parse_table_alias(join['join_table'])
-
-    #     main_data = self.storage_manager.get_table_data(main_table_name)
-    #     join_data = self.storage_manager.get_table_data(join_table_name)
-
-    #     if main_data is None or join_data is None:
-    #         logging.error("Failed to retrieve data for joining: main_data or join_data is None")
-    #         return []
-
-    #     left_field, right_field = self.parse_join_condition(join['join_condition'])
-    #     join_type = join.get('join_type', 'INNER').upper()
-
-    #     # Decide join method based on data size
-    #     method = self.decide_join_method(main_data, join_data, join_type)
-
-    #     result = method(main_data, join_data, left_field, right_field, main_alias, join_alias, select_columns)
-    #     logging.debug(f"Join result: {result}")
-    #     return result
     def handle_join(self, main_data, join, main_table, select_columns):
         logging.debug(f"Starting join operation: main_table={main_table}, join={join}")
         main_table_name, main_alias = self.parse_table_alias(main_table)
@@ -225,14 +204,6 @@ class ExecutionEngine:
             logging.error(f"Unsupported join type: {join_type}")
             return []
 
-    # def decide_join_method(self, main_data, join_data, join_type):
-    #     # If either dataset is large, use merge join, otherwise use nested loop
-    #     if len(main_data) > 1000 or len(join_data) > 1000:
-    #         logging.debug("Using merge join due to large dataset size")
-    #         return self.merge_join
-    #     else:
-    #         logging.debug("Using nested loop join for smaller dataset size")
-    #         return self.nested_loop_join
     def decide_join_method(self, main_data, join_data, join_type):
         # If either dataset is large, use merge join, otherwise use nested loop
         if len(main_data) > 1000 or len(join_data) > 1000:
@@ -287,8 +258,6 @@ class ExecutionEngine:
 
         return result
 
-
-    
     def nested_loop_join(self, main_data, join_data, left_field, right_field, main_alias, join_alias, select_columns, join_type):
         # Split fields to remove the table alias if present
         _, left_column = left_field.split('.')
@@ -546,9 +515,6 @@ class ExecutionEngine:
         if len(parts) == 2:
             return parts[1].strip()
         return column.split('(')[0].strip()
-
-
-
 
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])
