@@ -105,57 +105,6 @@ class ExecutionEngine:
         return data
 
 
-
-    # def select_with_index(self, command):
-    #     logging.debug("Selecting with index")
-    #     main_table = command['main_table']
-    #     select_columns = command['columns']
-
-    #     # Data collection variable to gather results
-    #     data = []
-
-    #     # Check for the presence of a WHERE clause
-    #     if 'where_clause' in command and command['where_clause']:
-    #         # If there is a WHERE clause, process the query using index
-    #         for column in select_columns:
-    #             # Construct a regex to find the value for the indexed column in the WHERE clause
-    #             pattern = rf"{column}\s*=\s*['\"]?(\w+)['\"]?"
-    #             match = re.search(pattern, command['where_clause'])
-    #             if match:
-    #                 value = match.group(1)
-    #                 # Assuming there's a method to handle indexed selections in DMLManager
-    #                 if self.storage_manager.column_has_index(main_table, column):
-    #                     indexed_data = self.dml_manager.select_with_index(main_table, column, value)
-    #                     data.extend(indexed_data)
-    #                 else:
-    #                     # Fallback to normal selection if no index is found
-    #                     logging.debug(f"No index found for column {column}, using standard selection.")
-    #                     additional_data = self.dml_manager.select(main_table, column, command.get('where_clause'))
-    #                     data.extend(additional_data)
-    #     else:
-    #         # If there's no WHERE clause, perform a normal select (this should ideally not reach here for index selection)
-    #         logging.debug("No where_clause provided, performing a standard select.")
-    #         data = self.dml_manager.select(main_table, select_columns)
-
-        # # Further processing of the data (join, group by, etc.) as needed
-        # if 'join' in command and command['join']:
-        #     data = self.handle_join(data, command['join'], main_table, select_columns)
-        
-        # if 'where_clause' in command and 'group_by' not in command:
-        #     data = self.filter_data_by_condition(data, command['where_clause'])
-
-        # if 'group_by' in command and command['group_by']:
-        #     data = self.handle_group_by(data, command['group_by'], command['columns'])
-
-        # if 'order_by' in command and command['order_by']:
-        #     data = self.handle_order_by(data, command['order_by'])
-
-        # if 'having' in command and command['having']:
-        #     data = self.handle_having(data, command['having'])
-
-        return self.filter_select_columns(data, command['columns'])
-
-
     def finalize_selection(self, data, command):
         # A more simplified processing suitable for non-indexed selects
         # This method can be expanded or contracted based on specific needs
@@ -187,32 +136,30 @@ class ExecutionEngine:
         condition_function = self.parse_condition_to_function(where_clause)
         filtered_data = [row for row in data if condition_function(row)]
         return filtered_data
-
+    
     def filter_select_columns(self, data, select_columns):
         if '*' in select_columns:
             return data  # If selecting all columns, return the data as is.
-    
         final_data = []
-        """
         for row in data:
             filtered_row = {}
-            for col in select_columns:
-                try:
-                    table_alias, column_name = col.split('.')
-                    key = f"{table_alias}.{column_name}"
-                    if key in row:
-                        filtered_row[key] = row[key]
-                except ValueError:
-                    logging.error(f"Invalid column format: {col}")
-            filtered_data.append(filtered_row)
-        """
-        for row in data:
-            filtered_data = {}
-            for key, value in row.items():
-                if key in select_columns:
-                    filtered_data[key] = value
-            final_data.append(filtered_data)
+            for column in select_columns:
+                # Handling alias if present in column definition
+                parts = column.split(' AS ')
+                actual_column = parts[0].split('(')[1].split(')')[0] if '(' in parts[0] else parts[0]
+                alias = parts[1] if len(parts) > 1 else actual_column
+
+                # Check if the actual column or its alias exists in the row data
+                if alias in row:
+                    filtered_row[alias] = row[alias]
+                elif actual_column in row:
+                    filtered_row[actual_column] = row[actual_column]
+                else:
+                    filtered_row[alias] = None  # Ensure all columns are represented even if null
+
+            final_data.append(filtered_row)
         return final_data
+
 
     def parse_join_condition(self, condition):
         try:
@@ -313,34 +260,76 @@ class ExecutionEngine:
         logging.error("Unsupported join type")
         return main_data
     
+    # def handle_aggregations(self, command, data_manager, conditions=None):
+    #     table = command['main_table']
+    #     column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
+    #     match = re.match(r'(\w+)\((\w+)\)', column)
+    #     if match:
+    #         agg_func, agg_column = match.groups()
+    #         data = data_manager.select(table, [agg_column], conditions)
+
+    #         # Convert data to numeric values
+    #         numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
+
+    #         # Perform the aggregation
+    #         if agg_func.upper() == 'MAX':
+    #             result = max(numeric_data)
+    #         elif agg_func.upper() == 'MIN':
+    #             result = min(numeric_data)
+    #         elif agg_func.upper() == 'SUM':
+    #             result = sum(numeric_data)
+    #         elif agg_func.upper() == 'AVG':
+    #             result = sum(numeric_data) / len(numeric_data) if numeric_data else None
+    #         elif agg_func.upper() == 'COUNT':
+    #             result = len(numeric_data)
+    #         else:
+    #             return "Unsupported aggregation function"
+
+    #         return {column: result}
+
+    #     return "No valid aggregation found"
+    
+    def parse_columns_for_aggregation(self, columns):
+        # This regex now correctly captures potential spaces around the AS keyword
+        agg_funcs = {}
+        for col in columns:
+            match = re.match(r'(\w+)\((\w+)\)\s*(AS\s*(\w+))?', col.strip(), re.IGNORECASE)
+            if match:
+                agg_func, column_name, _, alias = match.groups()
+                alias = alias or f"{agg_func.upper()}({column_name})"
+                agg_funcs[column_name] = (agg_func.upper(), alias)
+        return agg_funcs
+
+    
     def handle_aggregations(self, command, data_manager, conditions=None):
         table = command['main_table']
-        column = command['columns'][0]  # Assuming the column with aggregation function is always the first one
-        match = re.match(r'(\w+)\((\w+)\)', column)
-        if match:
-            agg_func, agg_column = match.groups()
-            data = data_manager.select(table, [agg_column], conditions)
+        agg_requests = command['columns']  # Support multiple aggregation requests
+        results = []
 
-            # Convert data to numeric values
-            numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
+        for column in agg_requests:
+            match = re.match(r'(\w+)\((\w+)\)\s*(AS\s*\w+)?', column)
+            if match:
+                agg_func, agg_column, alias = match.groups()
+                alias = alias[3:].strip() if alias else agg_column  # Correctly handle alias
+                data = data_manager.select(table, [agg_column], conditions)
+                numeric_data = [self.safe_convert_to_numeric(item[agg_column]) for item in data if item[agg_column] is not None]
 
-            # Perform the aggregation
-            if agg_func.upper() == 'MAX':
-                result = max(numeric_data)
-            elif agg_func.upper() == 'MIN':
-                result = min(numeric_data)
-            elif agg_func.upper() == 'SUM':
-                result = sum(numeric_data)
-            elif agg_func.upper() == 'AVG':
-                result = sum(numeric_data) / len(numeric_data) if numeric_data else None
-            elif agg_func.upper() == 'COUNT':
-                result = len(numeric_data)
-            else:
-                return "Unsupported aggregation function"
+                # Perform the aggregation and respect the alias
+                if agg_func.upper() == 'AVG':
+                    result = sum(numeric_data) / len(numeric_data) if numeric_data else None
+                elif agg_func.upper() == 'SUM':
+                    result = sum(numeric_data)
+                elif agg_func.upper() == 'MAX':
+                    result = max(numeric_data)
+                elif agg_func.upper() == 'MIN':
+                    result = min(numeric_data)
+                elif agg_func.upper() == 'COUNT':
+                    result = len(numeric_data)
 
-            return {column: result}
+                results.append({alias: result})
 
-        return "No valid aggregation found"
+        return results
+
 
     def handle_order_by(self, data, order_by_clause):
         import re
@@ -379,23 +368,55 @@ class ExecutionEngine:
                 logging.error(f"Conversion to numeric failed for value: {value}")
                 return None
             
-    def handle_group_by(self, data, group_by_column, columns):
-        # Setup
-        grouped_data = {}
-        agg_funcs = {}
+    # def handle_group_by(self, data, group_by_column, columns):
+    #     # Setup
+    #     grouped_data = {}
+    #     agg_funcs = {}
 
-        # Parsing columns for aggregate functions and their intended aliases
-        for col in columns:
-            # This regex extracts the aggregation function, the column it acts on, and an alias if provided
-            agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
-            if agg_match:
-                agg_func, column_name, alias = agg_match.groups()
-                # If an alias is specified, it should be used as the key in the output
-                agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
+    #     # Parsing columns for aggregate functions and their intended aliases
+    #     for col in columns:
+    #         # This regex extracts the aggregation function, the column it acts on, and an alias if provided
+    #         agg_match = re.match(r'(\w+)\((\w+)\)(?: AS (\w+))?', col)
+    #         if agg_match:
+    #             agg_func, column_name, alias = agg_match.groups()
+    #             # If an alias is specified, it should be used as the key in the output
+    #             agg_funcs[column_name] = (agg_func.upper(), alias or f"{agg_func.upper()}({column_name})")
+
+    #     # Grouping data
+    #     for row in data:
+    #         # The key for grouping
+    #         key = row[group_by_column]
+    #         if key not in grouped_data:
+    #             grouped_data[key] = []
+    #         grouped_data[key].append(row)
+
+    #     # Applying aggregation
+    #     result = []
+    #     for key, rows in grouped_data.items():
+    #         aggregated_row = {group_by_column: key}
+    #         for column_name, (agg_func, alias) in agg_funcs.items():
+    #             column_values = [self.safe_convert_to_numeric(row[column_name]) for row in rows if column_name in row and row[column_name] is not None]
+    #             if column_values:
+    #                 if agg_func == 'AVG':
+    #                     aggregated_row[alias] = sum(column_values) / len(column_values)
+    #                 elif agg_func == 'SUM':
+    #                     aggregated_row[alias] = sum(column_values)
+    #                 elif agg_func == 'MAX':
+    #                     aggregated_row[alias] = max(column_values)
+    #                 elif agg_func == 'MIN':
+    #                     aggregated_row[alias] = min(column_values)
+    #                 elif agg_func == 'COUNT':
+    #                     aggregated_row[alias] = len(column_values)
+    #         result.append(aggregated_row)
+
+    #     return result
+    
+    def handle_group_by(self, data, group_by_column, columns):
+        grouped_data = {}
+        agg_funcs = self.parse_columns_for_aggregation(columns)
 
         # Grouping data
         for row in data:
-            # The key for grouping
             key = row[group_by_column]
             if key not in grouped_data:
                 grouped_data[key] = []
@@ -421,6 +442,34 @@ class ExecutionEngine:
             result.append(aggregated_row)
 
         return result
+
+    
+    def finalize_query_results(self, data, columns):
+        # Ensure results use correct aliases or column names
+        final_results = []
+        for row in data:
+            final_row = {}
+            for col in columns:
+                # Attempt to extract an alias or use column directly
+                alias = self.extract_alias(col)
+                # Check if the alias exists in the aggregated data
+                if alias in row:
+                    final_row[alias] = row[alias]
+                else:
+                    # Use direct column name if no alias is found
+                    final_row[col.split(' AS ')[0]] = row.get(col.split(' AS ')[0], None)
+            final_results.append(final_row)
+        return final_results
+
+    def extract_alias(self, column):
+        # Extracts the alias from a column specification, if present
+        parts = column.split(' AS ')
+        if len(parts) == 2:
+            return parts[1].strip()
+        return column.split('(')[0].strip()
+
+
+
 
     def handle_create(self, command):
         return self.ddl_manager.create_table(command['table_name'], command['columns'])

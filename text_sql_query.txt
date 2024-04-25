@@ -46,7 +46,7 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 <GROUP BY>
 
-(Debug - Not returning when AS is included) SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
+SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
 
 SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
 
