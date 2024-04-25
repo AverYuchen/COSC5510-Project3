@@ -1,5 +1,5 @@
 # main.py
-
+import time
 from query_input_manager import handle_input
 from storage import StorageManager
 
@@ -17,6 +17,7 @@ def main():
             break
         if user_input.startswith("'") and user_input.endswith("'"):
             user_input = user_input[1:-1]  # Remove single quotes around the command
+        start_time = time.time()
         result, error = handle_input(user_input)
         if error:
             print("Error:", error)
@@ -24,6 +25,7 @@ def main():
             print("Query results:", result)
         else:
             print("No results returned.")
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
     main()

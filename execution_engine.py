@@ -551,13 +551,21 @@ class ExecutionEngine:
     
     def parse_condition_to_function(self, where_clause):
         def eval_condition(row, conditions):
-            if 'AND' in conditions:
+            if 'BETWEEN' in conditions and 'AND' in conditions:
+                pattern = r"(\w+)\s*(BETWEEN)\s*(.*)\s*(AND)\s*(.*)"
+                match = re.match(pattern, conditions.strip(), re.IGNORECASE)
+                if not match:
+                    raise ValueError("Invalid BETWEEN clause format")
+                column, between_operator, value_1, and_operator, value_2 = match.groups()
+                print([column, value_1, value_2])
+                return self.apply_operator(row, column.strip(), ">=", value_1.strip().strip("'")) and self.apply_operator(row, column.strip(), "<=", value_2.strip().strip("'"))
+            
+            if 'AND' in conditions and 'BETWEEN' not in conditions:
                 left, right = conditions.split('AND', 1)
                 return eval_condition(row, left.strip()) and eval_condition(row, right.strip())
             if 'OR' in conditions:
                 left, right = conditions.split('OR', 1)
                 return eval_condition(row, left.strip()) or eval_condition(row, right.strip())
-            
             pattern = r"(\w+)\s*(=|!=|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
             match = re.match(pattern, conditions.strip(), re.IGNORECASE)
             if not match:
@@ -580,9 +588,11 @@ class ExecutionEngine:
             result = regex.match(row.get(column)) is not None
             logging.debug(f"LIKE operator result: {result}")
             return result
+            """
         elif "BETWEEN" in operator:
             # Ensure proper handling of BETWEEN
             value = value[len("BETWEEN"):].strip()  # Remove the 'BETWEEN' keyword and strip any leading/trailing whitespace
+            """
         else:
             value = self.safe_convert_to_numeric_where(value)
             if operator == "=": operator = "=="
