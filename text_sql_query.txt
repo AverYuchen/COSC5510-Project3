@@ -8,7 +8,8 @@ SELECT B FROM TestTable1
 <WHERE>
 
 SELECT state FROM state_abbreviation WHERE state = 'Alaska'
-SELECT B FROM TestTable1 WHERE B = 'Data1_3'
+(Debug - Returning all column when where is included) SELECT B FROM TestTable1 WHERE B = 'Data1_3'
+SELECT A, B FROM TestTable1 WHERE B = 'Data1_3'
 
 
 <AND>
@@ -45,7 +46,7 @@ SELECT state_code, monthly_state_population FROM state_population ORDER BY month
 
 <GROUP BY>
 
-SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
+(Debug - Not returning when AS is included) SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
 
 SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
 
@@ -54,7 +55,7 @@ SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY 
 SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code 
 
 
-<comparison operators>
+<comparison operators - This function will break if index exist>
 SELECT A, B FROM TestTable1 WHERE A = 5
 SELECT A, B FROM TestTable1 WHERE A != 5
 SELECT A, B FROM TestTable1 WHERE A > 5
@@ -69,11 +70,11 @@ SELECT state_name, COUNT(population) AS total_population FROM state_population G
 
 
 <CREATE>
-CREATE TABLE employees_2 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+CREATE TABLE employees_3 (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
 
 <INSERT: successful>
 
-INSERT INTO test_table (id, name) VALUES (1, 'Ellen');
+INSERT INTO test_table (id, name) VALUES (2, 'Ellen');
 
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (798, 'Ellen');

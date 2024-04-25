@@ -77,37 +77,65 @@ class ExecutionEngine:
         final_data = self.filter_select_columns(data, command['columns'])
 
         return final_data
-
+    
     def select_with_index(self, command):
-        logging.debug("Selecting with index")
         main_table = command['main_table']
-        select_columns = command['columns']
+        columns = command.get('columns', [])
+        where_clause = command.get('where_clause', '')
 
-        # Data collection variable to gather results
+        # Initialize data collection
         data = []
 
-        # Check for the presence of a WHERE clause
-        if 'where_clause' in command and command['where_clause']:
-            # If there is a WHERE clause, process the query using index
-            for column in select_columns:
-                # Construct a regex to find the value for the indexed column in the WHERE clause
-                pattern = rf"{column}\s*=\s*['\"]?(\w+)['\"]?"
-                match = re.search(pattern, command['where_clause'])
-                if match:
+        # If a WHERE clause exists and is not empty
+        if where_clause:
+            for column in columns:
+                # Regex to find the value for the indexed column in WHERE clause
+                pattern = rf"{column}\s*=\s*['\"]?([^'\"]+)['\"]?"
+                match = re.search(pattern, where_clause)
+                if match and self.storage_manager.column_has_index(main_table, column):
                     value = match.group(1)
-                    # Assuming there's a method to handle indexed selections in DMLManager
-                    if self.storage_manager.column_has_index(main_table, column):
-                        indexed_data = self.dml_manager.select_with_index(main_table, column, value)
-                        data.extend(indexed_data)
-                    else:
-                        # Fallback to normal selection if no index is found
-                        logging.debug(f"No index found for column {column}, using standard selection.")
-                        additional_data = self.dml_manager.select(main_table, column, command.get('where_clause'))
-                        data.extend(additional_data)
+                    indexed_data = self.dml_manager.select_with_index(main_table, column, value)
+                    data.extend(indexed_data)
+                    break  # Assume only one index is used
         else:
-            # If there's no WHERE clause, perform a normal select (this should ideally not reach here for index selection)
-            logging.debug("No where_clause provided, performing a standard select.")
-            data = self.dml_manager.select(main_table, select_columns)
+            # Perform a regular select if no suitable index is found
+            logging.debug("No WHERE clause or no index match, performing full table scan.")
+            return self.dml_manager.select(main_table, columns)
+
+        return data
+
+
+
+    # def select_with_index(self, command):
+    #     logging.debug("Selecting with index")
+    #     main_table = command['main_table']
+    #     select_columns = command['columns']
+
+    #     # Data collection variable to gather results
+    #     data = []
+
+    #     # Check for the presence of a WHERE clause
+    #     if 'where_clause' in command and command['where_clause']:
+    #         # If there is a WHERE clause, process the query using index
+    #         for column in select_columns:
+    #             # Construct a regex to find the value for the indexed column in the WHERE clause
+    #             pattern = rf"{column}\s*=\s*['\"]?(\w+)['\"]?"
+    #             match = re.search(pattern, command['where_clause'])
+    #             if match:
+    #                 value = match.group(1)
+    #                 # Assuming there's a method to handle indexed selections in DMLManager
+    #                 if self.storage_manager.column_has_index(main_table, column):
+    #                     indexed_data = self.dml_manager.select_with_index(main_table, column, value)
+    #                     data.extend(indexed_data)
+    #                 else:
+    #                     # Fallback to normal selection if no index is found
+    #                     logging.debug(f"No index found for column {column}, using standard selection.")
+    #                     additional_data = self.dml_manager.select(main_table, column, command.get('where_clause'))
+    #                     data.extend(additional_data)
+    #     else:
+    #         # If there's no WHERE clause, perform a normal select (this should ideally not reach here for index selection)
+    #         logging.debug("No where_clause provided, performing a standard select.")
+    #         data = self.dml_manager.select(main_table, select_columns)
 
         # # Further processing of the data (join, group by, etc.) as needed
         # if 'join' in command and command['join']:
