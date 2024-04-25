@@ -146,35 +146,38 @@ class ExecutionEngine:
         return filtered_data
     
     def filter_select_columns(self, data, select_columns):
-        if '*' in select_columns:
-            return data  # If selecting all columns, return the data as is.
         final_data = []
         for row in data:
             filtered_row = {}
             for column in select_columns:
-                # Handling alias if present in column definition
-                parts = column.split(' AS ')
-                actual_column = parts[0].split('(')[1].split(')')[0] if '(' in parts[0] else parts[0]
-                alias = parts[1] if len(parts) > 1 else actual_column
-
-                # Check if the actual column or its alias exists in the row data
-                if alias in row:
-                    filtered_row[alias] = row[alias]
-                elif actual_column in row:
-                    filtered_row[actual_column] = row[actual_column]
+                if ' AS ' in column:
+                    # Split to get the function and alias
+                    func_part, alias = column.split(' AS ')
+                    alias = alias.strip()
+                    # Use the alias as the key to fetch from row
+                    filtered_row[alias] = row.get(alias)
                 else:
-                    filtered_row[alias] = None  # Ensure all columns are represented even if null
+                    # This will handle both aggregated columns without alias and regular columns
+                    func_match = re.match(r'(\w+)\((\w+)\)', column)
+                    if func_match:
+                        # It's an aggregated column without alias
+                        func_name, col_name = func_match.groups()
+                        agg_key = func_name.upper() + '(' + col_name + ')'
+                        filtered_row[column] = row.get(agg_key)
+                    else:
+                        # Regular column without any function
+                        filtered_row[column] = row.get(column)
 
             final_data.append(filtered_row)
         return final_data
+
 
     def parse_join_condition(self, condition):
         left, _, right = condition.partition('=')
         left_table, left_column = left.strip().split('.')
         right_table, right_column = right.strip().split('.')
         return (left_column.strip(), right_column.strip())  # Return only column names, ignore aliases for comparison
-
-            
+      
     def parse_table_alias(self, table_expression):
         parts = table_expression.split(' AS ')
         if len(parts) == 2:
@@ -307,9 +310,7 @@ class ExecutionEngine:
                     result.append(merged_row)
 
         return result
-
-
-    
+   
     def merge_rows(self, main_row, join_row, main_alias, join_alias, select_columns):
         """
         Merge rows from two tables based on provided columns and aliases.

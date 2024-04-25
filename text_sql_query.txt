@@ -31,7 +31,7 @@ SELECT SUM(monthly_state_population) FROM state_population
 SELECT AVG(monthly_state_population) FROM state_population
 SELECT COUNT(monthly_state_population) FROM state_population
 
-<GROUP BY>
+<GROUP BY> - Debug
 
 SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code 
 SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code 
@@ -39,8 +39,11 @@ SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP B
 
 SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code
 
-<HAVING> 
-SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code HAVING COUNT(monthly_state_population) > 4;
+<HAVING> - Debug
+SELECT state_code, COUNT(monthly_state_population) AS FROM state_population GROUP BY state_code HAVING COUNT(monthly_state_population) > 4;
+
+SELECT state_code, COUNT(monthly_state_population) AS count_population FROM state_population GROUP BY state_code HAVING count_population > 4;
+
 
 <JOIN> 
 
@@ -67,7 +70,7 @@ SELECT A, B FROM TestTable1 WHERE A = 5
 SELECT A, B FROM TestTable1 WHERE A != 5 
 SELECT A, B FROM TestTable1 WHERE A > 5
 SELECT A, B FROM TestTable1 WHERE A < 5
-SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5 - DONE
+SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
 
