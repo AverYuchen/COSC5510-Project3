@@ -85,10 +85,10 @@ class DDLManager:
             # Update metadata (if your system uses a catalog to track indices)
             self.ddlstorage.update_index_metadata(table_name, column_name, index_name, action="create")
 
-            logging.info(f"Index '{index_name}' created on '{table_name}({column_name})'")
+            #logging.info(f"Index '{index_name}' created on '{table_name}({column_name})'")
             return "Index created successfully"
         except Exception as e:
-            logging.error(f"Error creating index: {e}")
+            #logging.error(f"Error creating index: {e}")
             return f"Error creating index: {e}"
 
     def drop_index(self, table_name, index_name):
@@ -105,10 +105,10 @@ class DDLManager:
             # Update metadata to remove index information
             self.ddlstorage.update_index_metadata(table_name, index_name, action="drop")
 
-            logging.info(f"Index '{index_name}' dropped from '{table_name}'")
+            #logging.info(f"Index '{index_name}' dropped from '{table_name}'")
             return "Index dropped successfully"
         except Exception as e:
-            logging.error(f"Error dropping index: {e}")
+            #logging.error(f"Error dropping index: {e}")
             return f"Error dropping index: {e}"
     
 # Example usage for testing

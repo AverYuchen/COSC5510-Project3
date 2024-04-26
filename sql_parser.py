@@ -11,7 +11,7 @@ from execution_engine import ExecutionEngine
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def parse_sql(sql):
-    logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
+    #logging.debug(f"Debug Parsing SQL: {sql}")  # Log input SQL for debugging
     sql = sql.strip()
     lower_sql = sql.lower()
     tokens = lower_sql.split()
@@ -144,7 +144,7 @@ def parse_drop_table(sql):
 
 
 def parse_select(sql):
-    logging.debug(f"Parsing SELECT SQL: {sql}")
+    #logging.debug(f"Parsing SELECT SQL: {sql}")
     # Simplified and corrected regex pattern to handle SQL syntax variations
     pattern = r'''
     SELECT\s+(.*?)\s+FROM\s+([\w]+(?:\s+AS\s+\w+)?)
@@ -153,7 +153,7 @@ def parse_select(sql):
 
     match = re.match(pattern, sql, re.IGNORECASE | re.VERBOSE)
     if not match:
-        logging.error("Invalid SELECT syntax: " + sql)
+        #logging.error("Invalid SELECT syntax: " + sql)
         return {'error': 'Invalid SELECT syntax'}
 
     select_fields, main_table, remaining = match.groups()

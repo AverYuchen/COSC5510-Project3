@@ -21,7 +21,7 @@ class ExecutionEngine:
             handler = getattr(self, f"handle_{command['type'].lower()}", self.handle_unsupported)
             return handler(command)
         except Exception as e:
-            logging.error(f"Execution error: {e}", exc_info=True)
+            #logging.error(f"Execution error: {e}", exc_info=True)
             return f"Execution error: {e}"
         
     def handle_show_tables(self, command):
@@ -32,17 +32,17 @@ class ExecutionEngine:
         
     def handle_select(self, command):
         if 'main_table' not in command or not command['columns']:
-            logging.error("Select command is missing 'main_table' or 'columns'")
+            #logging.error("Select command is missing 'main_table' or 'columns'")
             return "Invalid command format"
         
         main_table = command['main_table']
         # Log initial action of checking for index
-        logging.debug(f"Checking for index on table {main_table}")
+        #logging.debug(f"Checking for index on table {main_table}")
         if self.has_index(main_table, command):
-            logging.debug("Index found, selecting with index.")
+            #logging.debug("Index found, selecting with index.")
             return self.select_with_index(command)
         else:
-            logging.debug("No index found, selecting without index.")
+            #logging.debug("No index found, selecting without index.")
             return self.select_no_index(command)
         
     
@@ -68,11 +68,11 @@ class ExecutionEngine:
                 data = [{col: row.get(col) for col in columns} for row in indexed_data]
             else:
                 # If no suitable index condition is found, fall back to a full table scan for these columns
-                logging.debug("No indexable condition found, performing a full scan on indexed columns.")
+                #logging.debug("No indexable condition found, performing a full scan on indexed columns.")
                 data = self.dml_manager.select(main_table, columns)
         else:
             # No index exists on the supposed indexed column, perform a full scan
-            logging.debug("No index found on the column, performing a full table scan.")
+            #logging.debug("No index found on the column, performing a full table scan.")
             data = self.dml_manager.select(main_table, columns)
 
         # Apply further WHERE clause filtering if necessary (for conditions not handled by the index)
@@ -83,7 +83,7 @@ class ExecutionEngine:
     
     def select_no_index(self, command):
         if 'main_table' not in command or not command['columns']:
-            logging.error("Select command is missing 'main_table' or 'columns'")
+            #logging.error("Select command is missing 'main_table' or 'columns'")
             return "Invalid command format"
         
         main_table = command['main_table']
@@ -133,7 +133,7 @@ class ExecutionEngine:
                     # Attempt to convert data to numeric types before aggregation
                     values = [self.safe_convert_to_numeric(row[col_name]) for row in data if col_name in row and row[col_name] is not None]
                 except ValueError as e:
-                    logging.error(f"Error converting data to numeric type for column {col_name}: {e}")
+                    #logging.error(f"Error converting data to numeric type for column {col_name}: {e}")
                     continue  # Skip this column if conversion fails
 
                 # Perform the aggregation operation
@@ -159,7 +159,7 @@ class ExecutionEngine:
             try:
                 return int(value)
             except ValueError:
-                logging.error(f"Conversion to numeric failed for value: {value}")
+                #logging.error(f"Conversion to numeric failed for value: {value}")
                 return None
 
     def finalize_selection(self, data, command):
@@ -180,15 +180,15 @@ class ExecutionEngine:
         # Check for each column if an index exists
         for column in requested_columns:
             if self.storage_manager.column_has_index(table, column):
-                logging.debug(f"Index found on column: {column}")
+                #logging.debug(f"Index found on column: {column}")
                 return True
-        logging.debug("No index found on any requested columns.")
+        #logging.debug("No index found on any requested columns.")
         return False
 
     
     def filter_data_by_condition(self, data, where_clause):
         if where_clause is None:
-            logging.debug("No where_clause provided, returning original data.")
+            #logging.debug("No where_clause provided, returning original data.")
             return data
         condition_function = self.parse_condition_to_function(where_clause)
         filtered_data = [row for row in data if condition_function(row)]
@@ -238,7 +238,7 @@ class ExecutionEngine:
         return table_expression.strip(), table_expression.strip()
     
     def handle_join(self, main_data, join, main_table, select_columns):
-        logging.debug(f"Starting join operation: main_table={main_table}, join={join}")
+        #logging.debug(f"Starting join operation: main_table={main_table}, join={join}")
         main_table_name, main_alias = self.parse_table_alias(main_table)
         join_table_name, join_alias = self.parse_table_alias(join['join_table'])
 
@@ -246,7 +246,7 @@ class ExecutionEngine:
         join_data = self.storage_manager.get_table_data(join_table_name)
 
         if main_data is None or join_data is None:
-            logging.error("Failed to retrieve data for joining: main_data or join_data is None")
+            #logging.error("Failed to retrieve data for joining: main_data or join_data is None")
             return []
 
         left_field, right_field = self.parse_join_condition(join['join_condition'])
@@ -263,16 +263,16 @@ class ExecutionEngine:
         elif join_type == "RIGHT JOIN":
             return join_method(main_data, join_data, left_field, right_field, main_alias, join_alias, select_columns, 'right')
         else:
-            logging.error(f"Unsupported join type: {join_type}")
+            #logging.error(f"Unsupported join type: {join_type}")
             return []
 
     def decide_join_method(self, main_data, join_data, join_type):
         # If either dataset is large, use merge join, otherwise use nested loop
         if len(main_data) > 1000 or len(join_data) > 1000:
-            logging.debug("Using merge join due to large dataset size")
+            #logging.debug("Using merge join due to large dataset size")
             return self.merge_join
         else:
-            logging.debug("Using nested loop join for smaller dataset size")
+            #logging.debug("Using nested loop join for smaller dataset size")
             return self.nested_loop_join
         
     def merge_join(self, main_data, join_data, left_field, right_field, main_alias, join_alias, select_columns, join_type):
@@ -409,11 +409,11 @@ class ExecutionEngine:
             left, _, right = condition.partition('=')
             left_table, left_column = left.strip().split('.')
             right_table, right_column = right.strip().split('.')
-            logging.debug(f"Parsed join condition: {left_table}.{left_column} = {right_table}.{right_column}")
+            #logging.debug(f"Parsed join condition: {left_table}.{left_column} = {right_table}.{right_column}")
             return (f"{left_table}.{left_column}", f"{right_table}.{right_column}")
         except ValueError as e:
-            logging.error(f"Error parsing join condition '{condition}': {e}")
-            raise
+            #logging.error(f"Error parsing join condition '{condition}': {e}")
+            raise ValueError('Parsing join condition has error')
 
     def join_data(self, main_data, join_data, left_field, right_field, main_alias, join_alias, join_type, select_columns):
         joined_data = []
@@ -546,7 +546,7 @@ class ExecutionEngine:
             column_name = command['column_name']
             return self.execute_create_index(index_name, table_name, column_name)
         except Exception as e:
-            logging.error(f"Error creating index: {e}")
+            #logging.error(f"Error creating index: {e}")
             return f"Error creating index: {e}"
 
     def execute_create_index(self, index_name, table_name, column_name):
@@ -562,7 +562,7 @@ class ExecutionEngine:
         try:
             return self.ddl_manager.drop_index(command['table_name'], command['index_name'])
         except Exception as e:
-            logging.error(f"Error dropping index: {e}")
+            #logging.error(f"Error dropping index: {e}")
             return f"Error dropping index: {e}"
     
     def parse_condition_to_function(self, where_clause):
@@ -592,17 +592,17 @@ class ExecutionEngine:
         return lambda row: eval_condition(row, where_clause)
     
     def apply_operator(self, row, column, operator, value):
-        logging.debug(f"Applying operator: {operator} on column: {column} with value: {value}")
+        #logging.debug(f"Applying operator: {operator} on column: {column} with value: {value}")
         
         if operator == "IN":
             values = eval(value)
             result = self.safe_convert_to_numeric_where(row.get(column)) in values
-            logging.debug(f"IN operator result: {result}")
+            #logging.debug(f"IN operator result: {result}")
             return result
         elif operator == "LIKE":
             regex = re.compile("^" + value.replace('%', '.*') + "$")
             result = regex.match(row.get(column)) is not None
-            logging.debug(f"LIKE operator result: {result}")
+            #logging.debug(f"LIKE operator result: {result}")
             return result
             """
         elif "BETWEEN" in operator:
@@ -614,7 +614,7 @@ class ExecutionEngine:
             if operator == "=": operator = "=="
             # elif operator == "!=": operator = "!="  # No change needed, just making it explicit
             result = self.compare_values(row.get(column), value, operator)
-            logging.debug(f"Comparison operator {operator} result: {result}")
+            #logging.debug(f"Comparison operator {operator} result: {result}")
             return result
 
     
@@ -624,7 +624,7 @@ class ExecutionEngine:
         value = self.safe_convert_to_numeric_where(value)
 
         # Add logging to check values just before comparison
-        logging.debug(f"Pre-comparison: Row Value: {row_value} ({type(row_value)}), Value: {value} ({type(value)}), Operator: {operator}")
+        #logging.debug(f"Pre-comparison: Row Value: {row_value} ({type(row_value)}), Value: {value} ({type(value)}), Operator: {operator}")
         
         if operator == "!":
             return row_value != value
@@ -643,14 +643,14 @@ class ExecutionEngine:
     def safe_convert_to_numeric_where(self, value):
         try:
             if value is None:
-                logging.debug("Received None value; original value is None.")
+                #logging.debug("Received None value; original value is None.")
                 return None
             return int(value)
         except ValueError:
             try:
                 return float(value)
             except ValueError:
-                logging.error(f"Conversion failed for value: {value}, returning None.")
+                #logging.error(f"Conversion failed for value: {value}, returning None.")
                 return value
             
 # Example usage

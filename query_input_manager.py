@@ -4,7 +4,7 @@ from sql_parser import parse_sql
 engine = ExecutionEngine()
 
 def handle_input(user_input):
-    print(f"Query_Input_debug: {user_input}")  # Log input SQL for debugging
+    #print(f"Query_Input_debug: {user_input}")  # Log input SQL for debugging
     command = parse_sql(user_input)
 
     if command:

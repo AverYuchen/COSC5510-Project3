@@ -14,7 +14,7 @@ class DMLManager:
     def __init__(self):
         self.storage_manager = StorageManager()  # Use the passed instance
         self.ddl_manager = DDLManager() 
-        logging.debug("DMLManager initialized with provided storage manager.")
+        #logging.debug("DMLManager initialized with provided storage manager.")
 
 
     
@@ -25,7 +25,7 @@ class DMLManager:
         schema = self.storage_manager.get_schema(table_name)
 
         if table_name not in self.storage_manager.schemas:
-            logging.error(f"Insert operation failed: Table {table_name} does not exist.")
+            #logging.error(f"Insert operation failed: Table {table_name} does not exist.")
             return "Error: Table does not exist."
 
         if not self.validate_data_PK(table_name, data, command='insert'):
@@ -37,14 +37,14 @@ class DMLManager:
             self.storage_manager.insert_data(table_name, data)
             return "Data inserted successfully."
         except Exception as e:
-            logging.error(f"Insert operation failed: {e}")
+            #logging.error(f"Insert operation failed: {e}")
             return "Error: Failed to insert data."
 
         
     def check_primary_key_constraint(self, table_name, data, schema, command):
         primary_keys = schema.get('primary_key')
         existing_data = self.storage_manager.get_table_data(table_name)
-        logging.debug(f"Checking PK with existing data: {existing_data}")
+        #logging.debug(f"Checking PK with existing data: {existing_data}")
         if primary_keys:
             if isinstance(primary_keys, str):
                 primary_keys = [primary_keys]
@@ -59,7 +59,7 @@ class DMLManager:
                 #     return False
                 existing_keys = [row[primary_key] for row in existing_data if primary_key in row]
                 if data[primary_key] in existing_keys:
-                    logging.error(f"Duplicate primary key error for value {data[primary_key]}")
+                    #logging.error(f"Duplicate primary key error for value {data[primary_key]}")
                     return False
         return True
     
@@ -78,12 +78,12 @@ class DMLManager:
         self.storage_manager.load_schema(table_name)  # Ensure schema is up-to-date
         schema = self.storage_manager.get_schema(table_name)
         if not schema:
-            logging.error(f"No schema available for table {table_name}")
+            #logging.error(f"No schema available for table {table_name}")
             return False
         if not self.check_primary_key_constraint(table_name, data, schema, command):
             return False
         if any(not self.validate_type(data[key], schema['columns'][key]['type']) for key in data if key in schema['columns']):
-            logging.error("Data type validation failed.")
+            #logging.error("Data type validation failed.")
             return False
         return True
 
@@ -95,7 +95,7 @@ class DMLManager:
                     int(value)  # Try converting to int
                     return True
                 except ValueError:
-                    logging.debug(f"Failed to convert {value} to int.")
+                    #logging.debug(f"Failed to convert {value} to int.")
                     return False
             return True
         elif expected_type == 'varchar':
@@ -130,7 +130,7 @@ class DMLManager:
             else:
                 return "No rows matched the conditions or needed deletion."
         except Exception as e:
-            logging.error(f"Delete operation failed: {str(e)}")
+            #logging.error(f"Delete operation failed: {str(e)}")
             return f"Error: Failed to delete data due to {str(e)}"
 
     def can_delete(self, table_name, data_to_delete):
@@ -173,16 +173,16 @@ class DMLManager:
                 else:
                     return lambda row: str(row.get(field, None)) == value
             else:
-                logging.error(f"Field {field} not found in schema.")
+                #logging.error(f"Field {field} not found in schema.")
                 return None
         else:
-            logging.error("Failed to parse delete conditions")
+            #logging.error("Failed to parse delete conditions")
             return None
 
     def update(self, table_name, value, conditions):
         #check validation:
-        if self.validate_data(table_name, value, command='update'):
-            logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
+        if self.validate_data(table_name, value, command='update') and self.validate_foreign_key(table_name,value):
+            #logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
             try:
                 data = self.storage_manager.get_table_data_w_datatype(table_name)
 
@@ -192,13 +192,13 @@ class DMLManager:
                 print(retrieved_data)
                 rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, condition_function)
                 if rows_updated > 0:
-                    logging.info(f"Updated {rows_updated} rows in {table_name}.")
+                    #logging.info(f"Updated {rows_updated} rows in {table_name}.")
                     return f"Updated {rows_updated} rows."
                 else:
-                    logging.warning(f"No rows updated in {table_name}.")
+                    #logging.warning(f"No rows updated in {table_name}.")
                     return "No rows matched the conditions."
             except Exception as e:
-                logging.error(f"Update operation failed: {e}")
+                #logging.error(f"Update operation failed: {e}")
                 return "Error: Failed to update data."
         else:
             return "new data does not match the datatype or conflict with primary key uniqueness"
@@ -206,12 +206,12 @@ class DMLManager:
     def validate_data(self, table_name, data, command):
         schema = self.storage_manager.get_schema(table_name)
         if not schema:
-            logging.error(f"No schema available for table {table_name}")
+            #logging.error(f"No schema available for table {table_name}")
             return False
 
         for field, value in data.items():
             if field not in schema['columns']:
-                logging.error(f"Data validation error: Field '{field}' is not in the schema.")
+                #logging.error(f"Data validation error: Field '{field}' is not in the schema.")
                 return False
             
             #verify if the inserted data matched the datatype definition
@@ -222,16 +222,16 @@ class DMLManager:
                     value = int(value)  # Convert to int if necessary
                     data[field] = value
                 except ValueError:
-                    logging.error(f"Type conversion error for field '{field}': expected int, got {value}")
+                    #logging.error(f"Type conversion error for field '{field}': expected int, got {value}")
                     return False
             elif expected_type == 'varchar' and not isinstance(value, str):
-                logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
+                #logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
                 return False
             
         #verify if the inserted data matched the primary key condition
         if not self.check_primary_key_constraint(table_name, data, schema, command):
             print(self.check_primary_key_constraint(table_name, data, schema, command))
-            logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
+            #logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
             return False
 
         return True
@@ -440,7 +440,7 @@ class DMLManager:
 
                     parsed_conditions.append(condition_str)
                 else:
-                    logging.error(f"Could not parse condition: {part}")
+                    #logging.error(f"Could not parse condition: {part}")
                     return None  # Or raise an Exception
 
         condition_str = " ".join(parsed_conditions)
@@ -513,6 +513,7 @@ class DMLManager:
     def validate_foreign_key(self, table_name, data):
         schema = self.storage_manager.get_schema(table_name)
         foreign_keys = schema.get('foreign_keys', {})
+        logging.error(foreign_keys)
         if isinstance(foreign_keys, list):
             foreign_keys = {fk['column']: fk for fk in foreign_keys}  # Convert list to dictionary if necessary
 
@@ -523,7 +524,7 @@ class DMLManager:
 
             # Check if the foreign key value exists in the referenced table
             if not self.storage_manager.value_exists(referenced_table, referenced_column, fk_value):
-                logging.error(f"Foreign key validation failed: {table_name}.{fk_column} does not reference an existing value in {referenced_table}.{referenced_column}")
+                #logging.error(f"Foreign key validation failed: {table_name}.{fk_column} does not reference an existing value in {referenced_table}.{referenced_column}")
                 return False
         return True
 
