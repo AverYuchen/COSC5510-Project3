@@ -24,6 +24,12 @@ class ExecutionEngine:
             logging.error(f"Execution error: {e}", exc_info=True)
             return f"Execution error: {e}"
         
+    def handle_show_tables(self, command):
+        # Assuming storage_manager is accessible within this instance
+        tables = self.storage_manager.show_tables()
+        return "\n".join(tables) if tables else "No tables found."
+
+        
     def handle_select(self, command):
         if 'main_table' not in command or not command['columns']:
             logging.error("Select command is missing 'main_table' or 'columns'")

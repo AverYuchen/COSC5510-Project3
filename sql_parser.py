@@ -30,6 +30,9 @@ def parse_sql(sql):
    # Detect SQL command type
     command_type = tokens[0]
     parsed_details['type'] = command_type.upper()
+    
+    if tokens[0] == 'show' and 'tables' in tokens:
+        return parse_show_tables(sql)
 
     # Parsing logic based on type of SQL command
     if command_type == 'select':
@@ -91,6 +94,14 @@ def parse_sql(sql):
     
 
     
+    else:
+        return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
+
+
+def parse_show_tables(sql):
+    # Simplified regex to match the "SHOW TABLES" command
+    if re.match(r"^\s*SHOW\s+TABLES\s*;?\s*$", sql, re.IGNORECASE):
+        return {'type': 'show_tables'}
     else:
         return {'error': 'Unsupported SQL command or malformed SQL', 'sql': sql}
 
@@ -384,13 +395,14 @@ if __name__ == "__main__":
         # "SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code ",
         # "SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code ",
         # "SELECT A, B FROM TestTable1 WHERE A = 5",
-        "SELECT A, B FROM TestTable1 WHERE A != 5",
+        # "SELECT A, B FROM TestTable1 WHERE A != 5", 
         # 'SELECT A, B FROM TestTable1 WHERE A > 5',
         # "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
         # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
         # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
         # "SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country HAVING COUNT(CustomerID) > 5; "
         # "SELECT state_code, AVG(monthly_state_population) FROM state_population WHERE state_code = 'WI' GROUP BY state_code" 
+        "SHOW TABLES"
 
         
     ]

@@ -141,7 +141,3 @@ SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5
 SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
 SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
 SELECT A, B FROM TestTable1 WHERE A = 5 
-
-<INDEX TIME COMPARISION>
-CREATE INDEX index_id ON state_population (state_code);
-DROP INDEX index_id ON state_population; 

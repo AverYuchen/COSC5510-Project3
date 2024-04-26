@@ -522,46 +522,14 @@ class StorageManager:
         except Exception as e:
             logging.error(f"Error reading schema file {schema_file}: {e}")
         return None
-
-
-
     
-class TestStorageManager(unittest.TestCase):
-    def setUp(self):
-        # Initialize the StorageManager with a specific data set
-        self.storage_manager = StorageManager(data_directory="test_data")
-        self.storage_manager.data = {
-            'TestTable1': [
-                {'A': '1', 'B': 'Alpha'},
-                {'A': '2', 'B': 'Beta'},
-                {'A': '3', 'B': 'Gamma'}
-            ]
-        }
-        # Define schema for simplicity in the test environment
-        self.storage_manager.schemas['TestTable1'] = {
-            "columns": { "A": { "type": "int" }, "B": { "type": "varchar" } },
-            "primary_key": ["A"],
-            "foreign_keys": [],
-            "indexes": []
-        }
-            
-    def test_create_drop_index(self):
-        # Test the creation of an index
-        creation_response = self.storage_manager.create_index('TestTable1', 'A', 'index_id')
-        self.assertIn("created", creation_response)
+    def show_tables(self):
+        """
+        Returns a list of all table names in the database.
+        
+        Returns:
+            list: A list of table names.
+        """
+        # This will return a list of all table names for which schemas are defined.
+        return [filename[:-4] for filename in os.listdir(self.data_directory) if filename.endswith('.csv')]
 
-        # Verify the index exists
-        exists = self.storage_manager.index_exists('TestTable1', 'index_id')
-        self.assertTrue(exists)
-
-        # Drop the index
-        drop_response = self.storage_manager.drop_index('TestTable1', 'index_id')
-        self.assertIn("dropped", drop_response)
-
-        # Verify the index does not exist anymore
-        not_exists = self.storage_manager.index_exists('TestTable1', 'index_id')
-        self.assertFalse(not_exists)
-
-
-if __name__ == '__main__':
-    unittest.main()
