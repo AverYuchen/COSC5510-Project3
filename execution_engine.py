@@ -582,13 +582,12 @@ class ExecutionEngine:
             if 'OR' in conditions:
                 left, right = conditions.split('OR', 1)
                 return eval_condition(row, left.strip()) or eval_condition(row, right.strip())
-            else:
-                pattern = r"\(?(.*)\)?\s*(=|!|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
-                match = re.match(pattern, conditions.strip(), re.IGNORECASE)
-                if not match:
-                    raise ValueError("Invalid WHERE clause format")
-                column, operator, value = match.groups()
-                return self.apply_operator(row, column.strip(), operator.strip().upper(), value.strip().strip("'"))
+            pattern = r"\(?(.*)\)?\s*(=|!|<>|<|>|<=|>=|LIKE|IN|BETWEEN)\s*(.*)"
+            match = re.match(pattern, conditions.strip(), re.IGNORECASE)
+            if not match:
+                raise ValueError("Invalid WHERE clause format")
+            column, operator, value = match.groups()
+            return self.apply_operator(row, column.strip(), operator.strip().upper(), value.strip().strip("'"))
 
         return lambda row: eval_condition(row, where_clause)
     
@@ -615,7 +614,7 @@ class ExecutionEngine:
             if operator == "=": operator = "=="
             # elif operator == "!=": operator = "!="  # No change needed, just making it explicit
             result = self.compare_values(row.get(column), value, operator)
-            # logging.debug(f"Comparison operator {operator} result: {result}")
+            logging.debug(f"Comparison operator {operator} result: {result}")
             return result
 
     
@@ -625,7 +624,7 @@ class ExecutionEngine:
         value = self.safe_convert_to_numeric_where(value)
 
         # Add logging to check values just before comparison
-        # logging.debug(f"Pre-comparison: Row Value: {row_value} ({type(row_value)}), Value: {value} ({type(value)}), Operator: {operator}")
+        logging.debug(f"Pre-comparison: Row Value: {row_value} ({type(row_value)}), Value: {value} ({type(value)}), Operator: {operator}")
         
         if operator == "!":
             return row_value != value
@@ -653,7 +652,7 @@ class ExecutionEngine:
             except ValueError:
                 logging.error(f"Conversion failed for value: {value}, returning None.")
                 return value
-
+            
 # Example usage
 if __name__ == "__main__":
     engine = ExecutionEngine()

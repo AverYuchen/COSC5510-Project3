@@ -117,6 +117,11 @@ DELETE FROM test_table WHERE id = 21;
 <UPDATE: fail due to invalid datatype>
 UPDATE test_table SET id = 'test' WHERE name = DemoUpdate;
 
+<UPDATE: Success and Fail beacuese of PK FK>
+UPDATE state_abbreviation SET state = 'Alabamamama' WHERE state_code = AL;
+UPDATE state_abbreviation SET state_code = 'ALBA' WHERE state = Alabama;
+
+
 <DELETE>
 
 DELETE FROM test_table WHERE id = 21; 
@@ -131,13 +136,6 @@ DROP INDEX index_id ON TestTable1;
 
 <INDEX TIME COMPARISION>
 CREATE INDEX index_id ON TestTable1 (A);
-DROP INDEX index_id ON TestTable1; 
+DROP INDEX index_id ON state_population; 
 
-SELECT A, B FROM TestTable1 WHERE A = 5 
-SELECT A, B FROM TestTable1 WHERE A ! 5
-SELECT A, B FROM TestTable1 WHERE A > 5
-SELECT A, B FROM TestTable1 WHERE A < 5
-SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5
-SELECT A, B FROM TestTable1 WHERE A LIKE '1%'
-SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)
-SELECT A, B FROM TestTable1 WHERE A = 5 
+

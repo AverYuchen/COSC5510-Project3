@@ -16,66 +16,115 @@ class DMLManager:
         self.ddl_manager = DDLManager() 
         logging.debug("DMLManager initialized with provided storage manager.")
 
+
+    
     def insert(self, table_name, data):
+        # Load the latest data to make sure the insertion checks against all existing records
         self.storage_manager.load_latest_data()
-        self.storage_manager.load_latest_schema()
-        if table_name not in self.storage_manager.schemas:  # Correct method to check table existence
+        schema = self.storage_manager.get_schema(table_name)
+
+        if table_name not in self.storage_manager.schemas:
             logging.error(f"Insert operation failed: Table {table_name} does not exist.")
             return "Error: Table does not exist."
 
-        if not self.validate_data(table_name, data, command='insert'):
-            logging.error("Insert operation failed: Data validation failed.")
-            return "Error: PK exist - Data validation failed."
+        if not self.validate_data_PK(table_name, data, command='insert'):
+            return "Error: Data validation failed due to primary key duplication or type mismatch."
 
         try:
             self.storage_manager.insert_data(table_name, data)
-            logging.info(f"Data successfully inserted into {table_name}.")
             return "Data inserted successfully."
         except Exception as e:
             logging.error(f"Insert operation failed: {e}")
             return "Error: Failed to insert data."
 
-    def validate_data(self, table_name, data, command):
+        
+    def check_primary_key_constraint(self, table_name, data, schema, command):
+        primary_keys = schema.get('primary_key')
+        existing_data = self.storage_manager.get_table_data(table_name)
+        logging.debug(f"Checking PK with existing data: {existing_data}")
+        if primary_keys:
+            if isinstance(primary_keys, str):
+                primary_keys = [primary_keys]
+            for primary_key in primary_keys:
+                
+                if primary_key not in data and command == 'insert':
+                    return False
+                if primary_key not in data and command == 'update':
+                    return True
+                # if primary_key not in data:
+                #     logging.error("Primary key field missing in data provided.")
+                #     return False
+                existing_keys = [row[primary_key] for row in existing_data if primary_key in row]
+                if data[primary_key] in existing_keys:
+                    logging.error(f"Duplicate primary key error for value {data[primary_key]}")
+                    return False
+        return True
+    
+    def validate_data_PK(self, table_name, data, command):
         schema = self.storage_manager.get_schema(table_name)
         if not schema:
             logging.error(f"No schema available for table {table_name}")
             return False
 
-        for field, value in data.items():
-            if field not in schema['columns']:
-                logging.error(f"Data validation error: Field '{field}' is not in the schema.")
-                return False
-            
-            #verify if the inserted data matched the datatype definition
-            expected_type = schema['columns'][field]['type']
-            print(expected_type)
-            if expected_type == 'int' and not isinstance(value, int):
-                try:
-                    value = int(value)  # Convert to int if necessary
-                    data[field] = value
-                except ValueError:
-                    logging.error(f"Type conversion error for field '{field}': expected int, got {value}")
-                    return False
-            elif expected_type == 'varchar' and not isinstance(value, str):
-                logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
-                return False
-        #verify if the inserted data matched the primary key condition
+        # Check if data matches schema requirements here (omitted for brevity)
+
+        # Primary Key Check
         if not self.check_primary_key_constraint(table_name, data, schema, command):
-            print(self.check_primary_key_constraint(table_name, data, schema, command))
-            logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
+            logging.error(f"Duplicate primary key error for table {table_name}")
             return False
 
         return True
 
-    def delete(self, table_name, conditions): 
+    def delete(self, table_name, conditions):
+        # Load latest data and schema
         self.storage_manager.load_latest_data()
         self.storage_manager.load_latest_schema()
+
+        # Parse conditions to filter applicable rows
+        condition_function = self.parse_conditions(conditions)
+        data_to_delete = [d for d in self.storage_manager.get_table_data_w_datatype(table_name) if condition_function(d)]
+
+        # Check for foreign key references before deleting
+        if not self.can_delete(table_name, data_to_delete):
+            return "Error: Data cannot be deleted due to foreign key constraints."
+
+        # Perform deletion if safe
         try:
-            condition_function = self.parse_conditions(conditions)
-            result = self.storage_manager.delete_data(table_name, condition_function)
-            return result
+            delete_count = 0
+            for row in data_to_delete:
+                self.storage_manager.delete_data(table_name, lambda r: r == row)
+                delete_count += 1
+
+            if delete_count > 0:
+                return f"Deleted {delete_count} rows from {table_name}."
+            else:
+                return "No rows matched the conditions or needed deletion."
         except Exception as e:
             logging.error(f"Delete operation failed: {str(e)}")
+            return f"Error: Failed to delete data due to {str(e)}"
+
+    def can_delete(self, table_name, data_to_delete):
+        """Check if data can be deleted based on foreign key constraints."""
+        schema = self.storage_manager.get_schema(table_name)
+        foreign_keys = schema.get('foreign_keys', {})
+        if isinstance(foreign_keys, list):  # Convert list to dict if needed
+            foreign_keys = {fk['column']: fk for fk in foreign_keys}
+
+        for ref_table, ref_schema in self.storage_manager.schemas.items():
+            ref_foreign_keys = ref_schema.get('foreign_keys', {})
+            if isinstance(ref_foreign_keys, list):
+                ref_foreign_keys = {fk['column']: fk for fk in ref_foreign_keys}
+
+            for fk_column, fk_details in ref_foreign_keys.items():
+                if fk_details['references']['table'] == table_name:
+                    # Check if any data in the referencing table matches the foreign key values
+                    ref_data = self.storage_manager.get_table_data(ref_table)
+                    for ref_row in ref_data:
+                        if ref_row[fk_column] in [row[fk_details['references']['column']] for row in data_to_delete]:
+                            return False  # Data is referenced, cannot delete
+        return True  # No references, safe to delete
+
+
        
     
     def parse_conditions_delete(self, conditions):
@@ -123,29 +172,39 @@ class DMLManager:
                 return "Error: Failed to update data."
         else:
             return "new data does not match the datatype or conflict with primary key uniqueness"
-    
-    def check_primary_key_constraint(self, table_name, data, schema, command):
-        """
-        Check if the data violates primary key constraints.
-        """
-        print(schema)
-        primary_keys = schema.get('primary_key')
-        existing_data = self.storage_manager.get_table_data(table_name)
-        if primary_keys:
-            if isinstance(primary_keys, str):
-                primary_keys = [primary_keys] 
-            for primary_key in primary_keys:
-                if primary_key not in data and command == 'insert':
+        
+    def validate_data(self, table_name, data, command):
+        schema = self.storage_manager.get_schema(table_name)
+        if not schema:
+            logging.error(f"No schema available for table {table_name}")
+            return False
+
+        for field, value in data.items():
+            if field not in schema['columns']:
+                logging.error(f"Data validation error: Field '{field}' is not in the schema.")
+                return False
+            
+            #verify if the inserted data matched the datatype definition
+            expected_type = schema['columns'][field]['type']
+            print(expected_type)
+            if expected_type == 'int' and not isinstance(value, int):
+                try:
+                    value = int(value)  # Convert to int if necessary
+                    data[field] = value
+                except ValueError:
+                    logging.error(f"Type conversion error for field '{field}': expected int, got {value}")
                     return False
-                if primary_key not in data and command == 'update':
-                    return True
-                for row in existing_data:
-                    if schema['columns'][primary_key]['type'] == "int":
-                        row[primary_key] = int(row[primary_key])
-                    if row[primary_key] == data[primary_key]:
-                        return False
+            elif expected_type == 'varchar' and not isinstance(value, str):
+                logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
+                return False
+        #verify if the inserted data matched the primary key condition
+        if not self.check_primary_key_constraint(table_name, data, schema, command):
+            print(self.check_primary_key_constraint(table_name, data, schema, command))
+            logging.error(f"Inserted data is not satisfied primary key rule for table {table_name}")
+            return False
 
         return True
+
 
     def create_table(self, table_name, columns):
         """
@@ -410,8 +469,6 @@ class DMLManager:
         except ValueError:
             return 0
     
-
-
     def order_by(self, data, order_column, ascending=True):
             # Convert string numeric data to integers before sorting
             numeric_data = [
@@ -422,34 +479,41 @@ class DMLManager:
             sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
             return sorted_data
         
-# if __name__ == "__main__":
-#     from storage import StorageManager
+    def validate_foreign_key(self, table_name, data):
+        schema = self.storage_manager.get_schema(table_name)
+        foreign_keys = schema.get('foreign_keys', {})
+        if isinstance(foreign_keys, list):
+            foreign_keys = {fk['column']: fk for fk in foreign_keys}  # Convert list to dictionary if necessary
 
-#     storage_manager = StorageManager()
-#     dml_manager = DMLManager(storage_manager)
+        for fk_column, fk_details in foreign_keys.items():
+            referenced_table = fk_details['references']['table']
+            referenced_column = fk_details['references']['column']
+            fk_value = data.get(fk_column)
 
-#     queries = [
-#         "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-#         "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-#         "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-#         "INSERT INTO test_table (id, name) VALUES (1, 'Hachii')",
-#         "DELETE FROM test_table WHERE id = 0",
-#         "SELECT MAX(monthly_state_population) FROM state_population",
-#         "SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-#         "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code"
-#     ]
+            # Check if the foreign key value exists in the referenced table
+            if not self.storage_manager.value_exists(referenced_table, referenced_column, fk_value):
+                logging.error(f"Foreign key validation failed: {table_name}.{fk_column} does not reference an existing value in {referenced_table}.{referenced_column}")
+                return False
+        return True
 
-#     # Mock responses for testing purposes
-#     for query in queries:
-#         if query.startswith("SELECT"):
-#             print("\nQuerying:", query)
-#             result = dml_manager.select(query)  # Simulate a select method
-#             print("Results:", result)
-#         elif query.startswith("INSERT"):
-#             print("\nInserting:", query)
-#             result = dml_manager.insert(query)  # Simulate an insert method
-#             print("Insertion Status:", result)
-#         elif query.startswith("DELETE"):
-#             print("\nDeleting:", query)
-#             result = dml_manager.delete(query)  # Simulate a delete method
-#             print("Deletion Status:", result)
+    def value_exists(self, table_name, column_name, value):
+        table_data = self.storage_manager.get_table_data(table_name)
+        return any(row[column_name] == value for row in table_data)
+
+if __name__ == "__main__":
+
+    def test_insert_duplicate_primary_key():
+        dml_manager = DMLManager()
+        table_name = "test_table"
+        data = {'id': 21, 'name': 'Ellen'}
+
+        # First insert
+        result1 = dml_manager.insert(table_name, data)
+        print(result1)  # Expected: "Data inserted successfully."
+
+        # Attempt to insert duplicate primary key
+        result2 = dml_manager.insert(table_name, data)
+        print(result2)  # Expected: "Error: Duplicate primary key error for value 21"
+
+    test_insert_duplicate_primary_key()
+

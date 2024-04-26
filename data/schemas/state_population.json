@@ -1,19 +1,18 @@
 {
   "columns": {
-    "state_code": {
-      "type": "varchar"
-    },
-    "month": {
-      "type": "int"
-    },
-    "year": {
-      "type": "year"
-    },
-    "monthly_state_population": {
-      "type": "int"
-    }
+    "state_code": { "type": "varchar" },
+    "month": { "type": "int" },
+    "year": { "type": "year" },
+    "monthly_state_population": { "type": "int" }
   },
   "primary_key": ["state_code", "month", "year"],
-  "foreign_keys": [],
+  "foreign_keys": {
+    "state_code": {
+      "references": {
+        "table": "state_abbreviation",
+        "column": "state_code"
+      }
+    }
+  },
   "indexes": []
 }
