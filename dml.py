@@ -21,6 +21,7 @@ class DMLManager:
     def insert(self, table_name, data):
         # Load the latest data to make sure the insertion checks against all existing records
         self.storage_manager.load_latest_data()
+        self.storage_manager.load_latest_schema()
         schema = self.storage_manager.get_schema(table_name)
 
         if table_name not in self.storage_manager.schemas:
@@ -28,6 +29,8 @@ class DMLManager:
             return "Error: Table does not exist."
 
         if not self.validate_data_PK(table_name, data, command='insert'):
+        # if not self.validate_data(table_name, data, command='insert'):
+
             return "Error: Data validation failed due to primary key duplication or type mismatch."
 
         try:
@@ -60,20 +63,47 @@ class DMLManager:
                     return False
         return True
     
+    # def validate_data_PK(self, table_name, data, command):
+    #     schema = self.storage_manager.get_schema(table_name)
+    #     if not schema:
+    #         logging.error(f"No schema available for table {table_name}")
+    #         return False
+
+    #     if not self.check_primary_key_constraint(table_name, data, schema, command):
+    #         logging.error(f"Duplicate primary key error for table {table_name}")
+    #         return False
+    #     return True
+    
     def validate_data_PK(self, table_name, data, command):
+        self.storage_manager.load_schema(table_name)  # Ensure schema is up-to-date
         schema = self.storage_manager.get_schema(table_name)
         if not schema:
             logging.error(f"No schema available for table {table_name}")
             return False
-
-        # Check if data matches schema requirements here (omitted for brevity)
-
-        # Primary Key Check
         if not self.check_primary_key_constraint(table_name, data, schema, command):
-            logging.error(f"Duplicate primary key error for table {table_name}")
             return False
-
+        if any(not self.validate_type(data[key], schema['columns'][key]['type']) for key in data if key in schema['columns']):
+            logging.error("Data type validation failed.")
+            return False
         return True
+
+
+    def validate_type(self, value, expected_type):
+        if expected_type == 'int':
+            if not isinstance(value, int):
+                try:
+                    int(value)  # Try converting to int
+                    return True
+                except ValueError:
+                    logging.debug(f"Failed to convert {value} to int.")
+                    return False
+            return True
+        elif expected_type == 'varchar':
+            return isinstance(value, str)
+        # Add more type checks as needed
+        return False
+
+    
 
     def delete(self, table_name, conditions):
         # Load latest data and schema
@@ -197,6 +227,7 @@ class DMLManager:
             elif expected_type == 'varchar' and not isinstance(value, str):
                 logging.error(f"Type validation error for field '{field}': expected string, got {type(value).__name__}")
                 return False
+            
         #verify if the inserted data matched the primary key condition
         if not self.check_primary_key_constraint(table_name, data, schema, command):
             print(self.check_primary_key_constraint(table_name, data, schema, command))

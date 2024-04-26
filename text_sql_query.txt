@@ -92,18 +92,11 @@ SELECT A, B FROM TestTable1 WHERE A IN (2,3,4) OR A = 5
 SELECT state_code, COUNT(monthly_state_population) AS total_population FROM state_population GROUP BY state_code HAVING total_population > 10; 
 
 
-<CREATE>
-
-CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
-
 <INSERT: successful>
 INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
 
 <INSERT: fail due to primary key confliction>
 INSERT INTO test_table (id, name) VALUES (21, 'Ellen');
-
-<successful>
-INSERT INTO employees (employee_id, name, salary) VALUES (21, 'Ellen', 253789);
 
 <INSERT: fail due to datatype confliction>
 INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
@@ -114,13 +107,19 @@ UPDATE test_table SET name = 'DemoUpdate' WHERE id = 21;
 <DELETE>
 DELETE FROM test_table WHERE id = 21;
 
+<CREATE>
+
+CREATE TABLE employees (employee_id INT PRIMARY KEY, name VARCHAR(20), salary INT);
+
+<successful>
+INSERT INTO employees (employee_id, name, salary) VALUES (21, 'Ellen', 253789);
+
 <UPDATE: fail due to invalid datatype>
 UPDATE test_table SET id = 'test' WHERE name = DemoUpdate;
 
 <UPDATE: Success and Fail beacuese of PK FK>
 UPDATE state_abbreviation SET state = 'Alabamamama' WHERE state_code = AL;
 UPDATE state_abbreviation SET state_code = 'ALBA' WHERE state = Alabama;
-
 
 <DELETE>
 
