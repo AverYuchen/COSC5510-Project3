@@ -182,7 +182,7 @@ class StorageManager:
                 reader = csv.DictReader(file)
                 return [row for row in reader]
         except Exception as e:
-            logging.error(f"Failed to read {file_path}: {e}")
+            #logging.error(f"Failed to read {file_path}: {e}")
             return []  # Return an empty list on error
 
     def load_schemas(self):
@@ -198,9 +198,13 @@ class StorageManager:
             with open(schema_path, newline='') as file:
                 schema = json.load(file)
         except FileNotFoundError:
-            logging.error(f"Schema file {schema_path} not found.")
+            #logging.error(f"Schema file {schema_path} not found.")
+            return schema
+
         except Exception as e:
-            logging.error(f"Error reading schema file {schema_path}: {e}")
+            #logging.error(f"Error reading schema file {schema_path}: {e}")
+            return schema
+
         return schema
     
     def load_latest_schema(self):
@@ -214,10 +218,13 @@ class StorageManager:
 
     def get_schema(self, table_name):
         schema = self.schemas.get(table_name)
+        
         if schema:
-            logging.debug(f"Schema found for table {table_name}: {schema}")
+            #logging.debug(f"Schema found for table {table_name}: {schema}")
+            return schema
         else:
-            logging.debug(f"No schema found for table {table_name}.")
+            #logging.debug(f"No schema found for table {table_name}.")
+            return schema
         return schema
 
     def create_schema(self, table_name, schema):
@@ -242,7 +249,7 @@ class StorageManager:
 
     def delete_data(self, table_name, condition_func):
         if condition_func is None:
-            logging.error("Deletion failed: Invalid condition syntax")
+            #logging.error("Deletion failed: Invalid condition syntax")
             return "Error: Invalid condition syntax"
 
         try:
@@ -251,8 +258,8 @@ class StorageManager:
             new_data = [row for row in initial_data if not condition_func(row)]
             rows_deleted = len(initial_data) - len(new_data)
 
-            logging.debug(f"Initial data: {initial_data}")
-            logging.debug(f"New data after deletion: {new_data}")
+            #logging.debug(f"Initial data: {initial_data}")
+            #logging.debug(f"New data after deletion: {new_data}")
 
             if rows_deleted > 0:
                 self.data[table_name] = new_data
@@ -263,7 +270,7 @@ class StorageManager:
             else:
                 return "No rows matched the condition."
         except Exception as e:
-            logging.error(f"Deletion failed: {e}")
+            #logging.error(f"Deletion failed: {e}")
             return f"Error: Failed to delete data due to {e}"
 
     def write_csv(self, table_name):
@@ -273,9 +280,9 @@ class StorageManager:
                 writer = csv.DictWriter(file, fieldnames=self.schemas[table_name]['columns'].keys())
                 writer.writeheader()
                 writer.writerows(self.data[table_name])
-            logging.info(f"Data for {table_name} successfully written to CSV.")
+            #logging.info(f"Data for {table_name} successfully written to CSV.")
         except Exception as e:
-            logging.error(f"Failed to write to {filename}: {e}")
+            #logging.error(f"Failed to write to {filename}: {e}")
             return f"Error: Failed to write data due to {e}"
     """
     def parse_conditions_safe(self, conditions):
@@ -346,7 +353,7 @@ class StorageManager:
                 self.insert_data(table_name, row)
             return changed_rows
         except Exception as e:
-            logging.error(f"update failed: {e}")
+            #logging.error(f"update failed: {e}")
             return 0
         
     def create_index(self, table_name, column_name, index_name):
@@ -403,9 +410,9 @@ class StorageManager:
         try:
             with open(schema_file_path, 'w') as file:
                 json.dump(self.schemas[table_name], file, indent=4)
-            logging.info(f"Schema for {table_name} saved successfully.")
+            #logging.info(f"Schema for {table_name} saved successfully.")
         except Exception as e:
-            logging.error(f"Failed to save schema for {table_name}: {e}")
+            #logging.error(f"Failed to save schema for {table_name}: {e}")
             return f"Error saving schema: {e}"
 
         
@@ -432,6 +439,8 @@ class StorageManager:
 
     def index_exists(self, table_name, index_name, check_file=False):
         # Check in-memory first
+        self.load_latest_schema()
+        self.load_indexes_for_table(table_name)
         in_memory_check = any(key[2] == index_name and key[0] == table_name for key in self.indexes.keys())
         if in_memory_check:
             return True
@@ -443,7 +452,7 @@ class StorageManager:
                     schema = json.load(file)
                     return any(idx['name'] == index_name for idx in schema.get('indexes', []))
             except Exception as e:
-                logging.error(f"Failed to read schema file for {table_name}: {e}")
+                #logging.error(f"Failed to read schema file for {table_name}: {e}")
                 return False
 
         return False
@@ -451,14 +460,14 @@ class StorageManager:
     def table_exists(self, table_name):
         """Check if the specified table exists in the database."""
         exists = table_name in self.schemas
-        logging.debug(f"Checking if table exists ('{table_name}'): {exists}")
+        #logging.debug(f"Checking if table exists ('{table_name}'): {exists}")
         return exists
 
     def column_exists(self, table_name, column_name):
         """Check if the specified column exists in the specified table."""
         if self.table_exists(table_name):
             exists = column_name in self.schemas[table_name]['columns']
-            logging.debug(f"Checking if column exists ('{column_name}' in '{table_name}'): {exists}")
+            #logging.debug(f"Checking if column exists ('{column_name}' in '{table_name}'): {exists}")
             return exists
         return False
 
@@ -519,9 +528,11 @@ class StorageManager:
             with open(schema_file, 'r') as file:
                 return json.load(file)
         except FileNotFoundError:
-            logging.error(f"Schema file {schema_file} not found for table {table_name}.")
+            #logging.error(f"Schema file {schema_file} not found for table {table_name}.")
+            return None
         except Exception as e:
-            logging.error(f"Error reading schema file {schema_file}: {e}")
+            #logging.error(f"Error reading schema file {schema_file}: {e}")
+            return None
         return None
     
     def show_tables(self):
