@@ -15,10 +15,5 @@
   },
   "primary_key": ["state_code", "month", "year"],
   "foreign_keys": [],
-  "indexes": [
-    {
-      "name": "index_id",
-      "column": "state_code"
-    }
-  ]
+  "indexes": []
 }
