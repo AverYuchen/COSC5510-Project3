@@ -509,28 +509,6 @@ class DMLManager:
             ]
             sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
             return sorted_data
-        
-    def validate_foreign_key(self, table_name, data):
-        schema = self.storage_manager.get_schema(table_name)
-        foreign_keys = schema.get('foreign_keys', {})
-        logging.error(foreign_keys)
-        if isinstance(foreign_keys, list):
-            foreign_keys = {fk['column']: fk for fk in foreign_keys}  # Convert list to dictionary if necessary
-
-        for fk_column, fk_details in foreign_keys.items():
-            referenced_table = fk_details['references']['table']
-            referenced_column = fk_details['references']['column']
-            fk_value = data.get(fk_column)
-
-            # Check if the foreign key value exists in the referenced table
-            if not self.storage_manager.value_exists(referenced_table, referenced_column, fk_value):
-                #logging.error(f"Foreign key validation failed: {table_name}.{fk_column} does not reference an existing value in {referenced_table}.{referenced_column}")
-                return False
-        return True
-
-    def value_exists(self, table_name, column_name, value):
-        table_data = self.storage_manager.get_table_data(table_name)
-        return any(row[column_name] == value for row in table_data)
 
 if __name__ == "__main__":
 
