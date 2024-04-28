@@ -63,16 +63,6 @@ class DMLManager:
                     return False
         return True
     
-    # def validate_data_PK(self, table_name, data, command):
-    #     schema = self.storage_manager.get_schema(table_name)
-    #     if not schema:
-    #         logging.error(f"No schema available for table {table_name}")
-    #         return False
-
-    #     if not self.check_primary_key_constraint(table_name, data, schema, command):
-    #         logging.error(f"Duplicate primary key error for table {table_name}")
-    #         return False
-    #     return True
     
     def validate_data_PK(self, table_name, data, command):
         self.storage_manager.load_schema(table_name)  # Ensure schema is up-to-date
@@ -179,29 +169,122 @@ class DMLManager:
             #logging.error("Failed to parse delete conditions")
             return None
 
-    def update(self, table_name, value, conditions):
-        #check validation:
-        if self.validate_data(table_name, value, command='update'):
-            #logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
-            try:
-                data = self.storage_manager.get_table_data_w_datatype(table_name)
+    # def update(self, table_name, value, conditions):
+    #     #check validation:
+    #     if self.validate_data(table_name, value, command='update'):
+    #         #logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
+    #         try:
+    #             data = self.storage_manager.get_table_data_w_datatype(table_name)
 
-                print(data)
-                condition_function = self.parse_conditions(conditions)
-                retrieved_data = [d for d in data if condition_function(d)]
-                print(retrieved_data)
-                rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, condition_function)
-                if rows_updated > 0:
-                    #logging.info(f"Updated {rows_updated} rows in {table_name}.")
-                    return f"Updated {rows_updated} rows."
-                else:
-                    #logging.warning(f"No rows updated in {table_name}.")
-                    return "No rows matched the conditions."
-            except Exception as e:
-                #logging.error(f"Update operation failed: {e}")
-                return "Error: Failed to update data."
+    #             print(data)
+    #             condition_function = self.parse_conditions(conditions)
+    #             retrieved_data = [d for d in data if condition_function(d)]
+    #             print(retrieved_data)
+    #             rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, condition_function)
+    #             if rows_updated > 0:
+    #                 #logging.info(f"Updated {rows_updated} rows in {table_name}.")
+    #                 return f"Updated {rows_updated} rows."
+    #             else:
+    #                 #logging.warning(f"No rows updated in {table_name}.")
+    #                 return "No rows matched the conditions."
+    #         except Exception as e:
+    #             #logging.error(f"Update operation failed: {e}")
+    #             return "Error: Failed to update data."
+    #     else:
+    #         return "new data does not match the datatype or conflict with primary key uniqueness"
+    
+    def column_in_foreign_keys(self, table_name, primary_key):
+        """Check if the primary key is used as a foreign key in any other table."""
+        for schema in self.storage_manager.schemas.values():
+            if 'foreign_keys' in schema:
+                for fk in schema['foreign_keys']:
+                    if fk['references']['table'] == table_name and fk['references']['column'] == primary_key:
+                        return True
+        return False
+    
+    # def update(self, table_name, value, conditions):
+    #     # Load the schema for the table
+    #     self.storage_manager.load_latest_schema()
+    #     schema = self.storage_manager.get_schema(table_name)
+        
+    #     # schema = self.storage_manager.get_schema(table_name)
+    #     primary_key = schema.get('primary_key')
+
+    #     # Check if primary key is being updated and if it's used in another table's foreign key
+    #     primary_key_value = value.get(primary_key) if isinstance(primary_key, str) else None
+    #     if primary_key_value is not None and self.column_in_foreign_keys(table_name, primary_key):
+    #         return "Error: Cannot update primary key as it is used as a foreign key in another table."
+
+    #     if self.validate_data(table_name, value, command='update'):
+    #         #logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
+    #         try:
+    #             data = self.storage_manager.get_table_data_w_datatype(table_name)
+
+    #             print(data)
+    #             condition_function = self.parse_conditions(conditions)
+    #             retrieved_data = [d for d in data if condition_function(d)]
+    #             print(retrieved_data)
+    #             rows_updated = self.storage_manager.update_table_data(table_name, value, retrieved_data, condition_function)
+    #             if rows_updated > 0:
+    #                 #logging.info(f"Updated {rows_updated} rows in {table_name}.")
+    #                 return f"Updated {rows_updated} rows."
+    #             else:
+    #                 #logging.warning(f"No rows updated in {table_name}.")
+    #                 return "No rows matched the conditions."
+    #         except Exception as e:
+    #             #logging.error(f"Update operation failed: {e}")
+    #             return "Error: Failed to update data."
+    #     else:
+    #         return "new data does not match the datatype or conflict with primary key uniqueness"
+    
+    def update(self, table_name, new_values, conditions):
+        """
+        Updates records in the specified table based on the provided conditions and new values.
+
+        Args:
+            table_name (str): The name of the table to update.
+            new_values (dict): A dictionary containing column names and their new values.
+            conditions (str): A string that represents the conditions for updating records.
+
+        Returns:
+            str: A message indicating the outcome of the operation.
+        """
+        # Load the latest schema for validation
+        self.storage_manager.load_latest_schema()
+        schema = self.storage_manager.get_schema(table_name)
+
+        if not schema:
+            return "Error: Table schema not found."
+
+        # Validate if primary key is being updated or if it's a part of foreign keys
+        primary_key = schema.get('primary_key')
+        if primary_key and any(key in new_values for key in primary_key if isinstance(primary_key, list) or key == primary_key):
+            if self.column_in_foreign_keys(table_name, primary_key):
+                return "Error: Cannot update primary key as it is used as a foreign key in another table."
+
+        # Validate new data against the schema before applying changes
+        if not self.validate_data(table_name, new_values, 'update'):
+            return "Error: Data validation failed."
+
+        # Prepare condition function to identify rows that need to be updated
+        condition_function = self.parse_conditions(conditions)
+        if not condition_function:
+            return "Error: Invalid conditions."
+
+        # Retrieve data to update
+        retrieved_data = self.storage_manager.get_table_data_w_datatype(table_name)
+        filtered_data = [d for d in retrieved_data if condition_function(d)]
+
+        # Update data using StorageManager
+        rows_updated = self.storage_manager.update_table_data_2(table_name, new_values, filtered_data, condition_function)
+
+        if rows_updated > 0:
+            return f"Updated {rows_updated} rows in {table_name}."
         else:
-            return "new data does not match the datatype or conflict with primary key uniqueness"
+            return "No rows matched the conditions or needed updating."
+
+
+        
         
     def validate_data(self, table_name, data, command):
         schema = self.storage_manager.get_schema(table_name)

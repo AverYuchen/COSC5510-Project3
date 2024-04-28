@@ -573,7 +573,7 @@ class ExecutionEngine:
                 if not match:
                     raise ValueError("Invalid BETWEEN clause format")
                 column, between_operator, value_1, and_operator, value_2 = match.groups()
-                print([column, value_1, value_2])
+                # print([column, value_1, value_2])
                 return self.apply_operator(row, column.strip(), ">=", value_1.strip().strip("'")) and self.apply_operator(row, column.strip(), "<=", value_2.strip().strip("'"))
             
             if 'AND' in conditions and 'BETWEEN' not in conditions:

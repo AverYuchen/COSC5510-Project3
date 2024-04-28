@@ -33,7 +33,7 @@ class StorageManager:
                 'state': {'type': 'varchar'},
                 'state_code': {'type': 'varchar'}
             },
-            'primary_key': 'state',
+            'primary_key': 'state_code',
             'foreign_keys': [],
             'indexes': []
         }
@@ -284,31 +284,31 @@ class StorageManager:
         except Exception as e:
             #logging.error(f"Failed to write to {filename}: {e}")
             return f"Error: Failed to write data due to {e}"
-    """
-    def parse_conditions_safe(self, conditions):
-        import re
-        # This regex now captures both digits and non-digits for values
-        match = re.match(r"^\s*(\w+)\s*=\s*(['\"]?)(\w+)\2\s*$", conditions)
-        if match:
-            field, _, value = match.groups()
-            # Try to convert to integer, fallback to string
-            try:
-                value = int(value)
-            except ValueError:
-                pass  # Keep value as string if conversion fails
+    # """
+    # def parse_conditions_safe(self, conditions):
+    #     import re
+    #     # This regex now captures both digits and non-digits for values
+    #     match = re.match(r"^\s*(\w+)\s*=\s*(['\"]?)(\w+)\2\s*$", conditions)
+    #     if match:
+    #         field, _, value = match.groups()
+    #         # Try to convert to integer, fallback to string
+    #         try:
+    #             value = int(value)
+    #         except ValueError:
+    #             pass  # Keep value as string if conversion fails
 
-            def condition_func(row):
-                # Convert both to string for comparison to handle different data types gracefully
-                row_value = row.get(field)
-                if isinstance(row_value, int):
-                    row_value = str(row_value)
-                return row_value == str(value)
+    #         def condition_func(row):
+    #             # Convert both to string for comparison to handle different data types gracefully
+    #             row_value = row.get(field)
+    #             if isinstance(row_value, int):
+    #                 row_value = str(row_value)
+    #             return row_value == str(value)
 
-            return condition_func
-        else:
-            logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
-            return None
-    """ 
+    #         return condition_func
+    #     else:
+    #         logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
+    #         return None
+    # """ 
     def insert_data(self, table_name, data):
         # Check if schema exists for the table
         if table_name in self.schemas:
@@ -338,23 +338,23 @@ class StorageManager:
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
  
-    def update_table_data(self, table_name, value, retrieved_data, condition_func):
-        try:
-            updated_data = []
-            changed_rows = 0
-            for row in retrieved_data:
-                for col, content in value.items():
-                    row[col] = content
-                updated_data.append(row)
-                changed_rows += 1
-            print(updated_data)
-            self.delete_data(table_name, condition_func)
-            for row in updated_data:
-                self.insert_data(table_name, row)
-            return changed_rows
-        except Exception as e:
-            #logging.error(f"update failed: {e}")
-            return 0
+    # def update_table_data(self, table_name, value, retrieved_data, condition_func):
+    #     try:
+    #         updated_data = []
+    #         changed_rows = 0
+    #         for row in retrieved_data:
+    #             for col, content in value.items():
+    #                 row[col] = content
+    #             updated_data.append(row)
+    #             changed_rows += 1
+    #         print(updated_data)
+    #         self.delete_data(table_name, condition_func)
+    #         for row in updated_data:
+    #             self.insert_data(table_name, row)
+    #         return changed_rows
+    #     except Exception as e:
+    #         #logging.error(f"update failed: {e}")
+    #         return 0
         
     def create_index(self, table_name, column_name, index_name):
         # Ensure the table exists
@@ -545,3 +545,28 @@ class StorageManager:
         # This will return a list of all table names for which schemas are defined.
         return [filename[:-4] for filename in os.listdir(self.data_directory) if filename.endswith('.csv')]
 
+    def update_table_data_2(self, table_name, new_values, retrieved_data, condition_func):
+        """
+        Updates data in a table based on the specified conditions and new values.
+
+        Args:
+            table_name (str): The table to update.
+            new_values (dict): New values for the update operation.
+            retrieved_data (list of dict): Data retrieved based on conditions.
+            condition_func (callable): Function to filter data to update.
+
+        Returns:
+            int: Number of rows updated.
+        """
+        updated_data = []
+        for row in retrieved_data:
+            if condition_func(row):
+                row.update(new_values)
+                updated_data.append(row)
+
+        # Now delete old data and insert updated data
+        self.delete_data(table_name, condition_func)
+        for row in updated_data:
+            self.insert_data(table_name, row)
+
+        return len(updated_data)

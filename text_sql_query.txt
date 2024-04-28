@@ -104,6 +104,8 @@ INSERT INTO test_table (id, name) VALUES ('WRONG','Ellen');
 <UPDATE: successful>
 UPDATE test_table SET name = 'DemoUpdate' WHERE id = 21; 
 
+UPDATE test_table SET name = 'DemoUpdate_2' WHERE id = 21; 
+
 <DELETE>
 DELETE FROM test_table WHERE id = 21;
 

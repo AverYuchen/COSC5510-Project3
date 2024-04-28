@@ -3,7 +3,7 @@
     "state": { "type": "varchar" },
     "state_code": { "type": "varchar" }
   },
-  "primary_key": "state",
+  "primary_key": "state_code",
   "foreign_keys": [],
   "indexes": []
 }
