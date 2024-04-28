@@ -220,12 +220,12 @@ class StorageManager:
         schema = self.schemas.get(table_name)
         
         if schema:
-            #logging.debug(f"Schema found for table {table_name}: {schema}")
+            logging.debug(f"Schema found for table {table_name}: {schema}")
             return schema
         else:
-            #logging.debug(f"No schema found for table {table_name}.")
+            logging.debug(f"No schema found for table {table_name}.")
             return schema
-        return schema
+
 
     def create_schema(self, table_name, schema):
         if table_name not in self.schemas:
@@ -338,23 +338,23 @@ class StorageManager:
         # print(f"Table Data for {table_name}: {table_data}")  # Debugging statement
         return table_data
  
-    # def update_table_data(self, table_name, value, retrieved_data, condition_func):
-    #     try:
-    #         updated_data = []
-    #         changed_rows = 0
-    #         for row in retrieved_data:
-    #             for col, content in value.items():
-    #                 row[col] = content
-    #             updated_data.append(row)
-    #             changed_rows += 1
-    #         print(updated_data)
-    #         self.delete_data(table_name, condition_func)
-    #         for row in updated_data:
-    #             self.insert_data(table_name, row)
-    #         return changed_rows
-    #     except Exception as e:
-    #         #logging.error(f"update failed: {e}")
-    #         return 0
+    def update_table_data(self, table_name, value, retrieved_data, condition_func):
+        try:
+            updated_data = []
+            changed_rows = 0
+            for row in retrieved_data:
+                for col, content in value.items():
+                    row[col] = content
+                updated_data.append(row)
+                changed_rows += 1
+            print(updated_data)
+            self.delete_data(table_name, condition_func)
+            for row in updated_data:
+                self.insert_data(table_name, row)
+            return changed_rows
+        except Exception as e:
+            #logging.error(f"update failed: {e}")
+            return 0
         
     def create_index(self, table_name, column_name, index_name):
         # Ensure the table exists

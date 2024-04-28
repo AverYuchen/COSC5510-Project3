@@ -1,3 +1,5 @@
+SHOW TABLES
+
 <SELECT FUNCTION>
 
 SELECT state FROM state_abbreviation
@@ -115,7 +117,8 @@ UPDATE test_table SET id = 'test' WHERE name = DemoUpdate;
 
 <UPDATE: Success and Fail beacuese of PK FK>
 UPDATE state_abbreviation SET state = 'Alabamamama' WHERE state_code = AL;
-UPDATE state_abbreviation SET state_code = 'ALBA' WHERE state = Alabama;
+UPDATE state_abbreviation SET state_code = 'WYWY' WHERE state = Wyoming;
+
 
 <CREATE>
 
