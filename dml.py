@@ -181,7 +181,7 @@ class DMLManager:
 
     def update(self, table_name, value, conditions):
         #check validation:
-        if self.validate_data(table_name, value, command='update') and self.validate_foreign_key(table_name,value):
+        if self.validate_data(table_name, value, command='update'):
             #logging.debug(f"Attempting to update {table_name} with conditions {conditions} to {value} ")
             try:
                 data = self.storage_manager.get_table_data_w_datatype(table_name)
