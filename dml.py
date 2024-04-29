@@ -145,8 +145,6 @@ class DMLManager:
         return True  # No references, safe to delete
 
 
-       
-    
     def parse_conditions_delete(self, conditions):
         import re
         # Simplify parsing logic to handle basic conditions like "id = 9"
@@ -331,94 +329,6 @@ class DMLManager:
             # Fallback to full table scan if no index exists
             return [row for row in self.storage_manager.get_table_data(table_name) if row[column] == value]
 
-    def max(self, table, column, conditions=None):
-        # Find the maximum value in the specified column
-        data = self.storage_manager.get_table_data(table)
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        column_values = [d.get(column, float('-inf')) for d in data]
-        return max(column_values)
-
-    def min(self, table, column, conditions=None):
-        # Find the minimum value in the specified column
-        data = self.storage_manager.get_table_data(table)
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        column_values = [d.get(column, float('inf')) for d in data]
-        return min(column_values)
-
-    def sum(self, table, column, conditions=None):
-        data = self.storage_manager.get_table_data(table)
-        print(f"Debug: Retrieved data for sum: {data}")  # Debug: Print retrieved data
-        if not data:
-            return "Table not found or no data available."
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        print(f"Debug: Filtered data for sum: {data}")  # Debug: Print filtered data
-        values_for_sum = [int(d.get(column, 0)) for d in data if d.get(column).isdigit()]
-        print(f"Debug: Values for sum: {values_for_sum}")  # Debug: Print values used for sum
-        return sum(values_for_sum)
-
-    def avg(self, main_table, column, conditions=None):
-        # Calculate the average of the specified column
-        data = self.storage_manager.get_table_data(main_table)
-        if not data:
-            print("Debug: Table not found or no data available.")
-            return "Table not found or no data available."
-
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        
-        column_values = [d.get(column, None) for d in data]
-        print(f"Debug: All values in the column: {column_values}")
-
-        # Filter out non-numeric values
-        numeric_values = [value for value in column_values if str(value).isdigit()]
-        print(f"Debug: Numeric values in the column: {numeric_values}")
-
-        if not numeric_values:
-            return "No numerical values found in the specified column."
-
-        # Convert numeric values to integers and calculate the average
-        numeric_values = [int(value) for value in numeric_values]
-        average = sum(numeric_values) / len(numeric_values)
-        return average
-
-    def count(self, main_table, column=None, conditions=None):
-        # Count the number of rows in the specified table or the number of non-null values in the specified column
-        data = self.storage_manager.get_table_data(main_table)
-        if not data:
-            print("Debug: Table not found or no data available.")
-            return "Table not found or no data available."
-
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [d for d in data if condition_function(d)]
-        
-        if column:
-            # Count non-null values in the specified column
-            column_values = [d.get(column, None) for d in data]
-            print(f"Debug: All values in the column: {column_values}")
-
-            # Filter out null values
-            non_null_values = [value for value in column_values if value is not None]
-            print(f"Debug: Non-null values in the column: {non_null_values}")
-
-            count = len(non_null_values)
-        else:
-            # Count the number of rows in the table
-            count = len(data)
-
-        return count
-
     def parse_conditions(self, conditions):
         print(f"Parsing conditions: {conditions}")
         operators = {
@@ -464,67 +374,13 @@ class DMLManager:
         
         # Return a callable lambda function
         return lambda d: eval(condition_str, {}, {"d": d})
-    
-    def aggregate(self, agg_type, table, column, conditions=None):
-        # This should connect to your database and execute the appropriate aggregation query.
-        # This is a simplified example:
-        query = f"SELECT {agg_type.upper()}({column}) FROM {table}"
-        if conditions:
-            query += f" WHERE {conditions}"
-        
-        # Simulating database connection and query execution
-        cursor = self.db_connection.cursor()
-        cursor.execute(query)
-        result = cursor.fetchone()
-        cursor.close()
-        return result[0] if result else None
-
-    def group_by(self, main_table, group_column, aggregate_func, aggregate_column, conditions=None):
-        data = self.storage_manager.get_table_data(main_table)
-        if not data:
-            return "Table not found or no data available."
-        
-        # Apply conditions if any
-        if conditions:
-            condition_function = self.parse_conditions(conditions)
-            data = [row for row in data if condition_function(row)]
-
-        # Grouping data
-        grouped_data = {}
-        for row in data:
-            key = row.get(group_column)
-            if key not in grouped_data:
-                grouped_data[key] = []
-            grouped_data[key].append(row)
-        
-        # Aggregating data
-        aggregated_data = {}
-        for key, rows in grouped_data.items():
-            if aggregate_func == 'sum':
-                aggregated_data[key] = sum(self.safe_convert(row.get(aggregate_column, 0)) for row in rows)
-            elif aggregate_func == 'avg':
-                values = [self.safe_convert(row.get(aggregate_column, 0)) for row in rows]
-                aggregated_data[key] = sum(values) / len(values) if values else 0
-            elif aggregate_func == 'count':
-                aggregated_data[key] = len(rows)
-
-        return aggregated_data
 
     def safe_convert(self, value):
         try:
             return float(value)
         except ValueError:
             return 0
-    
-    def order_by(self, data, order_column, ascending=True):
-            # Convert string numeric data to integers before sorting
-            numeric_data = [
-                {order_column: int(row.get(order_column))}
-                for row in data
-                if row.get(order_column).isdigit()
-            ]
-            sorted_data = sorted(numeric_data, key=lambda x: x[order_column], reverse=not ascending)
-            return sorted_data
+
 
 if __name__ == "__main__":
 

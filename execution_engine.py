@@ -472,8 +472,6 @@ class ExecutionEngine:
 
     def handle_unsupported(self, command):
         return "Unsupported command type"
-
-        
     
     def handle_group_by(self, data, group_by_column, columns):
         grouped_data = {}

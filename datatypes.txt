@@ -1,3 +1,0 @@
-users:['INT', 'VARCHAR(100)']
-passowrd:['INT', 'VARCHAR(8)']
-test:['INT', 'VARCHAR(100)']

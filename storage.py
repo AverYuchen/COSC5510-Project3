@@ -284,31 +284,7 @@ class StorageManager:
         except Exception as e:
             #logging.error(f"Failed to write to {filename}: {e}")
             return f"Error: Failed to write data due to {e}"
-    # """
-    # def parse_conditions_safe(self, conditions):
-    #     import re
-    #     # This regex now captures both digits and non-digits for values
-    #     match = re.match(r"^\s*(\w+)\s*=\s*(['\"]?)(\w+)\2\s*$", conditions)
-    #     if match:
-    #         field, _, value = match.groups()
-    #         # Try to convert to integer, fallback to string
-    #         try:
-    #             value = int(value)
-    #         except ValueError:
-    #             pass  # Keep value as string if conversion fails
 
-    #         def condition_func(row):
-    #             # Convert both to string for comparison to handle different data types gracefully
-    #             row_value = row.get(field)
-    #             if isinstance(row_value, int):
-    #                 row_value = str(row_value)
-    #             return row_value == str(value)
-
-    #         return condition_func
-    #     else:
-    #         logging.error("Invalid condition syntax or unhandled condition format: " + conditions)
-    #         return None
-    # """ 
     def insert_data(self, table_name, data):
         # Check if schema exists for the table
         if table_name in self.schemas:

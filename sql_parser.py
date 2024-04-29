@@ -5,7 +5,6 @@ import logging
 
 # from sql_parser import parse_sql
 from execution_engine import ExecutionEngine
-# from storage_manager import StorageManager  # Assuming this exists for testing
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -180,21 +179,6 @@ def parse_select(sql):
                 'join_table': join_table.strip(),
                 'join_condition': join_condition.strip()
             })
-
-    # # Handle WHERE, GROUP BY, ORDER BY, HAVING clauses
-    # where_match = re.search(r'WHERE\s+(.*)', remaining, re.IGNORECASE)
-    # group_by_match = re.search(r'GROUP BY\s+(.*)', remaining, re.IGNORECASE)
-    # order_by_match = re.search(r'ORDER BY\s+(.*)', remaining, re.IGNORECASE)
-    # having_match = re.search(r'HAVING\s+(.*)', remaining, re.IGNORECASE)
-
-    # if where_match:
-    #     result['where_clause'] = where_match.group(1).strip()
-    # if group_by_match:
-    #     result['group_by'] = group_by_match.group(1).strip().split(" ")[0]
-    # if order_by_match:
-    #     result['order_by'] = order_by_match.group(1).strip()
-    # if having_match:
-    #     result['having'] = having_match.group(1).strip()
     
     # Dynamically find the end index for each clause
     clauses = ['WHERE', 'GROUP BY', 'ORDER BY', 'HAVING']
@@ -248,7 +232,6 @@ def parse_where_clause(where_clause):
 
 def parse_create_table(sql):
     # This is a simplified regex pattern; you might need a more robust implementation
-    #pattern = r"CREATE TABLE (\w+) \((.*)\)"
     pattern = r'CREATE TABLE (\w+)\s*\((.*)\)\s*'
     match = re.match(pattern, sql)
     if not match:
@@ -374,34 +357,6 @@ def parse_additional_clauses(clause):
 # Test various SQL queries
 if __name__ == "__main__":
     queries = [
-        # "SELECT state FROM state_abbreviation",
-        # "SELECT state FROM state_abbreviation WHERE state = 'Alaska'",
-        # "SELECT * FROM state_population WHERE state_code = 'AK' AND year = '2018'",
-        # "SELECT state FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-        # "SELECT * FROM state_abbreviation WHERE state = 'California' OR state = 'Texas'",
-        # "SELECT MAX(monthly_state_population) FROM state_population",
-        # 'SELECT SUM(monthly_state_population) FROM state_population',
-        # "SELECT AVG(monthly_state_population) FROM state_population",
-        # "SELECT COUNT(monthly_state_population) FROM state_population",
-        # 'SELECT a.state_code, b.state FROM state_population AS a JOIN state_abbreviation AS b ON a.state_code = b.state_code',
-        # "SELECT a.state_code, b.state FROM state_population AS a INNER JOIN state_abbreviation AS b ON a.state_code = b.state_code",
-        # "SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 INNER JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        # 'SELECT t1.A, t2.A, t2.B FROM TestTable1 AS t1 LEFT JOIN TestTable2 AS t2 ON t1.A = t2.A',
-        # "SELECT t1.A, t2.B FROM TestTable1 AS t1 RIGHT JOIN TestTable2 AS t2 ON t1.A = t2.A",
-        # 'SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population DESC',
-        # "SELECT state_code, monthly_state_population FROM state_population ORDER BY monthly_state_population ASC",
-        # 'SELECT state_code, AVG(monthly_state_population) AS average_population FROM state_population GROUP BY state_code',
-        # "SELECT state_code, AVG(monthly_state_population) FROM state_population GROUP BY state_code ",
-        # "SELECT state_code, SUM(monthly_state_population) FROM state_population GROUP BY state_code ",
-        # "SELECT state_code, COUNT(monthly_state_population) FROM state_population GROUP BY state_code ",
-        # "SELECT A, B FROM TestTable1 WHERE A = 5",
-        # "SELECT A, B FROM TestTable1 WHERE A != 5", 
-        # 'SELECT A, B FROM TestTable1 WHERE A > 5',
-        # "SELECT A, B FROM TestTable1 WHERE A BETWEEN 3 AND 5",
-        # "SELECT A, B FROM TestTable1 WHERE A LIKE '1%'",
-        # "SELECT A, B FROM TestTable1 WHERE A IN (2,3,4)",
-        # "SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country HAVING COUNT(CustomerID) > 5; "
-        # "SELECT state_code, AVG(monthly_state_population) FROM state_population WHERE state_code = 'WI' GROUP BY state_code" 
         "SHOW TABLES"
 
         
